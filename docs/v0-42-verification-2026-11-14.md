@@ -27,6 +27,10 @@
 
 ## 發布狀態
 
-本機最終驗證完成，main 推送、v0.42 tag 與正式 Vercel 來源／bundle／live behavior 讀回尚待完成。此段完成前不得視為正式發布證據。
+- 最終程式已 fast-forward 合併並推送 `main`：`dd66dad3ca0f1b6f7a13dbaae740019968bead63`。Annotated tag `v0.42` 指向此版本並已推送。
+- 正式 Vercel deployment `dpl_BqfR4chLd3oZmACcdY2w9mr7SvgM` 為 READY，來源為上述 main SHA；alias `last-shield.vercel.app` 指向此部署。
+- 公開頁面讀回 `zh-Hant`、「最後防線 v0.42」與完整中文教學。JS `/assets/index-atyOtoj9.js` SHA-256 `a355d90f24c76300d5a06765b129d5dc73e945ffc797dbe0532ccf5d2495ac2e`、CSS `/assets/index-IHV0YTmj.css` SHA-256 `5c04168214d6475801de65de0bf8b9fea2e975397b9873f1d6577784107ccb9b` 皆與最終本機建置完全相同。
+- 正式站真實 Start click 後，受控操作跑到第 6 波／兩顆核心，顯示「超載掃射中」、兩道金色光束、1,550 分與 100% 護盾，無 JavaScript errors。驗證後暫停並重新載入回開場，恢復實際時鐘，未完成測試局以免寫入正式站本機戰績。
+- `src/server/`、`devvit.json`、`vercel.json` 對本次基準無差異；沒有未同步的後端版本。發布證據補記僅為 docs 變更，沿用既有 ignored-build gate，不增加新遊戲版號。
 
 沒有修改 server endpoint、API 回傳、schema、migration、Function、排程或 secret。Reddit 前端建置通過，平台仍未初始化／上傳／發布；此次只發布既有 Vercel 靜態獨立站。Phaser 大型 bundle 提示仍存在。真實 iOS／Android 觸控與人工試聽未執行。

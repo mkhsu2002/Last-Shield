@@ -1,6 +1,6 @@
 # v0.42 中文守城與隕石齊射
 
-Status: implementation authorized by MK's direct request, 2026-11-14. Supersedes v0.41 presentation, solo-core scheduling and survival-2 scoring. Existing global rules/skills own release/security procedures; this file contains only this release's design.
+Status: implemented and production-verified as v0.42, 2026-11-14; authorized by MK's direct request. Supersedes v0.41 presentation, solo-core scheduling and survival-2 scoring. Existing global rules/skills own release/security procedures; this file contains only this release's design.
 
 ## Design decisions
 
