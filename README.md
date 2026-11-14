@@ -1,44 +1,46 @@
 # AEGIS: Last Shield
 
-One-button meteor interception rhythm-survival game set in the **Neo Babylon** original fiction universe.
+A one-button hold-to-vaporize meteor rhythm-survival game in the original **Neo Babylon** universe.
 
-## Gameplay (MVP v0.1)
+## v0.2 gameplay
 
-- A meteor approaches the shield in first-person perspective.
-- One tap / left click / Space key triggers a single interception attempt per meteor.
-- **PERFECT** within ±105 ms gives 100 points; **GOOD** within ±250 ms gives 50 points; outside that window is a **MISS**.
-- A missed meteor continues to the shield and leaves a crack in its indicated sector.
-- **A second impact in any previously damaged sector ends the run.**
-- A rising combo grants multipliers. All players receive the same deterministic UTC daily meteor sequence.
-- Six sector markers and a visual timing flash make the game playable without sound.
+- Start a run with one tap, then **press and HOLD ANYWHERE** on the screen (or hold Space) when the turquoise ring says **HOLD NOW**.
+- The energy beam continuously melts the meteor until it vanishes. One meteor at a time; there is **no aiming** and **no clicking the fragments**.
+- Pressing before the cue heats the emitter. If it overheats, **release to cool**, then try again.
+- Releasing before the meteor disappears leaves residual debris. On impact, the debris removes a **proportionate amount** of shield integrity (0–100), rather than causing immediate death on a repeated sector.
+- Full vaporization saves all shield integrity, increases the combo, and earns points.
+- Beginner meteors take about 5.4 seconds to approach, with 2.9+ seconds available to complete a ~1.1 second hold.
+- Synthesized Web Audio cues play after the first interaction (browser gesture unlock); all cues also have visual equivalents. Impact and successful vaporization trigger strong screen feedback. Where supported, optional vibration is also used.
+- UTC-date-based deterministic meteor sequence enables future daily score comparisons.
 
-## Technology
+## Technology and development
 
-- Official Reddit **Devvit Web** layout, Hono server, Vite, TypeScript, Phaser 4.
-- Game rules in `src/shared/game-logic.ts` deliberately avoid any platform dependency.
-- Visuals are procedural graphics: no third-party artwork or Neo Babylon character reference images are embedded yet.
+- Reddit Devvit Web + Phaser 4 + TypeScript + Vite + Hono.
+- Portable rules in `src/shared/game-logic.ts` with no Phaser or Reddit dependencies.
+- Standalone browser preview and Devvit entrypoints share the same Phaser scene.
 
-## Develop
+Node.js 24.18.0 or newer:
 
-Requirements: Node.js **24.18.0 or later**, npm and a Reddit developer account.
+```sh
+npm install
+npm run check
+npm test
+npm run build:standalone
+npm run build
+```
 
-1. Create/connect a Devvit developer app at https://developers.reddit.com/new . If the chosen app identifier differs from `last-shield`, edit `devvit.json` to match before running playtest.
-2. Clone this repository and run `npm install`.
-3. Run `npm run check`, `npm test`, and `npm run build`.
-4. Run `npm run login` to authorize your Reddit account and `npm run dev` to open Devvit Playtest.
-5. In the test post choose **Launch App** and tap to start.
+For a local preview run `npx vite --config vite.standalone.config.ts`. For a Reddit test run, connect a Reddit developer app in `devvit.json`, run `npm run login` then `npm run dev`. The Reddit version has **not** been authenticated or publicly launched.
 
-Do not run a Devvit initialization command over this populated source tree with `--force`; it may overwrite project files.
+## Known limitations
 
-## Current status and limitations
+- Audio is generated in real time, and mobile Safari may not support browser vibration. Screen shake and visual cues work independently.
+- An actual touch-device playtest is still needed to tune difficulty and shaking intensity.
+- Scores remain local to a run; Redis leaderboard, score validation, daily posting, and account persistence are not implemented.
+- No background schedules or GitHub Actions are configured.
+- Current drawings are procedural placeholder art, not canonical Neo Babylon illustrations.
 
-- Repo scaffold and MVP code are committed; actual Devvit Playtest, browser visuals and production deployment still need authentication and live validation.
-- Score is per run only. Redis-backed leaderboards, server-validated scores, accessibility settings, mobile tuning, audio and daily post scheduling are intentionally **not** implemented yet.
-- No GitHub Actions have been configured; no automatic deploys or cost-producing schedules.
-- This is a first prototype, not an approved Reddit app or a live public game.
+## IP
 
-## IP and licensing
+**Neo Babylon**, its fictional setting, characters, original art and audiovisual assets are reserved to their respective creator(s). No rights to reuse those assets are granted. A source-code license has not yet been selected.
 
-**Neo Babylon**, its story, names, settings, character designs and art belong to their respective creator(s). No license is granted for those assets. This public repository does not yet include an open-source license for the original game code; choose and document a code-specific license separately when ready.
-
-Developed for the 2026 Reddit Game of the Day Hackathon.
+Developed for the Reddit Game of the Day 2026 challenge.
