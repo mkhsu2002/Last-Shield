@@ -18,7 +18,8 @@
 ## Release status
 
 - Final TypeScript, 15 unit tests, standalone build, Devvit build and diff whitespace checks: passed with Node.js 24.20.0.
-- GitHub main / Vercel standalone publication: pending.
+- GitHub main: `c6b2ba9` merged and pushed. Vercel production deployment `dpl_znQFZJngQUDWYiWBqDyw8uhXQzmA` reached READY at that source commit.
+- Public readback at https://last-shield.vercel.app loaded `/assets/index-D4-Ngo-3.js`, matching the local verified build. With no input, health stayed 100% at 2.8 seconds and changed to 66% after contact, with SHIELD FRACTURED −34%. There was no REMAINING countdown or JavaScript page error. The smoke was paused and reloaded before game-over to avoid saving a test record.
 - Reddit: deliberately not initialized, authenticated, uploaded or published. MK supplied an onboarding command to retain locally; it is not tracked or repeated here. After development, guide the official deployment of this existing project instead of running a scaffold over the checkout.
 - No server endpoint, API response format, schema, migration or backend deployment changed.
 
