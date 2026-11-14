@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   advanceBeam,
+  chargeCue,
   applyShieldDamage,
   debrisDamage,
   initialBeam,
@@ -61,4 +62,13 @@ test('shield takes multiple hits before it reaches zero', () => {
   const fourth = applyShieldDamage(integrity, 100);
   assert.equal(fourth.destroyed, true);
   assert.equal(fourth.integrity, 0);
+});
+
+test('countdown turns from wait into 3, 2, 1 and finally hold', () => {
+  const start = 2300;
+  assert.deepEqual(chargeCue(500, start), { phase: 'wait', count: 0 });
+  assert.deepEqual(chargeCue(800, start), { phase: 'countdown', count: 3 });
+  assert.deepEqual(chargeCue(1300, start), { phase: 'countdown', count: 2 });
+  assert.deepEqual(chargeCue(1800, start), { phase: 'countdown', count: 1 });
+  assert.deepEqual(chargeCue(2300, start), { phase: 'ready', count: 0 });
 });
