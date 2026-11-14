@@ -1,5 +1,6 @@
 # v0.41 — precision and storm rhythm
 
+Archived baseline as of 2026-11-14: v0.42 replaces the English UI, solo-core scheduling, survival-2 records and impact mix. Current release evidence: `docs/v0-42-verification-2026-11-14.md`. Original verification dates/evidence below remain historical.
 Status: implemented and production-verified as v0.41, 2026-11-14. Authorized by MK's request to implement the proposed experience improvements. Baseline: released v0.40 (`927e61b`). This document supersedes survival-1 mechanics where described below.
 
 ## Scope

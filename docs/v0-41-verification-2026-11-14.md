@@ -1,5 +1,6 @@
 # v0.41 — precision and storm rhythm verification
 
+Archived baseline as of 2026-11-14: v0.42 replaces the English UI, solo-core scheduling, survival-2 records and impact mix. Current release evidence: `docs/v0-42-verification-2026-11-14.md`. Original verification dates/evidence below remain historical.
 2026-11-14. Baseline v0.40 is archived in `survival-verification-2026-11-14.md`. This release preserves single-button survival and visible core/shield contact.
 
 ## Implemented

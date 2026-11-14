@@ -1,26 +1,61 @@
-import type { Mistakes, StormPhase } from '../shared/game-logic.ts';
+import type { Mistakes, StormPhase } from "../shared/game-logic.ts";
 
 export const PHASE_LABELS: Record<StormPhase, string> = {
-  approach: 'INCOMING FRONT', surge: 'RAPID FRONT', breaker: 'HEAVY BREAKER', respite: 'CALM FRONT',
+  approach: "前線推進",
+  surge: "密集來襲",
+  breaker: "重型突破",
+  respite: "短暫平靜",
 };
-export const CITY_MESSAGES = ['The city lights are still shining.', 'Another storm held outside the walls.', 'Below the shield, life goes on.'];
+export const CITY_MESSAGES = [
+  "城市的燈火，因你而亮。",
+  "又一場風暴，被擋在城外。",
+  "護盾之下，生活仍在繼續。",
+];
 
-export function milestone(cleared: number): { target: number; progress: number } {
-  return { target: (Math.floor(cleared / 10) + 1) * 10, progress: cleared % 10 };
+export function energyCopy(
+  energy: number,
+  active: boolean
+): { title: string; help: string } {
+  return active
+    ? { title: "超載掃射中", help: "雙倍光束威力，同時融解所有隕石。" }
+    : energy === 3
+    ? { title: "超載已就緒", help: "下次按住自動啟動：雙倍威力＋全域掃射。" }
+    : {
+        title: `超載蓄能 ${energy}／3`,
+        help: "完美擊破 +1；集滿後，下次光束雙倍並掃射全場。",
+      };
 }
 
-export function retryAdvice(run: { mistakes: Mistakes; early: number; late: number }): string {
-  const causes = ['unarmed', 'released', 'late', 'untouched'] as const;
-  const dominant = causes.reduce((best, cause) => run.mistakes[cause] > run.mistakes[best] ? cause : best);
+export function milestone(cleared: number): {
+  target: number;
+  progress: number;
+} {
+  return {
+    target: (Math.floor(cleared / 10) + 1) * 10,
+    progress: cleared % 10,
+  };
+}
+
+export function retryAdvice(run: {
+  mistakes: Mistakes;
+  early: number;
+  late: number;
+}): string {
+  const causes = ["unarmed", "released", "late", "untouched"] as const;
+  const dominant = causes.reduce((best, cause) =>
+    run.mistakes[cause] > run.mistakes[best] ? cause : best
+  );
   if (run.mistakes[dominant] > 0) {
     return {
-      unarmed: 'Release after each core breaks, then start a fresh hold for the next meteor.',
-      released: 'Keep holding until the core bursts. A smaller core can still hit the shield.',
-      late: 'Start your hold sooner, as the rings meet. PERFECT beams melt faster.',
-      untouched: 'When the ring lights up, press and hold anywhere until the core bursts.',
+      unarmed: "擊碎一顆後先放開，再按住攻擊下一顆；一直按住不會自動換目標。",
+      released: "按住直到核心爆裂再放開；縮小的隕石仍會撞傷護盾。",
+      late: "試著早一點，在圓環重合時按住；完美光束融解更快，還能替超載集氣。",
+      untouched: "鎖定圓環亮起時，按住發射。系統會替你鎖定最危險的隕石。",
     }[dominant];
   }
-  return run.early > run.late ? 'Press a little later, as the rings meet, for a faster PERFECT beam.' :
-    run.late > 0 ? 'Meet the rings a little sooner to melt cores faster.' :
-    'Three PERFECT clears charge your next beam with double-power OVERDRIVE.';
+  return run.early > run.late
+    ? "試著晚一點，在圓環剛好重合時按住，就能完美擊破並替超載集氣。"
+    : run.late > 0
+    ? "提早一點跟上圓環，讓完美光束替你多爭取時間。"
+    : "累積三次完美擊破，下次光束就會自動雙倍加強，並同時掃射所有隕石。";
 }

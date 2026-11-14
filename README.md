@@ -1,24 +1,23 @@
-# AEGIS: Last Shield
+# 最後防線 · Last Shield
 
-A one-button daily meteor-defense game in the original **Neo Babylon** universe.
+新巴比倫世界觀的單鍵隕石守城遊戲。[正式試玩](https://last-shield.vercel.app/)
 
-## v0.41 precision and storm rhythm
+## v0.42 中文守城
 
-- Watch incoming meteors and their targeting rings. **Press and hold anywhere**, or hold Space, when the targeting ring lights up. Release after the core bursts, then make a fresh hold for the next meteor. No aiming or fragment tapping.
-- **Survive until the shield breaks.** There is no countdown, time limit or wave cap. The main HUD shows shield health. A run keeps its starting UTC date, including across midnight.
-- First effective holds within **±120 ms** of ring alignment earn PERFECT. Holds through +450 ms earn GOOD. Earlier/later holds can still save the city, with fewer points. PERFECT beams melt at 1.25× speed. Repeated tapping cannot upgrade the grade after melting starts.
-- The first two waves teach normal meteors. Each ten-wave storm has four approach waves, four rapid-front waves (10% faster flight and 120–299 ms recovery), a heavy breaker and a slower respite core with a 1.2-second recovery. The HUD names the phase and previews the next core. Speeds, trajectories and intervals remain UTC-day seeded. Pressure increases through wave 80, then remains at the fastest tier. The next wave follows the previous clear or impact; there are no fixed slots.
-- Three PERFECT clears charge **OVERDRIVE**: the next beam fires at 2× power, multiplying the precision boost, and earns an additional 200 points if it clears the core. The charge is spent on first firing; release, pause or impact cannot refund it. A missed core resets the combo and removes one charge. A full impact removes 34 shield integrity; partial melting reduces damage. There is no overheat lock.
-- The shield visibly encloses the city. The same shared trajectory/radius function drives meteor drawing and edge-to-shield contact. Partially melted cores shrink and travel farther before contact. Damage is never triggered by an unrelated visual deadline. Each hit leaves branching cracks and glass fragments, dims the city, and adds fracture audio. At zero health the dome collapses for 1.25 seconds before results.
-- Scores include timing quality, a heavy-core bonus, capped combo bonuses and overdrive. There is no fixed-round maximum score.
-- The daily best is saved **on the current device/browser only**, scoped to the UTC day and rule version. Results show survival time, wave reached, perfect clears, longest combo, cores broken and a retry hint. The score-best run also records its wave reached, shown in the HUD (not an independent survival record). Both fixed-round and v0.40 records are excluded by the survival-2 rules namespace. Storage denial does not prevent play.
-- Every ten cleared cores advances a personal milestone and a short city message. Results suggest the next milestone and give advice from actual impact causes: no input, unrearmed hold, early release or late engagement.
-- **Copy Challenge** prepares player-initiated challenge text. Clipboard denial falls back to selectable text. The Reddit build links back to its public post; the standalone links to its page.
-- Sound activates after Start and can be muted. All timing cues also have visual equivalents. Escape or the pause button pauses play; losing focus or hiding the page pauses and releases controls. Reduced-motion preferences disable shaking, moving burst particles and dome-collapse movement.
+- **完整繁體中文介面**：教學、戰鬥提示、超載說明、結果、戰績分享、錯誤／儲存提示與無障礙標籤皆為中文。預設語系 `zh-Hant`，沒有尚未完成的語系切換。
+- **單鍵操作**：圓環重合亮起時，按住畫面、發射按鈕或空白鍵。持續按到核心擊碎，再放開、重新按住。光束自動鎖定最接近撞擊的隕石；按住期間不會自行切換目標。
+- **精準與超載**：最佳時機前後 120 ms 為完美；完美光束速度為 1.25 倍，每次完美擊破 +1 格能量。累積三次（不必連續）集滿後，下一次有效光束自動雙倍加強，並同時融解場上所有隕石。能量在開火時消耗，暫停／放開不會退款。旁支新目標判定為 GOOD，不會白拿完美集氣；已經取得的判定保持鎖定。超載參與過的擊破另加 200 分。
+- **多顆同時來襲**：前四波單顆教學；第 5 波起，密集／重型段引入雙顆。第 11 波起通常雙顆、平靜段單顆；第 31 波起密集段可三顆；第 51 波起通常三顆、平靜段雙顆。每波所有隕石同時出現，來自不同天空防區，鎖定時機錯開，保留依次攔截的窗口。
+- **持續加壓**：十波一組，包含推進、密集、重型與平靜段。原本的基礎速度成長延續到第 80 波，額外對數倍率會繼續加快飛行、融解與波間節奏；沒有固定通關波數或時間上限。UTC 日期決定相同的隨機序列，每局使用開始時的日期。
+- **真正碰撞**：所有隕石都從天空接近護盾，共用幾何函式判斷外緣接觸。完整撞擊造成 34 點傷害，部分融解可以減傷，縮小後會再前進到實際接觸才撞擊。護盾從 100 開始，歸零才結束；撞擊斷連擊、扣一格未使用的超載能量。各顆傷害分別計算，致命撞擊立刻終止模擬。
+- **重新設計畫面與聲音**：夜色層次、城市天際線、發光網格護盾、熾熱核心／尾跡、多束掃射、撞擊裂痕與碎片。撞擊使用低頻、手機可表現的中頻破裂與雜訊餘震，通過壓縮主輸出；靜音及暫停會停止音效。首次操作後才啟用音訊。
+- **更容易讀懂**：數字「超載蓄能 0／3」、三格進度、明確完美 +1 說明、就緒／啟動狀態與大面積按住按鈕。操作按鈕至少 44px。每十顆推進里程碑與城市訊息，結果依實際失誤給下一次建議。
+- **本機每日紀錄**：按得分保留最佳一局與該局波數，不宣稱獨立最遠波數。使用 `survival-3`，舊 v0.40／v0.41 規則分數不混用；每波最多三顆的紀錄邊界已更新。儲存被拒絕仍可遊玩；複製被拒絕則顯示可選取的中文戰績。
+- **暫停與減少動態**：Escape、暫停按鈕、失焦／隱藏頁面會暫停並釋放操作。減少動態模式停用震動、移動碎片與護盾崩解位移。觸控模擬不等於真實手機驗收。
 
-## Development
+## 開發與檔案
 
-Reddit Devvit Web + Phaser 4 + TypeScript + Vite + Hono. Node.js **24.18.0 or newer**.
+Reddit Devvit Web、Phaser 4、TypeScript、Vite、Hono。Node.js **24.18.0 以上**。
 
 ```sh
 npm ci
@@ -28,33 +27,34 @@ npm run build:standalone
 npm run build
 ```
 
-Local development: `npx vite --config vite.standalone.config.ts`.
-Built standalone preview: `npx vite preview --config vite.standalone.config.ts --host 127.0.0.1 --port 4173`.
-Reddit playtest: connect the developer app in `devvit.json`, then `npm run login` and `npm run dev`.
+開發獨立站：`npx vite --config vite.standalone.config.ts`。
+建置預覽：`npx vite preview --config vite.standalone.config.ts --host 127.0.0.1 --port 4173`。
+Reddit 仍待完成正式平台導入；不要用 scaffold 覆蓋此專案。
 
-- `src/shared/game-logic.ts`: deterministic run simulator, contact geometry, variable wave scheduling, timing, scoring and damage; no Phaser or Reddit dependency.
-- `src/client/game.ts`: scene, input, pause, rendering, results and challenge sharing.
-- `src/client/game-ui.ts` / `game.css`: semantic HTML controls and responsive overlay.
-- `src/client/audio.ts`: synthesized audio, independent of Phaser's audio manager.
-- `src/client/records.ts`: validated, failure-tolerant local score-best records including wave reached.
-- `src/client/coaching.ts`: storm labels, milestone progress and impact-based retry advice.
-- `src/client/version.ts`: visible version derived from package.json.
-- `src/server/index.ts`: existing moderator-created Reddit post endpoint; unchanged by this MVP.
+- `src/shared/game-logic.ts`：日期序列、多顆波次、鎖定、融解、碰撞、能量與得分，無 Phaser／Reddit 依賴。
+- `src/client/battlefield.ts`：城市／護盾／隕石／光束與多個同時發生的特效。繪製使用與碰撞相同的幾何。
+- `src/client/game.ts`：場景生命週期、鍵盤／觸控／按鈕操作、中文狀態、暫停、結果與分享。
+- `src/client/game-ui.ts`、`game.css`：語意化中文介面與手機版配置。
+- `src/client/audio.ts`：合成音效、壓縮主輸出、音源生命週期。`scheduleImpact`／`createMasterBus` 可供 OfflineAudioContext 重現實際撞擊混音。
+- `src/client/coaching.ts`：中文風暴／城市／超載說明、里程碑與失誤建議。
+- `src/client/records.ts`：可容錯的本機紀錄驗證與儲存。
+- `src/client/version.ts`：由 package.json 產生公開版號。
+- `src/server/index.ts`：既有 Reddit 管理員建文端點；此次未修改、未發布 Reddit 後端。
 
-## Release and current boundaries
+## 發布與驗證
 
-The existing Vercel project is `last-shield`, connected to GitHub `main`; its standalone production alias is [last-shield.vercel.app](https://last-shield.vercel.app). Source changes build the standalone client using `vercel.json`. Its ignored-build command compares production-impacting paths against the previous deployment SHA (falling back to the previous commit); docs-only updates skip builds. No cron or GitHub Actions are configured.
+Vercel 專案 `last-shield` 連接 GitHub `main`，正式站為 [last-shield.vercel.app](https://last-shield.vercel.app)。`vercel.json` 建置獨立前端，`scripts/ignore-build.sh` 對照前次部署 SHA，文件變更會跳過建置。沒有 cron 或 GitHub Actions。
 
-See [v0.41 verification](docs/v0-41-verification-2026-11-14.md) for the current release/readback state. The [v0.40 survival verification](docs/survival-verification-2026-11-14.md) and [v0.3 verification](docs/mvp-verification-2026-11-14.md) are historical. A successful Devvit build is not evidence of a Reddit launch. This release introduces **no backend schema or API changes** and does not deploy a new Reddit backend.
+即時狀態見 [v0.42 驗證紀錄](docs/v0-42-verification-2026-11-14.md)。[v0.41](docs/v0-41-verification-2026-11-14.md)、[v0.40](docs/survival-verification-2026-11-14.md) 與 [v0.3](docs/mvp-verification-2026-11-14.md) 均是歷史版本，不代表新規則。
 
-Not implemented: Reddit account persistence, global leaderboard, server-validated scores, shared city contributions, automatic daily posts or telemetry. Device-local scores are not authoritative competitive scores. Real iOS/Android hardware playtesting and human audio review remain necessary; browser touch emulation is not hardware testing. Audio is synthesized, and vibration support varies by device. The art is procedural rather than canonical Neo Babylon illustration.
+本次無後端 schema、migration、RPC、API 格式、Function、排程或 provider secret 變更，正式獨立站為靜態前端。Reddit 尚未初始化／上傳／發布，建置成功不代表已上線 Reddit。沒有跨裝置帳號、全球排行榜、伺服器驗證分數、城市共建或追蹤分析。真實 iOS／Android 與人工試聽仍待確認；瀏覽器音效輸出／波形通過不代表主觀聽感已驗收。Phaser 套件大小提示與先前記錄的 Devvit CLI 間接依賴 advisories 仍存在。
 
-## Versioning
+## 版本規則
 
-Visible gameplay releases advance by **v0.01 per completed release push**: v0.40 → v0.41 → v0.42. `package.json` uses `0.41.0` for v0.41; the UI, Reddit splash and challenge copy read that version through `version.ts`. Create a matching Git tag after successful release checks. Documentation-only release-evidence commits do not advance the gameplay version. Change `RULES_VERSION` when scoring or mechanics change, keeping incomparable local records separate.
+每個完成驗證並推送的新遊戲版本增加 **v0.01**：v0.40 → v0.41 → v0.42 → v0.43。`package.json` 以 `0.42.0` 對應 v0.42，UI、Reddit 開場與分享共用該來源，發布建立相同 Git tag。文件驗證補記不另升遊戲版本；計分／玩法變動須隔離 `RULES_VERSION`，避免比較不相容紀錄。
 
-## IP
+## 原創權利
 
-**Neo Babylon**, its fictional setting, characters, original art and audiovisual assets are reserved to their respective creator(s). No rights to reuse those assets are granted. A source-code license has not yet been selected.
+新巴比倫（Neo Babylon）的世界觀、角色、原創美術與視聽資產之權利保留予各自創作者。本專案未授予重用該等資產的權利；程式碼授權尚未選定。
 
-Developed for the Reddit Game of the Day 2026 challenge.
+為 Reddit Game of the Day 2026 挑戰開發。
