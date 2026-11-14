@@ -86,8 +86,9 @@ class ShieldScene extends Phaser.Scene {
     this.combo += 1;
     this.caught += 1;
     const multiplier = Math.min(5, 1 + Math.floor((this.combo - 1) / 5));
-    this.score += (result === 'perfect' ? 100 : 50) * multiplier;
-    this.message = result === 'perfect' ? 'PERFECT  +100' : 'GOOD  +50';
+    const points = (result === 'perfect' ? 100 : 50) * multiplier;
+    this.score += points;
+    this.message = (result === 'perfect' ? 'PERFECT  +' : 'GOOD  +') + points;
     this.pulse = 1;
     this.lastSector = meteor.sector;
     this.meteor = null;
@@ -228,10 +229,25 @@ class ShieldScene extends Phaser.Scene {
     }
     g.fillStyle(0xe35b31, .12 + .25 * p);
     g.fillCircle(x, y, radius * 1.75);
-    g.fillStyle(m.tapped ? 0xff4e45 : 0xff823d, 1);
-    g.fillCircle(x, y, radius);
-    g.fillStyle(0xffdca3, .95);
-    g.fillCircle(x - radius * .16, y - radius * .22, radius * .49);
+    if (m.tapped) {
+      // A failed interception fractures the meteor into residual fragments.
+      // They continue toward the shield and still count as one sector impact.
+      for (let j = 0; j < 3; j++) {
+        const a = (j * TAU / 3) + p * 5;
+        const distance = radius * .7;
+        const fx = x + Math.cos(a) * distance;
+        const fy = y + Math.sin(a) * distance;
+        g.fillStyle(0xff684d, .9);
+        g.fillCircle(fx, fy, radius * .29);
+        g.fillStyle(0xffd5a6, .85);
+        g.fillCircle(fx - 2, fy - 2, Math.max(2, radius * .12));
+      }
+    } else {
+      g.fillStyle(0xff823d, 1);
+      g.fillCircle(x, y, radius);
+      g.fillStyle(0xffdca3, .95);
+      g.fillCircle(x - radius * .16, y - radius * .22, radius * .49);
+    }
     if (canHit) {
       g.lineStyle(error <= 105 ? 8 : 5, error <= 105 ? 0xffffff : 0x87ecf7, .93);
       g.strokeCircle(x, y, radius + 14);
