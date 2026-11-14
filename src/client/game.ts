@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import {
-  advanceBeam, applyShieldDamage, initialBeam, meteorSpec, utcDaySeed,
+  advanceBeam, applyShieldDamage, chargeCue, initialBeam, meteorSpec, utcDaySeed,
 } from '../shared/game-logic';
 import type { BeamState, MeteorSpec } from '../shared/game-logic';
 
@@ -9,6 +9,7 @@ type FallingMeteor = MeteorSpec & {
   elapsed: number;
   beam: BeamState;
   readyCuePlayed: boolean;
+  countdownPlayed: number;
 };
 const W = 540;
 const H = 900;
@@ -52,6 +53,9 @@ class SynthAudio {
   }
 
   approaching(): void { this.tone(360, 520, .18, .035); }
+  countdown(number: number): void {
+    this.tone(number === 1 ? 780 : number === 2 ? 650 : 530, number === 1 ? 920 : 740, .11, .055);
+  }
   ready(): void {
     this.tone(690, 880, .12, .10);
     this.tone(1000, 1260, .18, .06);
@@ -229,7 +233,7 @@ class ShieldScene extends Phaser.Scene {
   private spawn(): void {
     this.release();
     const spec = meteorSpec(this.daySeed, this.index);
-    this.meteor = { ...spec, elapsed: 0, beam: initialBeam(), readyCuePlayed: false };
+    this.meteor = { ...spec, elapsed: 0, beam: initialBeam(), readyCuePlayed: false, countdownPlayed: 0 };
     this.index++;
     this.message = 'WAIT FOR THE CYAN SIGNAL';
     this.messageTimer = 1000;
@@ -292,7 +296,7 @@ class ShieldScene extends Phaser.Scene {
       this.cue.setFontSize(25);
       this.status.setText('TAP ANYWHERE TO START');
       this.status.setColor('#a9f5ff');
-      this.help.setText('Wait for HOLD NOW, then keep pressing until the meteor disappears. No aiming. No fragment tapping.');
+      this.help.setText('Watch 3 · 2 · 1. When both rings meet and glow CYAN, hold anywhere until the meteor vanishes.');
     } else if (this.phase === 'gameover') {
       this.cue.setText('SHIELD DESTROYED');
       this.cue.setFontSize(31);
@@ -303,7 +307,7 @@ class ShieldScene extends Phaser.Scene {
       this.cue.setFontSize(31);
       this.status.setText(this.message);
       this.status.setColor(this.message.includes('HIT') || this.message.includes('OVERHEAT') ? '#ff9b8a' : '#d5faff');
-      this.help.setText('HOLD ANYWHERE · LET GO TO COOL\nDEBRIS DAMAGES SHIELD AUTOMATICALLY');
+      this.help.setText('RINGS MEET = PRESS & HOLD  ·  NO AIMING\nRELEASE TO COOL IF THE EMITTER OVERHEATS');
     }
   }
 
@@ -320,12 +324,17 @@ class ShieldScene extends Phaser.Scene {
       } else {
         const m = this.meteor;
         m.elapsed += dt;
-        const ready = m.elapsed >= m.chargeStartMs;
+        const cue = chargeCue(m.elapsed, m.chargeStartMs);
+        const ready = cue.phase === 'ready';
+        if (cue.phase === 'countdown' && cue.count !== m.countdownPlayed) {
+          m.countdownPlayed = cue.count;
+          this.audio.countdown(cue.count);
+        }
         if (ready && !m.readyCuePlayed) {
           m.readyCuePlayed = true;
           this.audio.ready();
           this.pulse = .38;
-          this.setResult('HOLD THE BEAM!', 1350);
+          this.setResult('RINGS ALIGNED · PRESS AND HOLD!', 1350);
         }
         const oldOverheated = m.beam.overheated;
         m.beam = advanceBeam(m.beam, dt, this.held, ready);
@@ -355,10 +364,16 @@ class ShieldScene extends Phaser.Scene {
     const heat = Math.round(m.beam.heat);
     this.heatLabel.setText('EMITTER HEAT  ' + heat + '%');
     this.heatLabel.setColor(m.beam.overheated || heat > 75 ? '#ff8a78' : '#9abdd1');
+    const cue = chargeCue(m.elapsed, m.chargeStartMs);
     if (m.beam.overheated) this.cue.setText('RELEASE · OVERHEAT');
-    else if (m.elapsed < m.chargeStartMs) this.cue.setText(this.held ? 'TOO EARLY · RELEASE' : 'WAIT FOR SIGNAL');
+    else if (this.held && !m.beam.firing && cue.phase !== 'ready') this.cue.setText('TOO EARLY · RELEASE');
+    else if (cue.phase === 'wait') this.cue.setText('WATCH THE RINGS');
+    else if (cue.phase === 'countdown') this.cue.setText('GET READY  ' + cue.count);
     else if (m.beam.firing) this.cue.setText('KEEP HOLDING  ' + Math.round(100 - m.beam.mass) + '%');
     else this.cue.setText('HOLD NOW!');
+    this.cue.setColor(m.beam.overheated || (this.held && cue.phase !== 'ready') ? '#ff8b73' :
+      cue.phase === 'ready' ? '#a9fff0' : '#ffd795');
+    this.cue.setScale(cue.phase === 'ready' && !m.beam.firing ? 1.06 + .035 * Math.sin(m.elapsed / 85) : 1);
     if (this.messageTimer <= 0) {
       this.status.setText(m.beam.overheated ? 'RELEASE TO RESET THE EMITTER' :
         m.beam.firing ? 'VAPORIZING METEOR' :
@@ -410,7 +425,7 @@ class ShieldScene extends Phaser.Scene {
     g.fillCircle(CX, CY, 30);
     g.lineStyle(2, 0x76d5f6, .42);
     g.strokeCircle(CX, CY, 33);
-    if (m) this.drawMeteor(g, m);
+    if (m) { this.drawMeteor(g, m); this.drawTimingRings(g, m); }
     if (this.pulse > 0) {
       g.lineStyle(10 * this.pulse + 2, 0x9ef4fa, this.pulse);
       g.strokeCircle(CX, CY, SHIELD_R * (1.10 + .3 * (1 - this.pulse)));
@@ -437,12 +452,7 @@ class ShieldScene extends Phaser.Scene {
         g.fillStyle(0xf5b36f, .95);
         g.fillRoundedRect(115, 630, 310 * m.beam.mass / 100, 9, 5);
       }
-      const ready = m.elapsed >= m.chargeStartMs;
-      if (ready && !m.beam.overheated) {
-        const blink = .55 + .35 * Math.sin(m.elapsed / 145);
-        g.lineStyle(5, 0x82f4ff, blink);
-        g.strokeCircle(CX, CY, 119);
-      }
+      // Timing cues are rendered around the meteor by drawTimingRings().
     }
     if (this.phase === 'intro') {
       g.fillStyle(0x061b2c, .55);
@@ -450,6 +460,47 @@ class ShieldScene extends Phaser.Scene {
       g.lineStyle(2, 0x6cd2e4, .7);
       g.strokeRoundedRect(75, 342, 390, 169, 22);
     }
+  }
+
+  private drawTimingRings(g: Phaser.GameObjects.Graphics, m: FallingMeteor): void {
+    const cue = chargeCue(m.elapsed, m.chargeStartMs);
+    const centerX = CX;
+    const centerY = CY - 32;
+    const targetRadius = 117;
+    const preCountdown = Math.max(0, m.chargeStartMs - m.elapsed);
+    const progress = Math.max(0, Math.min(1, 1 - preCountdown / 1500));
+    const highlighted = cue.phase === 'ready' && !m.beam.overheated;
+    const color = m.beam.overheated ? 0xff705d : highlighted ? 0x7cffe1 : 0xffcb78;
+
+    // The fixed inner ring is the target; the outer ring travels inward.
+    g.lineStyle(3, 0x4f879f, .53);
+    g.strokeCircle(centerX, centerY, targetRadius);
+    if (cue.phase !== 'wait') {
+      const movingRadius = cue.phase === 'ready' ? targetRadius : targetRadius + 82 * (1 - progress);
+      g.lineStyle(cue.phase === 'ready' ? 11 : 6, color,
+        highlighted ? .62 + .25 * Math.sin(m.elapsed / 95) : .92);
+      g.strokeCircle(centerX, centerY, movingRadius);
+    }
+    if (highlighted) {
+      const brightness = .07 + .04 * Math.sin(m.elapsed / 90);
+      g.fillStyle(0x7cffe1, brightness);
+      g.fillCircle(centerX, centerY, targetRadius);
+      g.lineStyle(3, 0xd3fff6, .88);
+      g.strokeCircle(centerX, centerY, targetRadius + 8);
+    }
+
+    // Large, persistent button-like cue. Whole screen remains clickable.
+    const panelY = 555;
+    g.fillStyle(highlighted ? 0x125c64 : 0x342b22, .93);
+    g.fillRoundedRect(72, panelY, 396, 54, 14);
+    g.lineStyle(3, highlighted ? 0x83ffe9 : 0xddb270, .9);
+    g.strokeRoundedRect(72, panelY, 396, 54, 14);
+    const fill = cue.phase === 'ready' ? 1 : Math.max(0, Math.min(1, m.elapsed / m.chargeStartMs));
+    g.fillStyle(highlighted ? 0x4df0ce : 0xf0b967, highlighted ? .42 : .24);
+    g.fillRoundedRect(80, panelY + 8, Math.max(1, 380 * fill), 38, 8);
+    // Marker at the point where the countdown finishes, matching the ring collision.
+    g.fillStyle(highlighted ? 0xbffff1 : 0xffe3ae, .98);
+    g.fillRect(455, panelY + 6, 4, 42);
   }
 
   private drawMeteor(g: Phaser.GameObjects.Graphics, m: FallingMeteor): void {
