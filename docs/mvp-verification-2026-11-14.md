@@ -18,11 +18,17 @@ Verified locally on 2026-11-14. Starting remote commit: `20e94cd` (upstream sync
 ## Release status
 
 - Type check, 16 final tests and both final builds: passed with Node.js 24.20.0. The standalone bundle retains the Phaser size advisory (about 368 kB gzip); no build errors.
-- GitHub main integration/push: MVP `e96418c` merged and pushed.
-- First Vercel attempt (`e96418c`) was rejected before build because inline ignoreCommand exceeded 256 characters. The command was moved into `scripts/ignore-build.sh`; replacement deployment/readback pending. Previous READY production deployment: `20e94cd`.
+- GitHub main integration/push: MVP `e96418c` merged and pushed; deployment-config correction `4eed634` pushed.
+- First Vercel attempt (`e96418c`) was rejected before build because inline ignoreCommand exceeded 256 characters. The command was moved into `scripts/ignore-build.sh`. Replacement production deployment `dpl_8oe5HPvH6ET1FZ1qbHsJhuiotMHf` reached READY at source commit `4eed634`, and the production alias points to it.
+- Public readback at https://last-shield.vercel.app succeeded in the dedicated browser. The served module `/assets/index-DTFa0_7U.js` matches the local verified build. A Start/hold/release smoke earned 200 points with 100% shield; sound was ON and no page errors occurred. The page was then returned to its intro without saving a test record.
+- Build gating syntax/length checks passed; source changes and unavailable history request a build. The final documentation-only delta was checked to return 0 (skip) before push. No forced rebuild or empty commit was used.
 - Reddit upload/authenticated playtest/publication: not performed. Existing server endpoint and backend contract are unchanged.
 - Real touch hardware and human listening: not performed.
 
 ## Operating boundaries
 
 No schedules, outbound messages, provider credentials, migrations, account leaderboard or community-contribution writes were introduced. Future competitive features must add server-side replay validation and idempotent score/contribution storage before claiming trusted ranks. This record describes the MVP; it does not mark those later phases complete.
+
+## Dependency note
+
+The dependency audit reports inherited Devvit CLI transitive advisories (including isomorphic-git and tmp); the MVP does not upgrade the Devvit major version. The deployed standalone is static and does not run that CLI. Address CLI advisories in a separate SDK/tooling update.
