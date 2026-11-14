@@ -83,14 +83,14 @@ test("score-best wave remains paired with that score and old survival records ar
   for (const invalid of [
     { ...record, waveReached: 1 },
     { ...record, waveReached: null },
-    { ...record, version: "survival-2" },
+    { ...record, version: "survival-3" },
   ]) {
     storage.setItem("", JSON.stringify(invalid));
     assert.equal(records.readBest(storage, record.day), null);
   }
 });
 
-test("multi-core volleys allow more clears than waves, but never over three per wave", () => {
+test("multi-core volleys allow more clears than waves, but never over six per wave", () => {
   const storage = memory();
   const volleyRecord = {
     ...record,
@@ -102,7 +102,7 @@ test("multi-core volleys allow more clears than waves, but never over three per 
   assert.equal(records.storeBest(storage, volleyRecord), true);
   assert.deepEqual(records.readBest(storage, record.day), volleyRecord);
   assert.equal(
-    records.storeBest(storage, { ...volleyRecord, cleared: 61 }),
+    records.storeBest(storage, { ...volleyRecord, cleared: 121 }),
     false
   );
 });

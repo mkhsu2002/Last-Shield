@@ -1,5 +1,10 @@
 import * as Phaser from "phaser";
-import { meteorGeometry, SHIELD_RADIUS } from "../shared/game-logic";
+import {
+  meteorGeometry,
+  SHIELD_RADIUS,
+  PERFECT_WINDOW_MS,
+  contactInMs,
+} from "../shared/game-logic";
 import type { DefenseRun, Meteor } from "../shared/game-logic";
 
 export const FIELD = { width: 540, height: 1080, x: 270, y: 560 };
@@ -220,9 +225,12 @@ function core(g: Graphics, m: Meteor, state: State): void {
     y = FIELD.y + geometry.y,
     radius = geometry.radius;
   const target = run.meteor === m;
-  const ready = elapsed >= m.chargeStartMs;
+  const offset = elapsed - m.chargeStartMs;
+  const ready =
+    (m.grade === null && Math.abs(offset) <= PERFECT_WINDOW_MS) ||
+    (m.firing && m.grade === "perfect");
   const angle = geometry.angle;
-  const color = m.overdrive || m.boosted ? GOLD : target ? CYAN : CORAL;
+  const color = m.grade === "perfect" ? GOLD : target ? CYAN : CORAL;
   for (let i = 4; i >= 1; i--) {
     g.lineStyle(radius * (1 - i * 0.12), 0xff9c5a, 0.04 + (4 - i) * 0.025);
     g.lineBetween(
@@ -268,10 +276,20 @@ function core(g: Graphics, m: Meteor, state: State): void {
     g.lineBetween(x - 6, y - radius - 10, x, y - radius - 4);
     g.lineBetween(x, y - radius - 4, x + 6, y - radius - 10);
   }
+  const eta = contactInMs(m, elapsed, m.mass);
+  if (eta < 750) {
+    g.lineStyle(2, CORAL, 0.4 + (1 - eta / 750) * 0.5);
+    g.strokeCircle(x, y, radius + 5);
+    glow(g, x, y, radius + 8, CORAL, 0.06);
+  }
   // Only the selected core carries a bright timing ring; others have quieter brackets.
   if (target) {
     const progress = Math.min(1, elapsed / m.chargeStartMs);
-    const timingColor = ready ? GOLD : CYAN;
+    const timingColor = ready
+      ? GOLD
+      : offset > PERFECT_WINDOW_MS
+      ? CORAL
+      : CYAN;
     g.lineStyle(1, timingColor, 0.5);
     g.strokeCircle(x, y, radius + 11);
     g.lineStyle(ready ? 3 : 2, timingColor, 0.95);
@@ -288,9 +306,8 @@ function core(g: Graphics, m: Meteor, state: State): void {
     g.strokeCircle(x, y, radius + 8);
   }
   if (m.firing) {
-    const owner = run.meteor;
-    const boosted = !!owner?.overdrive;
-    const width = boosted ? 10 : m.grade === "perfect" ? 6 : 4;
+    const boosted = m.grade === "perfect";
+    const width = boosted ? 9 : 4;
     const beamColor = boosted ? GOLD : CYAN;
     g.lineStyle(width + 17, beamColor, 0.09);
     g.lineBetween(FIELD.x, FIELD.y + 75, x, y);

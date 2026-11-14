@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "last-shield",
-  "version": "0.42.0",
+  "version": "0.43.0",
   "type": "module",
   "scripts": {
     "dev": "devvit playtest",
@@ -10,7 +10,8 @@
     "test": "node --test src/shared/game-logic.test.ts src/client/records.test.ts src/client/coaching.test.ts",
     "deploy": "npm run check && npm run build && devvit upload",
     "login": "devvit login",
-    "build:standalone": "vite build --config vite.standalone.config.ts"
+    "build:standalone": "vite build --config vite.standalone.config.ts",
+    "balance": "node scripts/balance-sim.ts"
   },
   "engines": {
     "node": ">=24.18.0"

@@ -1,5 +1,6 @@
 # v0.42 中文、多顆隕石與視覺音效重製
 
+Archived as of 2026-11-14: v0.43 replaces automatic overdrive, padded sequential deadlines, survival-3 records and the v0.42 gameplay acceptance assumption. Audio/Chinese art remain the accepted baseline. Current evidence: `docs/v0-43-verification-2026-11-14.md`; original measurements below remain historical.
 2026-11-14。v0.41 為歷史基準，正式站改版前的部署來源已讀回確認為 `78435b2`。本次由 MK 要求：超載難懂、多顆來襲／難度、撞擊聲與整體美術檢討，並先提供中文介面。
 
 ## 完成內容

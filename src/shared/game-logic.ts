@@ -1,10 +1,10 @@
 // Deterministic rules shared by the standalone and Reddit clients.
-export const RULES_VERSION = "survival-3";
+export const RULES_VERSION = "survival-4";
 export const SHIELD_RADIUS = 132;
 export const METEOR_SPAWN_RADIUS = 218;
 export const PERFECT_WINDOW_MS = 120;
 export type TimingGrade = "perfect" | "good" | "early" | "late";
-export type StormPhase = "approach" | "surge" | "breaker" | "respite";
+export type StormPhase = "approach" | "surge" | "breaker" | "respite" | "storm";
 export type Mistakes = {
   unarmed: number;
   untouched: number;
@@ -12,14 +12,29 @@ export type Mistakes = {
   late: number;
 };
 export function stormPhase(index: number): StormPhase {
-  const position = index % 10;
-  return position < 4
-    ? "approach"
-    : position < 8
-    ? "surge"
-    : position === 8
-    ? "breaker"
-    : "respite";
+  if (index < 3) return "approach";
+  switch (index % 6) {
+    case 0:
+      return "respite";
+    case 2:
+      return "breaker";
+    case 4:
+      return "surge";
+    case 5:
+      return "storm";
+    default:
+      return "approach";
+  }
+}
+
+export function beamPower(grade: TimingGrade): number {
+  return grade === "perfect"
+    ? 3
+    : grade === "early"
+    ? 0.55
+    : grade === "late"
+    ? 0.75
+    : 1;
 }
 export type MeteorSpec = {
   sector: number;
@@ -38,7 +53,6 @@ export type Meteor = MeteorSpec & {
   overdrive: boolean;
   releasedEarly: boolean;
   id: number;
-  boosted: boolean;
 };
 export type RunEvent =
   | {
@@ -55,6 +69,8 @@ export type RunEvent =
       sector: number;
       point: { x: number; y: number };
     }
+  | { type: "engage"; grade: TimingGrade; offsetMs: number }
+  | { type: "overdrive"; cleared: number }
   | { type: "wave"; index: number }
   | { type: "finish" };
 
@@ -75,115 +91,100 @@ function hash(seed: number, index: number): number {
   return (x ^ (x >>> 16)) >>> 0;
 }
 
+export function difficultyScale(index: number): number {
+  return index < 3 ? 1 : 1 / (1 + Math.log1p(index / 20) * 0.15);
+}
+
 export function meteorSpec(daySeed: number, index: number): MeteorSpec {
-  const pick = hash(daySeed + 31, index) % 7;
-  const phase = stormPhase(index);
+  const phase = stormPhase(index),
+    pick = hash(daySeed + 31, index) % 7;
   const kind =
-    index < 2 || phase === "respite"
+    index < 3 || phase === "respite"
       ? "normal"
       : phase === "breaker"
       ? "heavy"
-      : phase === "surge"
-      ? index % 2 === 0
-        ? "fast"
-        : pick === 6
-        ? "heavy"
-        : "normal"
-      : pick === 6
-      ? "heavy"
-      : pick >= 4
+      : pick >= 5
       ? "fast"
       : "normal";
-  const pressure = Math.min(80, index);
-  const jitter = (hash(daySeed, index) % 401) - 200;
-  const flightMs =
-    index < 2
+  const scale = difficultyScale(index),
+    jitter = (hash(daySeed, index) % 181) - 90;
+  const flight =
+    index < 3
       ? 3000
+      : phase === "storm"
+      ? 1640 + jitter / 2
       : kind === "heavy"
-      ? Math.max(1800, 3450 - pressure * 18 + jitter)
+      ? Math.max(1750, 2900 - index * 15 + jitter)
       : kind === "fast"
-      ? Math.max(1050, 1950 - pressure * 14 + jitter / 2)
-      : Math.max(1350, 3000 - pressure * 22 + jitter);
-  const scale = difficultyScale(index);
-  const durationMs =
-    Math.round(scale * flightMs * (phase === "surge" ? 0.9 : 1)) +
-    Math.round(
-      scale * (phase === "breaker" ? 400 : phase === "respite" ? 650 : 0)
-    );
+      ? Math.max(1350, 2150 - index * 12 + jitter)
+      : Math.max(1500, 2700 - index * 18 + jitter);
+  const durationMs = Math.round(
+    flight * scale + (phase === "respite" ? 350 : 0)
+  );
   return {
     sector: hash(daySeed + 7919, index) % 6,
     kind,
     durationMs,
-    chargeStartMs: Math.round(
-      durationMs * (0.28 + (hash(daySeed + 97, index) % 11) / 100)
-    ),
-    burnMs: Math.round(
-      scale *
-        (phase === "breaker"
-          ? 1200
-          : kind === "heavy"
-          ? 900
-          : kind === "fast"
-          ? 380
-          : 620)
-    ),
-    recoveryMs:
-      phase === "respite"
-        ? 1200
-        : phase === "surge"
-        ? 120 + (hash(daySeed + 157, index) % 180)
-        : (kind === "heavy" ? 460 : 180) +
-          (hash(daySeed + 157, index) % Math.max(150, 500 - pressure * 4)),
+    chargeStartMs: Math.round(durationMs * (phase === "storm" ? 0.43 : 0.29)),
+    burnMs:
+      kind === "heavy"
+        ? 1400
+        : kind === "fast"
+        ? 650
+        : phase === "storm"
+        ? 1100
+        : 900,
+    recoveryMs: phase === "respite" ? 900 : phase === "storm" ? 1000 : 350,
   };
 }
 
-export function difficultyScale(index: number): number {
-  return index < 2 ? 1 : 1 / (1 + Math.log1p(index / 60) * 0.2);
-}
-
 export function volleySpecs(daySeed: number, index: number): MeteorSpec[] {
-  const phase = stormPhase(index);
+  const phase = stormPhase(index),
+    level = Math.floor(index / 12);
   const count =
-    index < 4
+    index < 3
       ? 1
-      : index < 10
-      ? phase === "surge" || phase === "breaker"
-        ? 2
-        : 1
-      : index < 30
-      ? phase === "respite"
-        ? 1
-        : 2
-      : index < 50
-      ? phase === "surge"
-        ? 3
-        : phase === "respite"
-        ? 1
-        : 2
       : phase === "respite"
-      ? 2
-      : 3;
-  const first = meteorSpec(daySeed, index);
-  const result = [first];
-  const scale = difficultyScale(index);
+      ? 1
+      : phase === "storm"
+      ? Math.min(6, 4 + Math.floor(index / 18))
+      : Math.min(5, (phase === "surge" ? 3 : 2) + Math.floor(level / 2));
+  const first = meteorSpec(daySeed, index),
+    result = [first];
+  // Sky sectors are distinct; neither arrival nor readiness waits for a previous clear.
   for (let i = 1; i < count; i++) {
-    const previous = result[i - 1]!;
-    const kind = hash(daySeed + i * 53, index) % 3 === 0 ? "fast" : "normal";
-    const burnMs = Math.round((kind === "fast" ? 380 : 620) * scale);
-    const chargeStartMs = Math.ceil(
-      previous.chargeStartMs + previous.burnMs / 1.25 + 180 * scale
+    const kind =
+      phase === "storm"
+        ? i === count - 1
+          ? "heavy"
+          : "normal"
+        : phase === "breaker"
+        ? "fast"
+        : hash(daySeed + i * 53, index) % 4 === 0
+        ? "fast"
+        : "normal";
+    const durationMs = Math.round(
+      first.durationMs + ((hash(daySeed + i * 19, index) % 111) - 55) + i * 25
     );
+    const spread =
+      phase === "storm" ? i * 28 : phase === "surge" ? i * 70 : i * 230;
+    const burnMs =
+      kind === "heavy"
+        ? 1400
+        : kind === "fast"
+        ? 650
+        : phase === "storm"
+        ? 1100
+        : 900;
     result.push({
       ...first,
       kind,
       burnMs,
-      sector: (first.sector + i * 2) % 6,
-      chargeStartMs,
-      durationMs: Math.ceil(
-        Math.max(
-          previous.durationMs + 220 * scale,
-          chargeStartMs + burnMs + 400 * scale
-        )
+      sector: (first.sector + i * 5) % 6,
+      durationMs,
+      chargeStartMs: Math.min(
+        Math.round(first.chargeStartMs + spread),
+        Math.floor(durationMs - burnMs / 3 - 160)
       ),
     });
   }
@@ -218,6 +219,15 @@ export function meteorGeometry(
   };
 }
 
+export function contactInMs(
+  spec: MeteorSpec,
+  elapsedMs: number,
+  mass = 100
+): number {
+  const speed = meteorGeometry(spec, 0, 100).clearance / spec.durationMs;
+  return Math.max(0, meteorGeometry(spec, elapsedMs, mass).clearance / speed);
+}
+
 export function judgeTiming(offsetMs: number): TimingGrade {
   if (offsetMs < -PERFECT_WINDOW_MS) return "early";
   if (offsetMs <= PERFECT_WINDOW_MS) return "perfect";
@@ -245,6 +255,8 @@ export class DefenseRun {
   early = 0;
   late = 0;
   energy = 0;
+  overdriveUses = 0;
+  overdriveCleared = 0;
   firstMiss: number | null = null;
   mistakes: Mistakes = { unarmed: 0, untouched: 0, released: 0, late: 0 };
   finished = false;
@@ -293,20 +305,19 @@ export class DefenseRun {
     this.selectedId = null;
     return specs.map((spec, i) => ({
       ...spec,
-      id: this.waveIndex * 3 + i,
+      id: this.waveIndex * 6 + i,
       mass: 100,
       grade: null,
       pressedGrade: "early",
       requireRelease: holding,
       firing: false,
       overdrive: false,
-      boosted: false,
       releasedEarly: false,
     }));
   }
 
   // Input is sampled at the step boundary; independent 10ms slices resolve each core.
-  step(deltaMs: number, holding: boolean): RunEvent[] {
+  step(deltaMs: number, holding: boolean, targetId?: number): RunEvent[] {
     const events: RunEvent[] = [];
     if (this.finished || !Number.isFinite(deltaMs) || deltaMs < 0)
       return events;
@@ -319,13 +330,14 @@ export class DefenseRun {
       }
       this.selectedId = null;
     } else if (!this.wasHolding && !this.needsRelease) {
-      const target = this.meteor;
+      const target = this.meteors.find((m) => m.id === targetId) ?? this.meteor;
       if (target) {
         this.selectedId = target.id;
-        if (target.grade === null)
-          target.pressedGrade = judgeTiming(
-            this.waveElapsedMs - target.chargeStartMs
-          );
+        if (target.grade === null) {
+          const offsetMs = this.waveElapsedMs - target.chargeStartMs;
+          target.pressedGrade = judgeTiming(offsetMs);
+          events.push({ type: "engage", grade: target.pressedGrade, offsetMs });
+        }
       } else this.needsRelease = true;
     }
     this.wasHolding = holding;
@@ -347,15 +359,12 @@ export class DefenseRun {
         const untilReady = beam.chargeStartMs - this.waveElapsedMs;
         if (untilReady > 0) dt = Math.min(dt, untilReady);
         else {
-          const fan = beam.grade === null ? this.energy === 3 : beam.overdrive;
-          for (const m of this.meteors) {
-            if (m !== beam && !fan) continue;
-            const grade = m.grade ?? (m === beam ? m.pressedGrade : "good");
-            const boost = (grade === "perfect" ? 1.25 : 1) * (fan ? 2 : 1);
-            // End a shot exactly at its clear boundary, so fan residue does not
-            // depend on whether a screen delivered a 10ms or 16ms frame.
-            dt = Math.min(dt, (m.mass * m.burnMs) / (100 * boost));
-          }
+          const grade = beam.grade ?? beam.pressedGrade;
+          // Resolve the exact clear boundary across different screen frame rates.
+          dt = Math.min(
+            dt,
+            (beam.mass * beam.burnMs) / (100 * beamPower(grade))
+          );
         }
       }
       const before = this.waveElapsedMs;
@@ -371,19 +380,13 @@ export class DefenseRun {
           : 0;
       if (owner && burnTime > 0 && owner.grade === null) {
         owner.grade = owner.pressedGrade;
-        owner.overdrive = this.energy === 3;
-        if (owner.overdrive) this.energy = 0;
+        owner.overdrive = false;
       }
       for (const m of [...this.meteors]) {
         const direct = m === owner;
-        m.firing = burnTime > 0 && (direct || !!owner?.overdrive);
+        m.firing = burnTime > 0 && direct;
         if (m.firing) {
-          if (!direct) {
-            m.grade ??= "good";
-            m.boosted = true;
-          }
-          const boost =
-            (m.grade === "perfect" ? 1.25 : 1) * (owner?.overdrive ? 2 : 1);
+          const boost = beamPower(m.grade ?? m.pressedGrade);
           m.mass = Math.max(0, m.mass - (burnTime * 100 * boost) / m.burnMs);
         }
         if (m.mass <= 0.000001) this.clear(m, holding, events);
@@ -397,6 +400,24 @@ export class DefenseRun {
         }
       }
     }
+    return events;
+  }
+
+  activateOverdrive(holding: boolean): RunEvent[] {
+    if (this.finished || this.energy !== 3 || this.meteors.length === 0)
+      return [];
+    this.energy = 0;
+    this.overdriveUses++;
+    const events: RunEvent[] = [];
+    const count = this.meteors.length;
+    for (const m of [...this.meteors]) {
+      m.grade = "good";
+      m.overdrive = true;
+      m.mass = 0;
+      this.clear(m, holding, events);
+    }
+    this.overdriveCleared += count;
+    events.push({ type: "overdrive", cleared: count });
     return events;
   }
 
@@ -416,7 +437,7 @@ export class DefenseRun {
 
   private clear(m: Meteor, holding: boolean, events: RunEvent[]): void {
     const grade = m.grade ?? "early";
-    const overdrive = m.overdrive || m.boosted;
+    const overdrive = m.overdrive;
     if (grade === "perfect") {
       this.perfect++;
       this.energy = Math.min(3, this.energy + 1);
@@ -449,7 +470,7 @@ export class DefenseRun {
     this.integrity = Math.max(0, this.integrity - damage);
     this.sectors[m.sector] += damage;
     this.combo = 0;
-    this.energy = Math.max(0, this.energy - 1);
+    // Earned energy is banked until the player explicitly spends it.
     this.firstMiss ??= this.waveIndex + 1;
     const cause = m.requireRelease
       ? "unarmed"

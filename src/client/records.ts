@@ -20,7 +20,7 @@ function valid(value: unknown, day: number): value is BestRecord {
       (n) => Number.isSafeInteger(n) && n >= 0
     ) &&
     r.waveReached >= 1 &&
-    r.cleared <= r.waveReached * 3 &&
+    r.cleared <= r.waveReached * 6 &&
     r.perfect <= r.cleared &&
     r.bestCombo <= r.cleared
   );
