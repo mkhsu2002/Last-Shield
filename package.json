@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "devvit playtest",
     "build": "vite build",
-    "check": "tsc --noEmit",
+    "check": "tsc --noEmit -p tsconfig.client.json && tsc --noEmit -p tsconfig.server.json",
     "test": "node --experimental-strip-types --test src/shared/game-logic.test.ts",
     "deploy": "npm run check && npm run build && devvit upload",
-    "login": "devvit login"
+    "login": "devvit login",
+    "build:standalone": "vite build --config vite.standalone.config.ts"
   },
   "engines": {
     "node": ">=24.18.0"
