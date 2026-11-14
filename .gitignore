@@ -7,3 +7,6 @@ coverage/
 *.tsbuildinfo
 *.log
 .devvit/
+
+.playwright-mcp/
+.vercel/

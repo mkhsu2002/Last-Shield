@@ -2,5 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "buildCommand": "npm run build:standalone",
-  "outputDirectory": "dist/standalone"
+  "outputDirectory": "dist/standalone",
+  "ignoreCommand": "git diff --quiet \"${VERCEL_GIT_PREVIOUS_SHA:-HEAD^}\" HEAD -- src/ public/ scripts/ index.html package.json package-lock.json npm-shrinkwrap.json pnpm-lock.yaml yarn.lock bun.lockb bun.lock .npmrc .nvmrc \":(glob)tsconfig*.json\" \":(glob)vite*.ts\" devvit.json vercel.json"
 }

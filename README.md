@@ -1,43 +1,50 @@
 # AEGIS: Last Shield
 
-A one-button hold-to-vaporize meteor rhythm-survival game in the original **Neo Babylon** universe.
+A one-button daily meteor-defense game in the original **Neo Babylon** universe.
 
-## v0.2 gameplay
+## v0.3 MVP gameplay
 
-- Start a run with one tap, then **press and HOLD ANYWHERE** on the screen (or hold Space) when the turquoise ring says **HOLD NOW**.
-- The energy beam continuously melts the meteor until it vanishes. One meteor at a time; there is **no aiming** and **no clicking the fragments**.
-- Pressing before the cue heats the emitter. If it overheats, **release to cool**, then try again.
-- Releasing before the meteor disappears leaves residual debris. On impact, the debris removes a **proportionate amount** of shield integrity (0–100), rather than causing immediate death on a repeated sector.
-- Full vaporization saves all shield integrity, increases the combo, and earns points.
-- Beginner meteors take about 5.4 seconds to approach, with 2.9+ seconds available to complete a ~1.1 second hold.
-- Synthesized Web Audio cues play after the first interaction (browser gesture unlock); all cues also have visual equivalents. Impact and successful vaporization trigger strong screen feedback. Where supported, optional vibration is also used.
-- UTC-date-based deterministic meteor sequence enables future daily score comparisons.
+- Watch the synchronized **3 · 2 · 1** countdown and converging rings. **Press and hold anywhere**, or hold Space, when the rings meet. Release after the core bursts, then make a fresh hold for the next meteor. No aiming or fragment tapping.
+- One daily challenge has **25 fixed waves over 75 seconds**, ending early if shield integrity reaches zero. Clearing quickly does not create extra waves. A run keeps its starting UTC date, including across midnight.
+- First effective holds within **±120 ms** of ring alignment earn PERFECT. Holds through +450 ms earn GOOD. Earlier/later holds can still save the city, with fewer points. Repeated tapping cannot upgrade the grade after melting starts.
+- The first three waves use normal meteors. Later waves introduce visibly marked fast and heavy cores. The UTC date determines a repeatable pattern.
+- Three PERFECT clears charge **OVERDRIVE**: the next successful clear earns an additional burst and 200 points. A missed core resets the combo and removes one charge. Partial melting reduces remaining debris damage. There is no overheat lock.
+- The city and six shield arcs reflect accumulated sector damage; the shared shield-integrity meter controls survival.
+- Scores include timing quality, a heavy-core bonus, capped combo bonuses and overdrive. The maximum flawless score for the current pattern is 8,950.
+- The daily best is saved **on the current device/browser only**, scoped to the UTC day and rule version. Results show perfect clears, longest combo, cores broken and a retry hint. Storage denial does not prevent play.
+- **Copy Challenge** prepares player-initiated challenge text. Clipboard denial falls back to selectable text. The Reddit build links back to its public post; the standalone links to its page.
+- Sound activates after Start and can be muted. All timing cues also have visual equivalents. Escape or the pause button pauses play; losing focus or hiding the page pauses and releases controls. Reduced-motion preferences disable shaking and moving burst particles.
 
-## Technology and development
+## Development
 
-- Reddit Devvit Web + Phaser 4 + TypeScript + Vite + Hono.
-- Portable rules in `src/shared/game-logic.ts` with no Phaser or Reddit dependencies.
-- Standalone browser preview and Devvit entrypoints share the same Phaser scene.
-
-Node.js 24.18.0 or newer:
+Reddit Devvit Web + Phaser 4 + TypeScript + Vite + Hono. Node.js **24.18.0 or newer**.
 
 ```sh
-npm install
+npm ci
 npm run check
 npm test
 npm run build:standalone
 npm run build
 ```
 
-For a local preview run `npx vite --config vite.standalone.config.ts`. For a Reddit test run, connect a Reddit developer app in `devvit.json`, run `npm run login` then `npm run dev`. The Reddit version has **not** been authenticated or publicly launched.
+Local development: `npx vite --config vite.standalone.config.ts`.
+Built standalone preview: `npx vite preview --config vite.standalone.config.ts --host 127.0.0.1 --port 4173`.
+Reddit playtest: connect the developer app in `devvit.json`, then `npm run login` and `npm run dev`.
 
-## Known limitations
+- `src/shared/game-logic.ts`: deterministic run simulator, fixed slots, timing, scoring and damage; no Phaser or Reddit dependency.
+- `src/client/game.ts`: scene, input, pause, rendering, results and challenge sharing.
+- `src/client/game-ui.ts` / `game.css`: semantic HTML controls and responsive overlay.
+- `src/client/audio.ts`: synthesized audio, independent of Phaser's audio manager.
+- `src/client/records.ts`: validated, failure-tolerant local best records.
+- `src/server/index.ts`: existing moderator-created Reddit post endpoint; unchanged by this MVP.
 
-- Audio is generated in real time, and mobile Safari may not support browser vibration. Screen shake and visual cues work independently.
-- An actual touch-device playtest is still needed to tune difficulty and shaking intensity.
-- Scores remain local to a run; Redis leaderboard, score validation, daily posting, and account persistence are not implemented.
-- No background schedules or GitHub Actions are configured.
-- Current drawings are procedural placeholder art, not canonical Neo Babylon illustrations.
+## Release and current boundaries
+
+The existing Vercel project is `last-shield`, connected to GitHub `main`; its standalone production alias is [last-shield.vercel.app](https://last-shield.vercel.app). Source changes build the standalone client using `vercel.json`. Its ignored-build command compares production-impacting paths against the previous deployment SHA (falling back to the previous commit); docs-only updates skip builds. No cron or GitHub Actions are configured.
+
+See [MVP verification](docs/mvp-verification-2026-11-14.md) for the actual release/readback state. A successful Devvit build is not evidence of a Reddit launch. This MVP introduces **no backend schema or API changes** and does not deploy a new Reddit backend.
+
+Not implemented: Reddit account persistence, global leaderboard, server-validated scores, shared city contributions, automatic daily posts or telemetry. Device-local scores are not authoritative competitive scores. Real iOS/Android hardware playtesting and human audio review remain necessary; browser touch emulation is not hardware testing. Audio is synthesized, and vibration support varies by device. The art is procedural rather than canonical Neo Babylon illustration.
 
 ## IP
 

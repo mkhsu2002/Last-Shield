@@ -1,576 +1,415 @@
 import * as Phaser from 'phaser';
-import {
-  advanceBeam, applyShieldDamage, chargeCue, initialBeam, meteorSpec, utcDaySeed,
-} from '../shared/game-logic';
-import type { BeamState, MeteorSpec } from '../shared/game-logic';
+import { context } from '@devvit/web/client';
+import { chargeCue, DefenseRun, RULES_VERSION, RUN_DURATION_MS, utcDaySeed, WAVE_COUNT, WAVE_SLOT_MS } from '../shared/game-logic';
+import type { RunEvent } from '../shared/game-logic';
+import { SynthAudio } from './audio';
+import { element, mountGameUI, show, text } from './game-ui';
+import { readBest, storeBest } from './records';
+import type { BestRecord, RecordStorage } from './records';
 
-type Phase = 'intro' | 'playing' | 'gameover';
-type FallingMeteor = MeteorSpec & {
-  elapsed: number;
-  beam: BeamState;
-  readyCuePlayed: boolean;
-  countdownPlayed: number;
-};
-const W = 540;
-const H = 900;
-const CX = W / 2;
-const CY = 435;
-const SHIELD_R = 200;
-const TAU = Math.PI * 2;
+const W = 540, H = 900, CX = 270, CY = 410, TAU = Math.PI * 2;
+const MINT = 0xa1f4d1, GOLD = 0xffd58b, CORAL = 0xff9777;
+type Phase = 'intro' | 'playing' | 'paused' | 'results';
 
-class SynthAudio {
-  private ctx: AudioContext | null = null;
-  private beamOsc: OscillatorNode | null = null;
-  private beamGain: GainNode | null = null;
-
-  unlock(): void {
-    try {
-      if (!this.ctx) this.ctx = new AudioContext();
-      if (this.ctx.state === 'suspended') void this.ctx.resume().catch(() => {});
-    } catch {
-      // Some embedded browsers have no Web Audio; visuals remain fully playable.
-    }
-  }
-
-  private tone(
-    startHz: number, endHz: number, duration: number,
-    volume: number, type: OscillatorType = 'sine',
-  ): void {
-    const ctx = this.ctx;
-    if (!ctx || ctx.state !== 'running') return;
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(Math.max(20, startHz), now);
-    osc.frequency.exponentialRampToValueAtTime(Math.max(20, endHz), now + duration);
-    gain.gain.setValueAtTime(Math.max(.0001, volume), now);
-    gain.gain.exponentialRampToValueAtTime(.0001, now + duration);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + duration + .03);
-  }
-
-  approaching(): void { this.tone(360, 520, .18, .035); }
-  countdown(number: number): void {
-    this.tone(number === 1 ? 780 : number === 2 ? 650 : 530, number === 1 ? 920 : 740, .11, .055);
-  }
-  ready(): void {
-    this.tone(690, 880, .12, .10);
-    this.tone(1000, 1260, .18, .06);
-  }
-  pressed(): void { this.tone(190, 310, .09, .05, 'triangle'); }
-  overheat(): void {
-    this.stopBeam();
-    this.tone(440, 90, .55, .19, 'sawtooth');
-  }
-  clear(): void {
-    this.stopBeam();
-    this.tone(540, 980, .28, .17, 'triangle');
-    this.tone(880, 1320, .42, .10);
-  }
-  impact(): void {
-    this.stopBeam();
-    this.tone(120, 38, .54, .29, 'sawtooth');
-    this.tone(76, 30, .7, .25, 'triangle');
-  }
-  beam(active: boolean): void {
-    const ctx = this.ctx;
-    if (!active || !ctx || ctx.state !== 'running') {
-      this.stopBeam();
-      return;
-    }
-    if (this.beamOsc) return;
-    const oscillator = ctx.createOscillator();
-    const gain = ctx.createGain();
-    oscillator.type = 'sawtooth';
-    oscillator.frequency.value = 120;
-    gain.gain.value = .0001;
-    oscillator.connect(gain);
-    gain.connect(ctx.destination);
-    oscillator.start();
-    gain.gain.setTargetAtTime(.065, ctx.currentTime, .06);
-    this.beamOsc = oscillator;
-    this.beamGain = gain;
-  }
-  stopBeam(): void {
-    const osc = this.beamOsc;
-    const gain = this.beamGain;
-    const ctx = this.ctx;
-    if (!osc || !gain || !ctx) return;
-    gain.gain.setTargetAtTime(.0001, ctx.currentTime, .025);
-    try { osc.stop(ctx.currentTime + .12); } catch { /* already stopped */ }
-    this.beamOsc = null;
-    this.beamGain = null;
-  }
-}
+mountGameUI();
 
 class ShieldScene extends Phaser.Scene {
   private graphics!: Phaser.GameObjects.Graphics;
-  private hud!: Phaser.GameObjects.Text;
-  private integrityLabel!: Phaser.GameObjects.Text;
-  private heatLabel!: Phaser.GameObjects.Text;
-  private cue!: Phaser.GameObjects.Text;
-  private status!: Phaser.GameObjects.Text;
-  private help!: Phaser.GameObjects.Text;
-  private footer!: Phaser.GameObjects.Text;
-  private audio = new SynthAudio();
   private phase: Phase = 'intro';
-  private meteor: FallingMeteor | null = null;
-  private held = false;
-  private nextSpawnMs = 0;
-  private sectors = [0, 0, 0, 0, 0, 0];
-  private shieldIntegrity = 100;
-  private daySeed = utcDaySeed(new Date());
-  private index = 0;
-  private score = 0;
-  private combo = 0;
-  private cleared = 0;
-  private pulse = 0;
-  private blast = 0;
-  private blastMass = 0;
-  private blastSector = 0;
-  private blastClock = 0;
-  private message = '';
-  private messageTimer = 0;
+  private run = new DefenseRun(utcDaySeed(new Date()));
+  private audio = new SynthAudio();
+  private inputs = new Set<string>();
+  private best: BestRecord | null = null;
+  private storage: RecordStorage | null = null;
+  private reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  private fx = 0;
+  private fxPerfect = false;
+  private fxOverdrive = false;
+  private fxImpact = false;
+  private fxSector = 0;
+  private feedbackMs = 0;
+  private previousCount = -1;
+  private previousWave = -1;
+  private previousReady = false;
+  private lastScore = 0;
+  private passedBest = false;
+  private newBest = false;
+  private sharing = false;
 
   constructor() { super('shield'); }
 
   create(): void {
-    this.cameras.main.setBackgroundColor(0x061120);
     this.graphics = this.add.graphics();
-    this.add.text(CX, 37, 'NEO BABYLON  /  AEGIS SYSTEM', {
-      fontFamily: 'Arial', fontSize: '13px', color: '#7eb2ce',
-    }).setOrigin(.5);
-    this.add.text(CX, 78, 'LAST SHIELD', {
-      fontFamily: 'Arial Black, Arial', fontSize: '36px', color: '#e9fbff',
-    }).setOrigin(.5);
-    this.hud = this.add.text(CX, 118, '', {
-      fontFamily: 'Arial', fontSize: '18px', color: '#c5e9f7',
-    }).setOrigin(.5);
-    this.integrityLabel = this.add.text(CX, 164, '', {
-      fontFamily: 'Arial Black, Arial', fontSize: '17px', color: '#a8eff4',
-    }).setOrigin(.5);
-    this.heatLabel = this.add.text(CX, 212, '', {
-      fontFamily: 'Arial', fontSize: '15px', color: '#9abdd1',
-    }).setOrigin(.5);
-    this.cue = this.add.text(CX, 664, '', {
-      fontFamily: 'Arial Black, Arial', fontSize: '32px',
-      color: '#a3effa', align: 'center',
-      stroke: '#041322', strokeThickness: 5,
-    }).setOrigin(.5);
-    this.status = this.add.text(CX, 731, '', {
-      fontFamily: 'Arial Black, Arial', fontSize: '23px',
-      color: '#ccf4ff', align: 'center',
-    }).setOrigin(.5);
-    this.help = this.add.text(CX, 791, '', {
-      fontFamily: 'Arial', fontSize: '18px', color: '#b7d7e6',
-      align: 'center', wordWrap: { width: 472 },
-    }).setOrigin(.5);
-    this.footer = this.add.text(CX, 861, 'CLICK / TOUCH / SPACE  ·  NO AIMING', {
-      fontFamily: 'Arial', fontSize: '12px', color: '#7694ac',
-    }).setOrigin(.5);
-
-    this.input.on('pointerdown', () => this.press());
-    this.input.on('pointerup', () => this.release());
-    this.input.on('pointerupoutside', () => this.release());
-    this.input.keyboard?.on('keydown-SPACE', (event: KeyboardEvent) => {
-      event.preventDefault();
-      if (!event.repeat) this.press();
+    this.audio.muted = false;
+    try { this.storage = window.localStorage; } catch { /* Storage is optional. */ }
+    this.loadDay();
+    element('start').addEventListener('click', () => this.startRun());
+    element('retry').addEventListener('click', () => this.startRun());
+    element('pause').addEventListener('click', () => this.pauseRun());
+    element('resume').addEventListener('click', () => this.resumeRun());
+    element('share').addEventListener('click', () => { void this.share(); });
+    element('sound').addEventListener('click', () => {
+      this.audio.unlock();
+      this.audio.muted = !this.audio.muted;
+      if (this.audio.muted) this.audio.stop();
+      else this.audio.tone(440, 880);
+      text('sound', this.audio.muted ? 'SOUND OFF' : 'SOUND ON');
+      element('sound').setAttribute('aria-label', this.audio.muted ? 'Enable sound' : 'Mute sound');
+      element('sound').setAttribute('aria-pressed', String(!this.audio.muted));
+      element('sound').blur();
     });
-    this.input.keyboard?.on('keyup-SPACE', (event: KeyboardEvent) => {
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => this.press('pointer-' + pointer.id));
+    this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => this.release('pointer-' + pointer.id));
+    this.input.on('pointerupoutside', (pointer: Phaser.Input.Pointer) => this.release('pointer-' + pointer.id));
+    const keydown = (event: KeyboardEvent) => {
+      if (event.code === 'Escape' && !event.repeat) {
+        if (this.phase === 'playing') this.pauseRun();
+        else if (this.phase === 'paused') this.resumeRun();
+      }
+      if (event.code !== 'Space' || (event.target as HTMLElement)?.matches('button,textarea')) return;
       event.preventDefault();
-      this.release();
+      if (!event.repeat) this.press('keyboard');
+    };
+    const keyup = (event: KeyboardEvent) => { if (event.code === 'Space') this.release('keyboard'); };
+    const blur = () => this.pauseRun();
+    const visibility = () => { if (document.hidden) this.pauseRun(); };
+    window.addEventListener('keydown', keydown);
+    window.addEventListener('keyup', keyup);
+    window.addEventListener('blur', blur);
+    document.addEventListener('visibilitychange', visibility);
+    // Touch cancellation must never leave a sustained beam active.
+    const cancel = () => this.releaseAll();
+    window.addEventListener('pointercancel', cancel);
+    this.events.once('shutdown', () => {
+      window.removeEventListener('keydown', keydown); window.removeEventListener('keyup', keyup);
+      window.removeEventListener('blur', blur); document.removeEventListener('visibilitychange', visibility);
+      window.removeEventListener('pointercancel', cancel); this.audio.stop();
     });
-    window.addEventListener('blur', () => this.release());
-    this.refreshLabels();
+    this.setPhase('intro');
+    this.renderHUD();
   }
 
-  private rumble(ms: number): void {
-    try {
-      if (typeof navigator.vibrate === 'function') navigator.vibrate(ms);
-    } catch { /* Vibration API unavailable on most iOS browsers. */ }
+  private loadDay(): void {
+    const day = this.run.daySeed;
+    const stamp = String(day);
+    text('day', `${stamp.slice(0, 4)}.${stamp.slice(4, 6)}.${stamp.slice(6)} UTC`);
+    this.best = readBest(this.storage, day);
+    text('intro-best', this.best ? `TODAY'S BEST ON THIS DEVICE · ${this.best.score.toLocaleString('en-US')}` : '25 WAVES · SAME DAILY PATTERN · BEST SAVED ON THIS DEVICE');
   }
 
-  private press(): void {
+  private setPhase(phase: Phase): void {
+    this.phase = phase;
+    document.querySelector<HTMLElement>('.interface')!.dataset.state = phase;
+    for (const [id, visible] of [
+      ['intro', phase === 'intro'], ['results', phase === 'results'], ['paused', phase === 'paused'],
+      ['run-hud', phase === 'playing' || phase === 'paused'], ['action', phase === 'playing' || phase === 'paused'],
+      ['pause', phase === 'playing'], ['footer', phase === 'intro'],
+    ] as const) show(id, visible);
+  }
+
+  private startRun(): void {
+    this.releaseAll();
     this.audio.unlock();
-    if (this.phase !== 'playing') {
-      this.reset();
-      return;
-    }
-    if (!this.meteor || this.held) return;
-    this.held = true;
-    this.audio.pressed();
-    this.cameras.main.shake(95, .004);
-    this.rumble(12);
+    this.run = new DefenseRun(utcDaySeed(new Date()));
+    this.loadDay();
+    this.previousCount = -1; this.previousWave = -1; this.previousReady = false;
+    this.fx = 0; this.feedbackMs = 0; this.lastScore = 0; this.passedBest = false;
+    text('feedback', ''); text('share-status', ''); show('share-box', false);
+    this.setPhase('playing');
+    element('game-container').focus({ preventScroll: true });
+    this.renderHUD();
   }
 
-  private release(): void {
-    this.held = false;
-    this.audio.stopBeam();
+  private press(source: string): void {
+    if (this.phase !== 'playing' || this.inputs.has(source)) return;
+    this.inputs.add(source); this.audio.unlock();
+    this.audio.tone(180, 250, .06, .025, 'triangle');
+    // Record the input against the same clock used to draw the rings.
+    this.run.step(0, true);
   }
-
-  private reset(): void {
-    this.release();
-    this.phase = 'playing';
-    this.daySeed = utcDaySeed(new Date());
-    this.meteor = null;
-    this.sectors = [0, 0, 0, 0, 0, 0];
-    this.shieldIntegrity = 100;
-    this.nextSpawnMs = 750;
-    this.index = 0;
-    this.score = 0;
-    this.combo = 0;
-    this.cleared = 0;
-    this.pulse = 0;
-    this.blast = 0;
-    this.message = 'FIRST METEOR INCOMING';
-    this.messageTimer = 900;
-    this.refreshLabels();
-  }
-
-  private spawn(): void {
-    this.release();
-    const spec = meteorSpec(this.daySeed, this.index);
-    this.meteor = { ...spec, elapsed: 0, beam: initialBeam(), readyCuePlayed: false, countdownPlayed: 0 };
-    this.index++;
-    this.message = 'WAIT FOR THE CYAN SIGNAL';
-    this.messageTimer = 1000;
-    this.audio.approaching();
-  }
-
-  private setResult(message: string, duration = 1100): void {
-    this.message = message;
-    this.messageTimer = duration;
-    this.refreshLabels();
-  }
-
-  private clearMeteor(): void {
-    this.audio.clear();
-    this.release();
-    this.cameras.main.shake(220, .014);
-    this.cameras.main.flash(165, 120, 245, 255);
-    this.rumble(35);
-    this.pulse = 1;
-    this.combo++;
-    this.cleared++;
-    const points = 100 + Math.min(200, Math.floor((this.combo - 1) / 5) * 25);
-    this.score += points;
-    this.setResult('VAPORIZED  +' + points, 1450);
-    this.meteor = null;
-    this.nextSpawnMs = 1150;
-  }
-
-  private impact(m: FallingMeteor): void {
-    const result = applyShieldDamage(this.shieldIntegrity, m.beam.mass);
-    this.shieldIntegrity = result.integrity;
-    this.sectors[m.sector] += result.damage;
-    this.combo = 0;
-    this.blast = 1;
-    this.blastMass = m.beam.mass;
-    this.blastSector = m.sector;
-    this.blastClock = 0;
-    this.release();
-    this.audio.impact();
-    this.cameras.main.shake(490, .034);
-    this.cameras.main.flash(340, 240, 55, 50);
-    this.rumble(120);
-    this.setResult('DEBRIS HIT  -' + result.damage + '% SHIELD', 1700);
-    this.meteor = null;
-    if (result.destroyed) {
-      this.phase = 'gameover';
-      this.refreshLabels();
-    } else {
-      this.nextSpawnMs = 1400;
+  private release(source: string): void {
+    this.inputs.delete(source);
+    if (!this.inputs.size) {
+      this.audio.stop();
+      if (this.phase === 'playing') this.run.step(0, false);
     }
   }
+  private releaseAll(): void {
+    this.inputs.clear(); this.audio.stop(); this.run.step(0, false);
+  }
+  private pauseRun(): void {
+    if (this.phase !== 'playing') return;
+    this.releaseAll(); this.setPhase('paused');
+  }
+  private resumeRun(): void {
+    if (this.phase !== 'paused') return;
+    this.releaseAll(); this.setPhase('playing');
+    element('game-container').focus({ preventScroll: true });
+  }
 
-  private refreshLabels(): void {
-    if (!this.hud) return;
-    this.hud.setText('SCORE ' + this.score + '     COMBO ' + this.combo + '     CLEAR ' + this.cleared);
-    this.integrityLabel.setText('SHIELD INTEGRITY  ' + this.shieldIntegrity + '%');
-    this.integrityLabel.setColor(this.shieldIntegrity <= 30 ? '#ff9585' : '#a8eff4');
-    if (this.phase === 'intro') {
-      this.cue.setText('ONE BUTTON. HOLD TO DEFEND.');
-      this.cue.setFontSize(25);
-      this.status.setText('TAP ANYWHERE TO START');
-      this.status.setColor('#a9f5ff');
-      this.help.setText('Watch 3 · 2 · 1. When both rings meet and glow CYAN, hold anywhere until the meteor vanishes.');
-    } else if (this.phase === 'gameover') {
-      this.cue.setText('SHIELD DESTROYED');
-      this.cue.setFontSize(31);
-      this.status.setText('FINAL SCORE: ' + this.score);
-      this.status.setColor('#ff9b8a');
-      this.help.setText('TAP ANYWHERE TO TRY AGAIN');
-    } else {
-      this.cue.setFontSize(31);
-      this.status.setText(this.message);
-      this.status.setColor(this.message.includes('HIT') || this.message.includes('OVERHEAT') ? '#ff9b8a' : '#d5faff');
-      this.help.setText('RINGS MEET = PRESS & HOLD  ·  NO AIMING\nRELEASE TO COOL IF THE EMITTER OVERHEATS');
-    }
+  private feedback(message: string, tone = 'normal'): void {
+    text('feedback', message); this.feedbackMs = 1100;
+    document.querySelector<HTMLElement>('.interface')!.dataset.tone = tone;
+  }
+
+  private handleEvent(event: RunEvent): void {
+    if (event.type === 'clear') {
+      this.fx = 1; this.fxImpact = false; this.fxPerfect = event.grade === 'perfect';
+      this.fxOverdrive = event.overdrive; this.fxSector = event.sector;
+      this.audio.clear(this.fxPerfect, event.overdrive);
+      const label = event.overdrive ? 'OVERDRIVE' : event.grade === 'perfect' ? 'PERFECT' : event.grade === 'good' ? 'CORE BROKEN' : event.grade === 'early' ? 'EARLY · SAVED' : 'LATE · SAVED';
+      this.feedback(`${label}  +${event.points}`, this.fxPerfect || event.overdrive ? 'perfect' : 'normal');
+      if (!this.reducedMotion) {
+        this.cameras.main.shake(event.overdrive ? 180 : 100, event.overdrive ? .009 : this.fxPerfect ? .004 : .002);
+        try { navigator.vibrate?.(event.overdrive ? 35 : 15); } catch { /* Optional. */ }
+      }
+    } else if (event.type === 'impact') {
+      this.fx = 1; this.fxImpact = true; this.fxOverdrive = false; this.fxSector = event.sector;
+      this.audio.impact(); this.feedback(`DEBRIS HIT  −${event.damage}% SHIELD`, 'impact');
+      if (!this.reducedMotion) this.cameras.main.shake(180, .008);
+    } else if (event.type === 'finish') this.finishRun();
+  }
+
+  private finishRun(): void {
+    this.releaseAll();
+    this.newBest = this.run.score > (this.best?.score ?? 0);
+    const saved = storeBest(this.storage, {
+      version: RULES_VERSION, day: this.run.daySeed, score: this.run.score,
+      perfect: this.run.perfect, cleared: this.run.cleared, bestCombo: this.run.bestCombo,
+    });
+    text('result-kicker', this.run.reason === 'complete' ? 'ALL 25 WAVES FACED' : 'THE CITY NEEDS YOU AGAIN');
+    text('result-title', this.run.reason === 'complete' ? 'City defended.' : 'Shield down.');
+    text('result-score', this.run.score.toLocaleString('en-US'));
+    text('record-note', saved ? this.newBest ? 'NEW DAILY BEST · ON THIS DEVICE' : `DAILY BEST ON THIS DEVICE · ${Math.max(this.best?.score ?? 0, this.run.score).toLocaleString('en-US')}` : 'THIS RUN ONLY · RECORD COULD NOT BE SAVED');
+    text('result-perfect', String(this.run.perfect));
+    text('result-combo', String(this.run.bestCombo));
+    text('result-cleared', `${this.run.cleared}/${WAVE_COUNT}`);
+    const next = this.best && this.run.score < this.best.score ? `${this.best.score - this.run.score + 1} more points to beat your daily best. ` : '';
+    const hint = this.run.firstMiss ? `Wave ${String(this.run.firstMiss).padStart(2, '0')} broke through. Hold until the core bursts.` :
+      this.run.early > this.run.late ? 'Try pressing a little later, just as the rings meet.' :
+      this.run.late > 0 ? 'Meet the rings a little sooner for more PERFECTs.' :
+      this.run.perfect < WAVE_COUNT ? 'Meet the rings more precisely to charge OVERDRIVE.' : 'Flawless defense. Share the daily challenge.';
+    text('retry-hint', next + hint);
+    this.setPhase('results');
+    element('retry').focus({ preventScroll: true });
+  }
+
+  private async share(): Promise<void> {
+    if (this.sharing) return;
+    this.sharing = true;
+    const day = String(this.run.daySeed);
+    const message = `LAST SHIELD · ${day.slice(0, 4)}-${day.slice(4, 6)}-${day.slice(6)} UTC\n${this.run.score.toLocaleString('en-US')} pts · ${this.run.perfect} PERFECT · ${this.run.cleared}/25 cores\nBest combo: ${this.run.bestCombo}. Same sky. Can you beat my defense?`;
+    const local = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+    const postId = context?.postId;
+    const url = postId ? `https://www.reddit.com/comments/${postId.replace(/^t3_/, '')}` : local ? '' : `${location.origin}${location.pathname}`;
+    const challenge = message + (url ? `\n${url}` : '');
+    try {
+      await navigator.clipboard.writeText(challenge);
+      text('share-status', 'Challenge copied. Paste it into your post or comment.');
+    } catch {
+      element<HTMLTextAreaElement>('share-text').value = challenge;
+      show('share-box', true);
+      element<HTMLTextAreaElement>('share-text').focus(); element<HTMLTextAreaElement>('share-text').select();
+      text('share-status', 'Select the challenge above and copy it.');
+    } finally { this.sharing = false; }
   }
 
   update(_time: number, delta: number): void {
-    const dt = Math.max(0, Math.min(70, delta));
-    this.pulse = Math.max(0, this.pulse - dt / 700);
-    this.blast = Math.max(0, this.blast - dt / 780);
-    this.blastClock += dt;
-    this.messageTimer = Math.max(0, this.messageTimer - dt);
+    const dt = Math.max(0, Math.min(100, delta));
+    this.fx = Math.max(0, this.fx - dt / 650);
     if (this.phase === 'playing') {
-      if (!this.meteor) {
-        this.nextSpawnMs -= dt;
-        if (this.nextSpawnMs <= 0) this.spawn();
-      } else {
-        const m = this.meteor;
-        m.elapsed += dt;
-        const cue = chargeCue(m.elapsed, m.chargeStartMs);
-        const ready = cue.phase === 'ready';
-        if (cue.phase === 'countdown' && cue.count !== m.countdownPlayed) {
-          m.countdownPlayed = cue.count;
-          this.audio.countdown(cue.count);
+      this.feedbackMs = Math.max(0, this.feedbackMs - dt);
+      if (!this.feedbackMs) text('feedback', '');
+      for (const event of this.run.step(dt, this.inputs.size > 0)) this.handleEvent(event);
+      const m = this.run.meteor;
+      if (m && this.phase === 'playing') {
+        if (this.previousWave !== this.run.waveIndex) {
+          this.previousWave = this.run.waveIndex; this.previousCount = -1; this.previousReady = false;
         }
-        if (ready && !m.readyCuePlayed) {
-          m.readyCuePlayed = true;
-          this.audio.ready();
-          this.pulse = .38;
-          this.setResult('RINGS ALIGNED · PRESS AND HOLD!', 1350);
+        const cue = chargeCue(this.run.waveElapsedMs, m.chargeStartMs);
+        if (cue.phase === 'countdown' && cue.count !== this.previousCount) {
+          this.previousCount = cue.count; this.audio.tone(360 + (3 - cue.count) * 120, 650, .07, .025);
         }
-        const oldOverheated = m.beam.overheated;
-        m.beam = advanceBeam(m.beam, dt, this.held, ready);
-        if (m.beam.overheated && !oldOverheated) {
-          this.audio.overheat();
-          this.cameras.main.shake(270, .022);
-          this.rumble(65);
-          this.setResult('OVERHEAT! RELEASE TO COOL', 1100);
-        }
-        this.audio.beam(m.beam.firing);
-        if (m.beam.mass <= 0) this.clearMeteor();
-        else if (m.elapsed >= m.durationMs) this.impact(m);
-      }
+        if (cue.phase === 'ready' && !this.previousReady) { this.previousReady = true; this.audio.tone(760, 1080, .1, .05); }
+        this.audio.beam(m.firing ? 1 - m.mass / 100 : null, this.run.energy === 3);
+      } else this.audio.stop();
+      this.renderHUD();
     }
     this.draw();
-    this.updateLiveText();
   }
 
-  private updateLiveText(): void {
-    const m = this.meteor;
-    if (this.phase !== 'playing') return;
+  private renderHUD(): void {
+    const run = this.run;
+    text('score', run.score.toLocaleString('en-US'));
+    text('clock', `${Math.ceil((RUN_DURATION_MS - run.elapsedMs) / 1000)}s`);
+    text('combo', `${run.combo} COMBO`);
+    text('perfect-count', `${run.perfect} PERFECT`);
+    text('wave', `WAVE ${String(run.waveIndex + 1).padStart(2, '0')} / ${WAVE_COUNT}`);
+    text('shield', `${run.integrity}%`);
+    element('run-progress').style.width = `${run.elapsedMs / RUN_DURATION_MS * 100}%`;
+    element('shield-fill').style.width = `${run.integrity}%`;
+    element('shield-fill').style.background = run.integrity <= 30 ? '#ff9777' : '#a1f4d1';
+    element('energy').querySelectorAll('i').forEach((el, i) => el.classList.toggle('lit', i < run.energy));
+    text('energy-label', run.energy === 3 ? 'OVERDRIVE READY' : 'OVERDRIVE');
+    if (this.best && run.score > this.best.score && this.lastScore <= this.best.score && !this.passedBest) {
+      this.passedBest = true;
+      this.feedback('DAILY BEST PASSED', 'perfect');
+    }
+    this.lastScore = run.score;
+    text('target', this.best ? run.score > this.best.score ? 'NEW TERRITORY · KEEP THE CITY STANDING' : `${this.best.score - run.score + 1} TO BEAT YOUR DAILY BEST` : 'SET YOUR FIRST DAILY BEST · ON THIS DEVICE');
+    const m = run.meteor;
     if (!m) {
-      this.cue.setText('STAND BY');
-      this.heatLabel.setText('EMITTER HEAT  0%');
+      text('cue', this.fxImpact ? 'SHIELD HIT · REARM' : 'CORE BROKEN · RELEASE');
+      text('cue-help', this.fxImpact ? 'You can recover. Meet the next rings.' : 'Breathe. The next wave is coming.');
       return;
     }
-    const heat = Math.round(m.beam.heat);
-    this.heatLabel.setText('EMITTER HEAT  ' + heat + '%');
-    this.heatLabel.setColor(m.beam.overheated || heat > 75 ? '#ff8a78' : '#9abdd1');
-    const cue = chargeCue(m.elapsed, m.chargeStartMs);
-    if (m.beam.overheated) this.cue.setText('RELEASE · OVERHEAT');
-    else if (this.held && !m.beam.firing && cue.phase !== 'ready') this.cue.setText('TOO EARLY · RELEASE');
-    else if (cue.phase === 'wait') this.cue.setText('WATCH THE RINGS');
-    else if (cue.phase === 'countdown') this.cue.setText('GET READY  ' + cue.count);
-    else if (m.beam.firing) this.cue.setText('KEEP HOLDING  ' + Math.round(100 - m.beam.mass) + '%');
-    else this.cue.setText('HOLD NOW!');
-    this.cue.setColor(m.beam.overheated || (this.held && cue.phase !== 'ready') ? '#ff8b73' :
-      cue.phase === 'ready' ? '#a9fff0' : '#ffd795');
-    this.cue.setScale(cue.phase === 'ready' && !m.beam.firing ? 1.06 + .035 * Math.sin(m.elapsed / 85) : 1);
-    if (this.messageTimer <= 0) {
-      this.status.setText(m.beam.overheated ? 'RELEASE TO RESET THE EMITTER' :
-        m.beam.firing ? 'VAPORIZING METEOR' :
-        m.elapsed < m.chargeStartMs ? 'METEOR APPROACHING' : 'PRESS ANYWHERE');
-      this.status.setColor(m.beam.overheated ? '#ff9b8a' : '#d5faff');
+    const cue = chargeCue(run.waveElapsedMs, m.chargeStartMs);
+    if (m.requireRelease) {
+      text('cue', 'RELEASE TO REARM'); text('cue-help', 'A fresh hold for every meteor.');
+    } else if (m.firing) {
+      text('cue', `MELTING  ${Math.round(100 - m.mass)}%`);
+      text('cue-help', m.kind === 'heavy' ? 'HEAVY CORE · Keep holding.' : 'Keep holding until the core breaks.');
+    } else if (cue.phase === 'countdown') {
+      text('cue', this.inputs.size ? 'HOLD · WAIT FOR ALIGNMENT' : `GET READY  ${cue.count}`);
+      text('cue-help', m.kind === 'fast' ? 'FAST CORE · Meet the rings.' : m.kind === 'heavy' ? 'HEAVY CORE · A longer hold.' : 'Meet the rings for a PERFECT.');
+    } else {
+      text('cue', 'HOLD NOW'); text('cue-help', 'Press anywhere. Hold until it breaks.');
     }
   }
 
   private draw(): void {
-    const g = this.graphics;
-    g.clear();
-    const m = this.meteor;
-    const p = m ? Math.min(1, m.elapsed / m.durationMs) : 0;
-    // Deep-space perspective streaks follow the approaching meteor.
-    for (let i = 0; i < 110; i++) {
-      const a = ((i * 137.507) % 360) * Math.PI / 180;
-      const r = 30 + ((i * 43) % 290);
-      const sx = CX + Math.cos(a) * r;
-      const sy = CY + Math.sin(a) * r * 1.12;
-      const len = 2 + p * 11 + (i % 5);
-      g.lineStyle(i % 9 === 0 ? 2 : 1, i % 9 === 0 ? 0xa7dcf8 : 0x497792, .17 + p * .2);
-      g.lineBetween(sx, sy, sx + Math.cos(a) * len, sy + Math.sin(a) * len);
+    const g = this.graphics; g.clear();
+    g.fillStyle(0x071216); g.fillRect(0, 0, W, H);
+    const live = this.phase === 'playing' || this.phase === 'paused';
+    // A restrained radar grid leads the eye to the ring alignment.
+    for (let i = 0; i < 65; i++) {
+      const x = (i * 173 + 41) % W, y = (i * 97 + 19) % 670;
+      g.fillStyle(i % 7 === 0 ? MINT : 0x7a9d94, i % 7 === 0 ? .4 : .16);
+      g.fillCircle(x, y, i % 7 === 0 ? 1.2 : .7);
     }
-    // Shield ring: it is not a target; timing is independent of pointer position.
-    g.fillStyle(0x092f50, .36);
-    g.fillCircle(CX, CY, SHIELD_R + 36);
-    g.lineStyle(3, 0x286690, .6);
-    g.strokeCircle(CX, CY, SHIELD_R + 30);
-    g.lineStyle(5, 0x65c6e6, .66);
-    g.strokeCircle(CX, CY, SHIELD_R);
-    g.fillStyle(0x063451, .14);
-    g.fillCircle(CX, CY, SHIELD_R);
+    g.lineStyle(1, 0x31574e, .17);
+    for (let i = -3; i <= 3; i++) {
+      g.lineBetween(CX + i * 55, 570, CX + i * 160, 690);
+      g.lineBetween(0, 580 + i * 24, W, 580 + i * 24);
+    }
+    this.drawCity(g, live);
     for (let i = 0; i < 6; i++) {
       const a = -Math.PI / 2 + i * TAU / 6;
-      g.lineStyle(1, 0x4397c3, .19);
-      g.lineBetween(CX, CY, CX + SHIELD_R * Math.cos(a), CY + SHIELD_R * Math.sin(a));
-      if (this.sectors[i] > 0) {
-        const x = CX + SHIELD_R * .80 * Math.cos(a + TAU / 12);
-        const y = CY + SHIELD_R * .80 * Math.sin(a + TAU / 12);
-        const thickness = 2 + Math.min(4, this.sectors[i] / 16);
-        g.lineStyle(thickness, 0xff8276, .84);
-        g.lineBetween(x - 16, y - 20, x + 9, y + 2);
-        g.lineBetween(x + 9, y + 2, x - 7, y + 23);
-        g.lineBetween(x + 9, y + 2, x + 25, y - 7);
+      const hurt = live && this.run.sectors[i] > 0;
+      g.lineStyle(hurt ? 3 : 1, hurt ? CORAL : 0x507e6a, hurt ? .45 : .28);
+      g.beginPath(); g.arc(CX, CY, 185, a + .025, a + TAU / 6 - .025); g.strokePath();
+      const x = CX + Math.cos(a + TAU / 12) * 180, y = CY + Math.sin(a + TAU / 12) * 180;
+      if (hurt) { g.lineBetween(x - 8, y - 5, x + 3, y + 4); g.lineBetween(x + 3, y + 4, x - 4, y + 12); }
+    }
+    if (live && this.run.meteor) this.drawMeteor(g);
+    else if (!live) {
+      g.lineStyle(1, MINT, .15); g.strokeCircle(CX, CY, 100); g.strokeCircle(CX, CY, 110);
+    }
+    if (this.fx > 0) this.drawBurst(g);
+  }
+
+  private drawCity(g: Phaser.GameObjects.Graphics, live: boolean): void {
+    for (let i = 0; i < 23; i++) {
+      const x = 24 + i * 22;
+      const height = 20 + (i * 47 % 60) + (i === 11 ? 48 : 0);
+      const sector = Math.min(5, Math.floor(i / 4));
+      const damage = live ? this.run.sectors[sector] : 0;
+      g.fillStyle(0x0b2525, .9); g.fillRect(x, 630 - height, 17, height);
+      g.lineStyle(1, damage > 0 ? CORAL : MINT, damage > 0 ? .25 : .25);
+      g.strokeRect(x, 630 - height, 17, height);
+      for (let row = 0; row < Math.floor(height / 10) - 1; row++) {
+        for (let col = 0; col < 2; col++) {
+          const lit = (i + row + col) % 7 >= Math.min(6, Math.ceil(damage / 8));
+          g.fillStyle(lit ? MINT : 0x21362e, lit ? .4 : .5);
+          g.fillRect(x + 4 + col * 6, 637 - height + row * 10, 2, 3);
+        }
       }
     }
-    // Core with subtle pulse; the entire screen is the input surface.
-    g.fillStyle(0x77cce9, .13);
-    g.fillCircle(CX, CY, 30);
-    g.lineStyle(2, 0x76d5f6, .42);
-    g.strokeCircle(CX, CY, 33);
-    if (m) { this.drawMeteor(g, m); this.drawTimingRings(g, m); }
-    if (this.pulse > 0) {
-      g.lineStyle(10 * this.pulse + 2, 0x9ef4fa, this.pulse);
-      g.strokeCircle(CX, CY, SHIELD_R * (1.10 + .3 * (1 - this.pulse)));
-    }
-    if (this.blast > 0) this.drawBlast(g);
+    g.lineStyle(1, MINT, .3); g.lineBetween(20, 632, 520, 632);
+  }
 
-    // Shield integrity and emitter heat are legible without audio.
-    g.fillStyle(0x112c43, .90);
-    g.fillRoundedRect(80, 185, 380, 14, 7);
-    g.fillStyle(this.shieldIntegrity <= 30 ? 0xff715d : this.shieldIntegrity <= 60 ? 0xffb65d : 0x6fdfd6, .98);
-    if (this.shieldIntegrity > 0) g.fillRoundedRect(80, 185, 380 * this.shieldIntegrity / 100, 14, 7);
-
-    g.fillStyle(0x1a3349, .95);
-    g.fillRoundedRect(80, 232, 380, 8, 4);
-    if (m && m.beam.heat > 0) {
-      g.fillStyle(m.beam.heat > 75 ? 0xff765e : 0xffc975, .96);
-      g.fillRoundedRect(80, 232, 380 * m.beam.heat / 100, 8, 4);
+  private drawMeteor(g: Phaser.GameObjects.Graphics): void {
+    const m = this.run.meteor!;
+    const elapsed = this.run.waveElapsedMs;
+    const ready = elapsed >= m.chargeStartMs;
+    const progress = Math.min(1, elapsed / m.chargeStartMs);
+    const color = this.run.energy === 3 ? GOLD : MINT;
+    const radius = (m.kind === 'heavy' ? 58 : m.kind === 'fast' ? 32 : 44) * (.65 + .35 * Math.min(1, elapsed / m.durationMs)) * Math.sqrt(m.mass / 100);
+    const targetR = 99;
+    // Exact same target time drives rings, countdown, tone and timing grade.
+    g.lineStyle(2, color, .4); g.strokeCircle(CX, CY, targetR);
+    const ringR = ready ? targetR : targetR + 76 * (1 - progress);
+    g.lineStyle(ready ? 5 : 3, ready ? color : 0x86a99c, ready ? .9 : .65);
+    g.strokeCircle(CX, CY, ringR);
+    for (let i = 0; i < 4; i++) {
+      const a = i * TAU / 4;
+      g.lineStyle(2, color, .65);
+      g.lineBetween(CX + Math.cos(a) * (targetR - 6), CY + Math.sin(a) * (targetR - 6), CX + Math.cos(a) * (targetR + 6), CY + Math.sin(a) * (targetR + 6));
     }
-    // Remaining meteor mass displayed separately; residual fragments never need clicking.
-    if (m) {
-      g.fillStyle(0x1d384d, .85);
-      g.fillRoundedRect(115, 630, 310, 9, 5);
-      if (m.beam.mass > 0) {
-        g.fillStyle(0xf5b36f, .95);
-        g.fillRoundedRect(115, 630, 310 * m.beam.mass / 100, 9, 5);
+    if (ready) {
+      g.fillStyle(color, m.firing ? .055 : .025); g.fillCircle(CX, CY, targetR);
+    }
+    // Faceted shell shrinks while bright fractures expose the core.
+    const points: Phaser.Math.Vector2[] = [];
+    for (let i = 0; i < 9; i++) {
+      const a = i * TAU / 9 + (this.reducedMotion ? .3 : elapsed / 4000);
+      const r = radius * (i % 2 ? .85 : 1.05);
+      points.push(new Phaser.Math.Vector2(CX + Math.cos(a) * r, CY + Math.sin(a) * r));
+    }
+    g.fillStyle(0x82523d); g.fillPoints(points, true);
+    g.lineStyle(2, 0xe6af7c, .85); g.strokePoints(points, true);
+    g.fillStyle(m.firing ? GOLD : 0xc88855, m.firing ? .85 : .5); g.fillCircle(CX, CY, Math.max(2, radius * .24));
+    for (let i = 0; i < 5; i++) {
+      const a = i * TAU / 5 + .5;
+      g.lineStyle(m.firing ? 3 : 1, m.firing ? GOLD : 0xffc38b, m.firing ? .9 : .4);
+      g.lineBetween(CX + Math.cos(a) * radius * .2, CY + Math.sin(a) * radius * .2, CX + Math.cos(a + .2) * radius * .82, CY + Math.sin(a + .2) * radius * .82);
+    }
+    if (m.kind === 'heavy') {
+      g.lineStyle(3, 0xd79c76, .45); g.strokeCircle(CX, CY, radius + 7);
+    } else if (m.kind === 'fast') {
+      g.lineStyle(2, 0xffd58b, .7);
+      g.lineBetween(CX - 10, CY - radius - 24, CX, CY - radius - 12);
+      g.lineBetween(CX, CY - radius - 12, CX + 10, CY - radius - 24);
+    }
+    if (m.firing) {
+      const width = this.run.energy === 3 ? 18 : 10;
+      g.lineStyle(width + 18, color, .12); g.lineBetween(CX, 646, CX, CY);
+      g.lineStyle(width, color, .7); g.lineBetween(CX, 646, CX, CY);
+      g.lineStyle(3, 0xf0fff2, .95); g.lineBetween(CX, 646, CX, CY);
+      for (let i = 0; i < 10; i++) {
+        const a = i * TAU / 10 + (this.reducedMotion ? 0 : elapsed / 170);
+        const distance = radius + 10 + i % 3 * 7;
+        g.fillStyle(GOLD, .7); g.fillCircle(CX + Math.cos(a) * distance, CY + Math.sin(a) * distance, 2);
       }
-      // Timing cues are rendered around the meteor by drawTimingRings().
-    }
-    if (this.phase === 'intro') {
-      g.fillStyle(0x061b2c, .55);
-      g.fillRoundedRect(75, 342, 390, 169, 22);
-      g.lineStyle(2, 0x6cd2e4, .7);
-      g.strokeRoundedRect(75, 342, 390, 169, 22);
+      // A ring of remaining shell gives continuous feedback without another text bar.
+      g.lineStyle(5, GOLD, .9); g.beginPath(); g.arc(CX, CY, 74, -Math.PI / 2, -Math.PI / 2 + TAU * m.mass / 100); g.strokePath();
     }
   }
 
-  private drawTimingRings(g: Phaser.GameObjects.Graphics, m: FallingMeteor): void {
-    const cue = chargeCue(m.elapsed, m.chargeStartMs);
-    const centerX = CX;
-    const centerY = CY - 32;
-    const targetRadius = 117;
-    const preCountdown = Math.max(0, m.chargeStartMs - m.elapsed);
-    const progress = Math.max(0, Math.min(1, 1 - preCountdown / 1500));
-    const highlighted = cue.phase === 'ready' && !m.beam.overheated;
-    const color = m.beam.overheated ? 0xff705d : highlighted ? 0x7cffe1 : 0xffcb78;
-
-    // The fixed inner ring is the target; the outer ring travels inward.
-    g.lineStyle(3, 0x4f879f, .53);
-    g.strokeCircle(centerX, centerY, targetRadius);
-    if (cue.phase !== 'wait') {
-      const movingRadius = cue.phase === 'ready' ? targetRadius : targetRadius + 82 * (1 - progress);
-      g.lineStyle(cue.phase === 'ready' ? 11 : 6, color,
-        highlighted ? .62 + .25 * Math.sin(m.elapsed / 95) : .92);
-      g.strokeCircle(centerX, centerY, movingRadius);
+  private drawBurst(g: Phaser.GameObjects.Graphics): void {
+    const t = 1 - this.fx;
+    const color = this.fxImpact ? CORAL : this.fxOverdrive || this.fxPerfect ? GOLD : MINT;
+    const a = (this.fxSector + .5) * TAU / 6 - Math.PI / 2;
+    const x = this.fxImpact ? CX + Math.cos(a) * 130 : CX;
+    const y = this.fxImpact ? CY + Math.sin(a) * 130 : CY;
+    if (this.reducedMotion) {
+      g.lineStyle(3, color, this.fx * .6); g.strokeCircle(x, y, 100); return;
     }
-    if (highlighted) {
-      const brightness = .07 + .04 * Math.sin(m.elapsed / 90);
-      g.fillStyle(0x7cffe1, brightness);
-      g.fillCircle(centerX, centerY, targetRadius);
-      g.lineStyle(3, 0xd3fff6, .88);
-      g.strokeCircle(centerX, centerY, targetRadius + 8);
-    }
-
-    // Large, persistent button-like cue. Whole screen remains clickable.
-    const panelY = 555;
-    g.fillStyle(highlighted ? 0x125c64 : 0x342b22, .93);
-    g.fillRoundedRect(72, panelY, 396, 54, 14);
-    g.lineStyle(3, highlighted ? 0x83ffe9 : 0xddb270, .9);
-    g.strokeRoundedRect(72, panelY, 396, 54, 14);
-    const fill = cue.phase === 'ready' ? 1 : Math.max(0, Math.min(1, m.elapsed / m.chargeStartMs));
-    g.fillStyle(highlighted ? 0x4df0ce : 0xf0b967, highlighted ? .42 : .24);
-    g.fillRoundedRect(80, panelY + 8, Math.max(1, 380 * fill), 38, 8);
-    // Marker at the point where the countdown finishes, matching the ring collision.
-    g.fillStyle(highlighted ? 0xbffff1 : 0xffe3ae, .98);
-    g.fillRect(455, panelY + 6, 4, 42);
-  }
-
-  private drawMeteor(g: Phaser.GameObjects.Graphics, m: FallingMeteor): void {
-    const p = Math.min(1, m.elapsed / m.durationMs);
-    const x = CX + Math.sin((m.sector + 1) * 1.4) * p * 28;
-    const y = CY - 32 + Math.cos((m.sector + 1) * 1.4) * p * 16;
-    const massRatio = Math.max(0, m.beam.mass) / 100;
-    const radius = (7 + 101 * Math.pow(p, 2)) * Math.sqrt(massRatio);
-    if (radius > .5) {
-      g.fillStyle(0xff7e3a, .10 + .22 * p);
-      g.fillCircle(x, y, radius * 1.72);
-      for (let i = 0; i < 5; i++) {
-        const a = i * TAU / 5 + p;
-        g.lineStyle(2 + p * 5, 0xff6931, (.22 + p * .45) * massRatio);
-        g.lineBetween(
-          x + Math.cos(a) * radius * .6, y + Math.sin(a) * radius * .6,
-          x + Math.cos(a) * radius * (1.7 + p), y + Math.sin(a) * radius * (1.7 + p),
-        );
-      }
-      g.fillStyle(0xdb5933, 1);
-      g.fillCircle(x, y, radius);
-      g.fillStyle(0xffd29c, .95);
-      g.fillCircle(x - radius * .2, y - radius * .22, Math.max(2, radius * .48));
-    }
-    if (m.beam.firing) {
-      // Visible sustained beam from the ship; one key can vaporize the whole meteor.
-      g.lineStyle(27, 0x3cc1e9, .23);
-      g.lineBetween(CX, 879, x, y);
-      g.lineStyle(10, 0x7df2f7, .86);
-      g.lineBetween(CX, 879, x, y);
-      g.lineStyle(3, 0xf3ffff, .95);
-      g.lineBetween(CX, 879, x, y);
-      g.fillStyle(0xf4ffff, .85);
-      g.fillCircle(x, y, 18 + Math.sin(m.elapsed / 50) * 4);
-      for (let i = 0; i < 6; i++) {
-        const a = i * TAU / 6 + m.elapsed / 120;
-        g.fillStyle(0xffe2ac, .8);
-        g.fillCircle(x + Math.cos(a) * (radius + 15), y + Math.sin(a) * (radius + 15), 3);
-      }
-    }
-    if (m.beam.overheated) {
-      g.lineStyle(7, 0xff6958, .85);
-      g.strokeCircle(CX, CY, 122);
-    }
-  }
-
-  private drawBlast(g: Phaser.GameObjects.Graphics): void {
-    const t = 1 - this.blast;
-    const a = -Math.PI / 2 + (this.blastSector + .5) * TAU / 6;
-    const x = CX + Math.cos(a) * SHIELD_R * .66;
-    const y = CY + Math.sin(a) * SHIELD_R * .66;
-    g.fillStyle(0xff513c, .43 * this.blast);
-    g.fillCircle(x, y, 20 + t * 175);
-    g.lineStyle(8 * this.blast + 2, 0xffb06b, this.blast);
-    g.strokeCircle(x, y, 18 + t * 120);
-    const count = 4 + Math.floor(this.blastMass / 12);
+    g.fillStyle(color, this.fx * .07); g.fillCircle(x, y, 25 + t * 170);
+    g.lineStyle(1 + this.fx * 4, color, this.fx * .8); g.strokeCircle(x, y, 25 + t * (this.fxOverdrive ? 240 : 155));
+    const count = this.fxOverdrive ? 26 : this.fxPerfect ? 18 : 12;
     for (let i = 0; i < count; i++) {
-      const angle = i * TAU / count + this.blastClock / 950;
-      const dist = (18 + t * 110) * (0.7 + (i % 3) * .18);
-      g.fillStyle(i % 2 ? 0xff8b5b : 0xffde9e, this.blast);
-      g.fillCircle(x + Math.cos(angle) * dist, y + Math.sin(angle) * dist, 3 + this.blast * 5);
+      const angle = i * TAU / count + .2;
+      const distance = 20 + t * (75 + i % 4 * 30);
+      const px = x + Math.cos(angle) * distance, py = y + Math.sin(angle) * distance;
+      g.fillStyle(color, this.fx); g.fillRect(px, py, 2 + this.fx * 3, 2 + this.fx * 3);
+      g.lineStyle(1, color, this.fx * .4); g.lineBetween(px, py, px - Math.cos(angle) * 15, py - Math.sin(angle) * 15);
     }
   }
 }
 
 new Phaser.Game({
-  type: Phaser.AUTO,
-  parent: 'game-container',
-  backgroundColor: '#061120',
+  type: Phaser.AUTO, parent: 'canvas-host', backgroundColor: '#071216',
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width: W, height: H },
-  scene: [ShieldScene],
-  render: { antialias: true },
+  scene: [ShieldScene], render: { antialias: true }, audio: { noAudio: true },
 });
