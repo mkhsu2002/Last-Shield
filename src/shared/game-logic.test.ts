@@ -100,7 +100,7 @@ test('holding continuously cannot automatically defend subsequent meteors', () =
   assert.ok(run.integrity<100);
 });
 
-test('three perfects charge the next successful clear and a miss removes a charge', () => {
+test('three perfects charge the next beam and a miss removes a charge', () => {
   const run=new rules.DefenseRun(20261114);
   for(let i=0;i<3;i++)perfectWave(run);
   assert.equal(run.energy,3);
@@ -123,4 +123,92 @@ test('repeated presses cannot improve an already committed early grade', () => {
   run.step(1000,true);
   assert.equal(run.early,1);
   assert.equal(run.perfect,0);
+});
+
+test('perfect precision and overdrive accelerate actual melting', () => {
+  const early = new rules.DefenseRun(20261114);
+  early.step(early.meteor!.chargeStartMs + 200, true);
+  const perfect = new rules.DefenseRun(20261114);
+  perfect.step(perfect.meteor!.chargeStartMs, false);
+  perfect.step(200, true);
+  assert.ok(perfect.meteor!.mass < early.meteor!.mass);
+  const boosted = new rules.DefenseRun(20261114);
+  boosted.energy = 3;
+  boosted.step(boosted.meteor!.chargeStartMs, false);
+  boosted.step(200, true);
+  assert.ok(boosted.meteor!.mass < perfect.meteor!.mass);
+  assert.equal(boosted.energy, 0, 'charge is spent when firing starts');
+  assert.equal(boosted.meteor!.overdrive, true);
+  const mass = boosted.meteor!.mass;
+  boosted.step(100, false);
+  assert.equal(boosted.meteor!.mass, mass);
+  boosted.step(20, true);
+  assert.equal(boosted.meteor!.overdrive, true, 'release does not reset a beam boost');
+  assert.equal(boosted.energy, 0);
+  const clear = boosted.step(100, true).find(e => e.type === 'clear');
+  assert.equal(clear?.overdrive, true);
+  assert.equal(boosted.energy, 1, 'a perfect boosted clear starts the next charge');
+});
+
+test('a failed overdrive beam cannot be refunded or retriggered', () => {
+  const run = new rules.DefenseRun(20261114);
+  run.energy = 3;
+  run.step(run.meteor!.durationMs - 30, false);
+  run.step(10, true);
+  assert.equal(run.energy, 0);
+  run.step(1000, false);
+  assert.ok(run.integrity < 100);
+  assert.equal(run.energy, 0);
+  assert.equal(run.cleared, 0);
+});
+
+test('ten-wave storms have distinct seeded phases and readable breathers', () => {
+  assert.equal(rules.stormPhase(0), 'approach');
+  assert.equal(rules.stormPhase(4), 'surge');
+  assert.equal(rules.stormPhase(8), 'breaker');
+  assert.equal(rules.stormPhase(9), 'respite');
+  assert.equal(rules.stormPhase(10), 'approach');
+  for (let day = 20261101; day <= 20261130; day++) {
+    for (let i = 0; i < 100; i++) {
+      const spec = rules.meteorSpec(day, i);
+      assert.deepEqual(spec, rules.meteorSpec(day, i));
+      assert.ok(spec.chargeStartMs + spec.burnMs < spec.durationMs);
+      if (i % 10 >= 4 && i % 10 <= 7) assert.ok(spec.recoveryMs >= 120 && spec.recoveryMs < 300);
+      if (i % 10 === 8) assert.equal(spec.kind, 'heavy');
+      if (i % 10 === 9) {
+        assert.equal(spec.kind, 'normal');
+        assert.ok(spec.recoveryMs >= 1200);
+      }
+    }
+  }
+});
+
+test('impacts distinguish no input, early release, late hold and unrearmed control', () => {
+  const untouched = new rules.DefenseRun(20261114);
+  untouched.step(untouched.meteor!.durationMs, false);
+  assert.equal(untouched.mistakes.untouched, 1);
+  const released = new rules.DefenseRun(20261114);
+  released.step(released.meteor!.chargeStartMs, false);
+  released.step(100, true);
+  released.step(5000, false);
+  assert.equal(released.mistakes.released, 1);
+  const late = new rules.DefenseRun(20261114);
+  late.step(late.meteor!.durationMs - 50, false);
+  late.step(500, true);
+  assert.equal(late.mistakes.late, 1);
+  const unarmed = new rules.DefenseRun(20261114);
+  unarmed.step(15000, true);
+  assert.ok(unarmed.mistakes.unarmed > 0);
+});
+
+test('beam outcomes remain stable across render frame partitions', () => {
+  function simulate(slice: number) {
+    const run = new rules.DefenseRun(20261114);
+    run.energy = 3;
+    run.step(run.meteor!.chargeStartMs, false);
+    for (let left = 400; left > 0; left -= Math.min(left, slice)) run.step(Math.min(left, slice), true);
+    return { score: run.score, energy: run.energy, cleared: run.cleared, integrity: run.integrity };
+  }
+  assert.deepEqual(simulate(400), simulate(10));
+  assert.deepEqual(simulate(16), simulate(10));
 });

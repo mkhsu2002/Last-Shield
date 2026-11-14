@@ -1,11 +1,13 @@
 import * as Phaser from 'phaser';
 import { context } from '@devvit/web/client';
-import { DefenseRun, meteorGeometry, RULES_VERSION, SHIELD_RADIUS, utcDaySeed } from '../shared/game-logic';
+import { DefenseRun, meteorGeometry, meteorSpec, stormPhase, RULES_VERSION, SHIELD_RADIUS, utcDaySeed } from '../shared/game-logic';
 import type { RunEvent } from '../shared/game-logic';
 import { SynthAudio } from './audio';
 import { element, mountGameUI, show, text } from './game-ui';
 import { readBest, storeBest } from './records';
 import type { BestRecord, RecordStorage } from './records';
+import { CITY_MESSAGES, milestone, PHASE_LABELS, retryAdvice } from './coaching';
+import { GAME_VERSION } from './version';
 
 const W = 540, H = 900, CX = 270, CY = 410, TAU = Math.PI * 2;
 const MINT = 0xa1f4d1, GOLD = 0xffd58b, CORAL = 0xff9777;
@@ -96,7 +98,7 @@ class ShieldScene extends Phaser.Scene {
     const stamp = String(day);
     text('day', `${stamp.slice(0, 4)}.${stamp.slice(4, 6)}.${stamp.slice(6)} UTC`);
     this.best = readBest(this.storage, day);
-    text('intro-best', this.best ? `TODAY'S BEST ON THIS DEVICE · ${this.best.score.toLocaleString('en-US')}` : 'SURVIVE UNTIL THE SHIELD BREAKS · BEST SAVED ON THIS DEVICE');
+    text('intro-best', this.best ? `TODAY'S BEST · ${this.best.score.toLocaleString('en-US')} · WAVE ${this.best.waveReached} · ON THIS DEVICE` : 'SURVIVE UNTIL THE SHIELD BREAKS · BEST SAVED ON THIS DEVICE');
   }
 
   private setPhase(phase: Phase): void {
@@ -117,6 +119,7 @@ class ShieldScene extends Phaser.Scene {
     this.breakMs = 0; this.previousWave = -1; this.previousReady = false;
     this.fx = 0; this.fxImpact = false; this.feedbackMs = 0; this.lastScore = 0; this.passedBest = false;
     text('feedback', ''); text('share-status', ''); show('share-box', false);
+    text('city-message', 'The city is counting on you.');
     this.setPhase('playing');
     element('game-container').focus({ preventScroll: true });
     this.renderHUD();
@@ -162,6 +165,10 @@ class ShieldScene extends Phaser.Scene {
       this.audio.clear(this.fxPerfect, event.overdrive);
       const label = event.overdrive ? 'OVERDRIVE' : event.grade === 'perfect' ? 'PERFECT' : event.grade === 'good' ? 'CORE BROKEN' : event.grade === 'early' ? 'EARLY · SAVED' : 'LATE · SAVED';
       this.feedback(`${label}  +${event.points}`, this.fxPerfect || event.overdrive ? 'perfect' : 'normal');
+      if (this.run.cleared % 10 === 0) {
+        const chapter = this.run.cleared / 10;
+        text('city-message', CITY_MESSAGES[(chapter - 1) % CITY_MESSAGES.length]!);
+      }
       if (!this.reducedMotion) {
         this.cameras.main.shake(event.overdrive ? 180 : 100, event.overdrive ? .009 : this.fxPerfect ? .004 : .002);
         try { navigator.vibrate?.(event.overdrive ? 35 : 15); } catch { /* Optional. */ }
@@ -186,6 +193,7 @@ class ShieldScene extends Phaser.Scene {
     const saved = storeBest(this.storage, {
       version: RULES_VERSION, day: this.run.daySeed, score: this.run.score,
       perfect: this.run.perfect, cleared: this.run.cleared, bestCombo: this.run.bestCombo,
+      waveReached: this.run.waveIndex + 1,
     });
     text('result-kicker', `SURVIVED ${Math.floor(this.run.elapsedMs / 60000)}:${String(Math.floor(this.run.elapsedMs / 1000) % 60).padStart(2, '0')} · WAVE ${this.run.waveIndex + 1}`);
     text('result-title', 'Shield shattered.');
@@ -195,11 +203,9 @@ class ShieldScene extends Phaser.Scene {
     text('result-combo', String(this.run.bestCombo));
     text('result-cleared', String(this.run.cleared));
     const next = this.best && this.run.score < this.best.score ? `${this.best.score - this.run.score + 1} more points to beat your daily best. ` : '';
-    const hint = this.run.firstMiss ? `Wave ${String(this.run.firstMiss).padStart(2, '0')} broke through. Hold until the core bursts.` :
-      this.run.early > this.run.late ? 'Try pressing a little later, just as the rings meet.' :
-      this.run.late > 0 ? 'Meet the rings a little sooner for more PERFECTs.' :
-      'Meet the incoming ring precisely to charge OVERDRIVE.';
-    text('retry-hint', next + hint);
+    const goal = milestone(this.run.cleared);
+    text('result-milestone', `CITY MILESTONES: ${Math.floor(this.run.cleared / 10)} · NEXT GOAL: ${goal.target} CORES`);
+    text('retry-hint', next + retryAdvice(this.run));
     this.setPhase('results');
     element('retry').focus({ preventScroll: true });
   }
@@ -208,7 +214,7 @@ class ShieldScene extends Phaser.Scene {
     if (this.sharing) return;
     this.sharing = true;
     const day = String(this.run.daySeed);
-    const message = `LAST SHIELD · ${day.slice(0, 4)}-${day.slice(4, 6)}-${day.slice(6)} UTC\n${this.run.score.toLocaleString('en-US')} pts · ${this.run.perfect} PERFECT · ${this.run.cleared} cores\nWave ${this.run.waveIndex + 1} · Best combo: ${this.run.bestCombo}. Same sky. Can you beat my defense?`;
+    const message = `LAST SHIELD ${GAME_VERSION} · ${day.slice(0, 4)}-${day.slice(4, 6)}-${day.slice(6)} UTC\n${this.run.score.toLocaleString('en-US')} pts · ${this.run.perfect} PERFECT · ${this.run.cleared} cores\nWave ${this.run.waveIndex + 1} · Best combo: ${this.run.bestCombo}. Same sky. Can you beat my defense?`;
     const local = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
     const postId = context?.postId;
     const url = postId ? `https://www.reddit.com/comments/${postId.replace(/^t3_/, '')}` : local ? '' : `${location.origin}${location.pathname}`;
@@ -242,7 +248,7 @@ class ShieldScene extends Phaser.Scene {
         }
         const ready = this.run.waveElapsedMs >= m.chargeStartMs;
         if (ready && !this.previousReady) { this.previousReady = true; this.audio.tone(760, 1080, .1, .05); }
-        this.audio.beam(m.firing ? 1 - m.mass / 100 : null, this.run.energy === 3);
+        this.audio.beam(m.firing ? 1 - m.mass / 100 : null, m.overdrive);
       } else this.audio.stop();
       this.renderHUD();
     }
@@ -257,32 +263,36 @@ class ShieldScene extends Phaser.Scene {
     text('combo', `${run.combo} COMBO`);
     text('perfect-count', `${run.perfect} PERFECT`);
     text('wave', `WAVE ${String(run.waveIndex + 1).padStart(2, '0')}`);
-    text('shield', `${run.integrity}%`);
     element('run-progress').style.width = `${run.integrity}%`;
     element('run-progress').style.background = run.integrity <= 34 ? '#ff9777' : '#a1f4d1';
-    element('shield-fill').style.width = `${run.integrity}%`;
-    element('shield-fill').style.background = run.integrity <= 30 ? '#ff9777' : '#a1f4d1';
     element('energy').querySelectorAll('i').forEach((el, i) => el.classList.toggle('lit', i < run.energy));
-    text('energy-label', run.energy === 3 ? 'OVERDRIVE READY' : 'OVERDRIVE');
+    text('energy-label', run.meteor?.firing && run.meteor.overdrive ? 'OVERDRIVE ACTIVE' : run.energy === 3 ? 'OVERDRIVE READY' : 'OVERDRIVE');
     if (this.best && run.score > this.best.score && this.lastScore <= this.best.score && !this.passedBest) {
       this.passedBest = true;
       this.feedback('DAILY BEST PASSED', 'perfect');
     }
     this.lastScore = run.score;
-    text('target', this.best ? run.score > this.best.score ? 'NEW TERRITORY · KEEP THE CITY STANDING' : `${this.best.score - run.score + 1} TO BEAT YOUR DAILY BEST` : 'SET YOUR FIRST DAILY BEST · ON THIS DEVICE');
+    text('target', this.best ? run.score > this.best.score ? `DAILY BEST PASSED · BEST RUN: WAVE ${this.best.waveReached}` : `DAILY BEST: +${this.best.score - run.score + 1} PTS · BEST RUN: WAVE ${this.best.waveReached}` : 'SET YOUR FIRST DAILY BEST · ON THIS DEVICE');
+    const storm = Math.floor(run.waveIndex / 10) + 1;
+    text('storm', `STORM ${String(storm).padStart(2, '0')} · ${PHASE_LABELS[stormPhase(run.waveIndex)]}`);
+    const nextCore = meteorSpec(run.daySeed, run.waveIndex + 1);
+    text('next-core', `NEXT: ${stormPhase(run.waveIndex + 1) === 'breaker' ? 'BREAKER' : nextCore.kind.toUpperCase()}`);
+    const goal = milestone(run.cleared);
+    text('milestone', `${run.cleared} / ${goal.target} CORES`);
+    element('milestone-fill').style.width = `${goal.progress * 10}%`;
     if (this.phase === 'breaking') return;
     const m = run.meteor;
     if (!m) {
       text('cue', this.fxImpact ? 'SHIELD HIT · REARM' : 'CORE BROKEN · RELEASE');
-      text('cue-help', this.fxImpact ? 'You can recover. Meet the next rings.' : 'Breathe. The next wave is coming.');
+      text('cue-help', this.fxImpact ? 'You can recover. Meet the next rings.' : stormPhase(run.waveIndex) === 'respite' ? 'A moment of calm. The city is still standing.' : 'Breathe. The next wave is coming.');
       return;
     }
     const ready = run.waveElapsedMs >= m.chargeStartMs;
     if (m.requireRelease) {
       text('cue', 'RELEASE TO REARM'); text('cue-help', 'A fresh hold for every meteor.');
     } else if (m.firing) {
-      text('cue', `MELTING  ${Math.round(100 - m.mass)}%`);
-      text('cue-help', m.kind === 'heavy' ? 'HEAVY CORE · Keep holding.' : 'Keep holding until the core breaks.');
+      text('cue', `${m.overdrive ? 'OVERDRIVE' : m.grade === 'perfect' ? 'PERFECT BEAM' : 'MELTING'}  ${Math.round(100 - m.mass)}%`);
+      text('cue-help', m.overdrive ? 'DOUBLE POWER · Hold until the core breaks.' : m.grade === 'perfect' ? 'PRECISION BOOST · Keep holding.' : m.kind === 'heavy' ? 'HEAVY CORE · Keep holding.' : 'Keep holding until the core breaks.');
     } else if (!ready) {
       text('cue', this.inputs.size ? 'HOLD · LOCKING ON' : 'INCOMING · TRACK THE RING');
       text('cue-help', m.kind === 'fast' ? 'FAST CORE · Meet the rings.' : m.kind === 'heavy' ? 'HEAVY CORE · A longer hold.' : 'When the ring lights up, press & hold.');
@@ -368,7 +378,7 @@ class ShieldScene extends Phaser.Scene {
     const x = CX + geometry.x, y = CY + geometry.y, radius = geometry.radius;
     const ready = elapsed >= m.chargeStartMs;
     const progress = Math.min(1, elapsed / m.chargeStartMs);
-    const color = this.run.energy === 3 ? GOLD : MINT;
+    const color = m.overdrive || m.grade === 'perfect' || this.run.energy === 3 ? GOLD : MINT;
     // The trail, core and impact all use the simulator's shared trajectory.
     g.lineStyle(2, CORAL, .2);
     g.lineBetween(x, y, x + Math.cos(geometry.angle) * 35, y + Math.sin(geometry.angle) * 35);
@@ -400,7 +410,7 @@ class ShieldScene extends Phaser.Scene {
       g.lineBetween(x, y - radius - 2, x - 5, y - radius - 7);
     }
     if (m.firing) {
-      const width = this.run.energy === 3 ? 14 : 7;
+      const width = m.overdrive ? 14 : m.grade === 'perfect' ? 9 : 7;
       g.lineStyle(width + 14, color, .14); g.lineBetween(CX, 470, x, y);
       g.lineStyle(width, color, .75); g.lineBetween(CX, 470, x, y);
       g.lineStyle(2, 0xf0fff2, .95); g.lineBetween(CX, 470, x, y);

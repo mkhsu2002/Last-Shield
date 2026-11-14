@@ -1,5 +1,6 @@
 # Shield survival revision
 
+Historical baseline: v0.40. The v0.41 precision/storm revision is tracked in `docs/v0-41-verification-2026-11-14.md`; survival-1 scoring/overdrive descriptions below apply only to this older release. Status note added 2026-11-14; original verification evidence is unchanged.
 Status: implemented and locally verified, 2026-11-14; see `docs/survival-verification-2026-11-14.md` for publication state. Supersedes the fixed-duration daily-defense MVP after MK's hands-on feedback. This revision is authorized for implementation; Reddit initialization/publication is explicitly deferred until development is complete and MK is guided through the platform flow.
 
 - A run ends only when shield integrity reaches zero. Remove the 75-second timer, 25-wave cap and visual/audio numerical countdown. Keep single-button holds, timing grades, combo, overdrive and local records.

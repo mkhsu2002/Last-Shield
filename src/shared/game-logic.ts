@@ -1,9 +1,15 @@
 // Deterministic rules shared by the standalone and Reddit clients.
-export const RULES_VERSION = 'survival-1';
+export const RULES_VERSION = 'survival-2';
 export const SHIELD_RADIUS = 132;
 export const METEOR_SPAWN_RADIUS = 218;
 export const PERFECT_WINDOW_MS = 120;
 export type TimingGrade = 'perfect' | 'good' | 'early' | 'late';
+export type StormPhase = 'approach' | 'surge' | 'breaker' | 'respite';
+export type Mistakes = { unarmed: number; untouched: number; released: number; late: number };
+export function stormPhase(index: number): StormPhase {
+  const position = index % 10;
+  return position < 4 ? 'approach' : position < 8 ? 'surge' : position === 8 ? 'breaker' : 'respite';
+}
 export type MeteorSpec = {
   sector: number;
   durationMs: number;
@@ -18,6 +24,8 @@ export type Meteor = MeteorSpec & {
   pressedGrade: TimingGrade;
   requireRelease: boolean;
   firing: boolean;
+  overdrive: boolean;
+  releasedEarly: boolean;
 };
 export type RunEvent =
   | { type: 'clear'; grade: TimingGrade; points: number; overdrive: boolean; sector: number; point: { x: number; y: number } }
@@ -40,16 +48,21 @@ function hash(seed: number, index: number): number {
 
 export function meteorSpec(daySeed: number, index: number): MeteorSpec {
   const pick = hash(daySeed + 31, index) % 7;
-  const kind = index < 2 ? 'normal' : pick === 6 ? 'heavy' : pick >= 4 ? 'fast' : 'normal';
+  const phase = stormPhase(index);
+  const kind = index < 2 || phase === 'respite' ? 'normal' : phase === 'breaker' ? 'heavy' :
+    phase === 'surge' ? (index % 2 === 0 ? 'fast' : pick === 6 ? 'heavy' : 'normal') :
+    pick === 6 ? 'heavy' : pick >= 4 ? 'fast' : 'normal';
   const pressure = Math.min(80, index);
   const jitter = hash(daySeed, index) % 401 - 200;
-  const durationMs = index < 2 ? 3000 : kind === 'heavy' ? Math.max(1800, 3450 - pressure * 18 + jitter) :
+  const flightMs = index < 2 ? 3000 : kind === 'heavy' ? Math.max(1800, 3450 - pressure * 18 + jitter) :
     kind === 'fast' ? Math.max(1050, 1950 - pressure * 14 + jitter / 2) : Math.max(1350, 3000 - pressure * 22 + jitter);
+  const durationMs = Math.round(flightMs * (phase === 'surge' ? .9 : 1)) + (phase === 'breaker' ? 400 : phase === 'respite' ? 650 : 0);
   return {
     sector: hash(daySeed + 7919, index) % 6, kind, durationMs,
     chargeStartMs: Math.round(durationMs * (.28 + (hash(daySeed + 97, index) % 11) / 100)),
-    burnMs: kind === 'heavy' ? 900 : kind === 'fast' ? 380 : 620,
-    recoveryMs: (kind === 'heavy' ? 460 : 180) + hash(daySeed + 157, index) % Math.max(150, 500 - pressure * 4),
+    burnMs: phase === 'breaker' ? 1200 : kind === 'heavy' ? 900 : kind === 'fast' ? 380 : 620,
+    recoveryMs: phase === 'respite' ? 1200 : phase === 'surge' ? 120 + hash(daySeed + 157, index) % 180 :
+      (kind === 'heavy' ? 460 : 180) + hash(daySeed + 157, index) % Math.max(150, 500 - pressure * 4),
   };
 }
 
@@ -91,6 +104,7 @@ export class DefenseRun {
   late = 0;
   energy = 0;
   firstMiss: number | null = null;
+  mistakes: Mistakes = { unarmed: 0, untouched: 0, released: 0, late: 0 };
   finished = false;
   reason: 'destroyed' | null = null;
   private waveStartedMs = 0;
@@ -108,6 +122,7 @@ export class DefenseRun {
     return {
       ...meteorSpec(this.daySeed, this.waveIndex), mass: 100,
       grade: null, pressedGrade: 'early', requireRelease: holding, firing: false,
+      overdrive: false, releasedEarly: false,
     };
   }
 
@@ -119,7 +134,10 @@ export class DefenseRun {
     let remaining = deltaMs;
     const m = this.meteor;
     if (m) {
-      if (!holding) { m.requireRelease = false; m.firing = false; }
+      if (!holding) {
+        if (m.firing && m.mass > 0) m.releasedEarly = true;
+        m.requireRelease = false; m.firing = false;
+      }
       if (holding && !this.wasHolding && !m.requireRelease && m.grade === null) {
         m.pressedGrade = judgeTiming(this.waveElapsedMs - m.chargeStartMs);
       }
@@ -142,8 +160,13 @@ export class DefenseRun {
         const burnTime = Math.max(0, after - Math.max(before, current.chargeStartMs));
         current.firing = holding && !current.requireRelease && burnTime > 0;
         if (current.firing) {
-          current.grade ??= current.pressedGrade;
-          current.mass = Math.max(0, current.mass - burnTime * 100 / current.burnMs);
+          if (current.grade === null) {
+            current.grade = current.pressedGrade;
+            current.overdrive = this.energy === 3;
+            if (current.overdrive) this.energy = 0;
+          }
+          const boost = (current.grade === 'perfect' ? 1.25 : 1) * (current.overdrive ? 2 : 1);
+          current.mass = Math.max(0, current.mass - burnTime * 100 * boost / current.burnMs);
         }
         if (current.mass <= .000001) this.clear(current, events);
         else if (meteorGeometry(current, after, current.mass).clearance <= 1e-9) this.impact(current, events);
@@ -155,8 +178,7 @@ export class DefenseRun {
 
   private clear(m: Meteor, events: RunEvent[]): void {
     const grade = m.grade ?? 'early';
-    const overdrive = this.energy === 3;
-    if (overdrive) this.energy = 0;
+    const overdrive = m.overdrive;
     if (grade === 'perfect') { this.perfect++; this.energy = Math.min(3, this.energy + 1); }
     if (grade === 'early') this.early++;
     if (grade === 'late') this.late++;
@@ -179,6 +201,8 @@ export class DefenseRun {
     this.combo = 0;
     this.energy = Math.max(0, this.energy - 1);
     this.firstMiss ??= this.waveIndex + 1;
+    const cause = m.requireRelease ? 'unarmed' : m.grade === null ? 'untouched' : m.releasedEarly && !m.firing ? 'released' : 'late';
+    this.mistakes[cause]++;
     const point = meteorGeometry(m, this.waveElapsedMs, m.mass);
     this.meteor = null;
     this.nextWaveAt = this.elapsedMs + Math.max(700, m.recoveryMs);

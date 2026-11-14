@@ -1,5 +1,6 @@
 # v0.4 shield survival verification
 
+Historical baseline: v0.40. The v0.41 precision/storm revision is tracked in `docs/v0-41-verification-2026-11-14.md`; survival-1 scoring/overdrive descriptions below apply only to this older release. Status note added 2026-11-14; original verification evidence is unchanged.
 2026-11-14. Supersedes the archived v0.3 fixed-duration MVP. This revision implements MK's feedback: contact was unclear/early, fixed cadence became repetitive, misses felt inconsequential, and life loss should govern survival rather than a timer.
 
 ## Implemented and checked

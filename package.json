@@ -1,13 +1,13 @@
 {
   "private": true,
   "name": "last-shield",
-  "version": "0.4.0",
+  "version": "0.41.0",
   "type": "module",
   "scripts": {
     "dev": "devvit playtest",
     "build": "vite build",
     "check": "tsc --noEmit -p tsconfig.client.json && tsc --noEmit -p tsconfig.server.json",
-    "test": "node --test src/shared/game-logic.test.ts src/client/records.test.ts",
+    "test": "node --test src/shared/game-logic.test.ts src/client/records.test.ts src/client/coaching.test.ts",
     "deploy": "npm run check && npm run build && devvit upload",
     "login": "devvit login",
     "build:standalone": "vite build --config vite.standalone.config.ts"
