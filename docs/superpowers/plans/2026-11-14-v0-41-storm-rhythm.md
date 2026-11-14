@@ -13,4 +13,6 @@
 - [x] Add `src/client/coaching.ts` and its tests for actionable dominant-cause advice and ten-core milestone progress; extend `records.ts` validation/tests with score-best wave.
 - [x] Update `game.ts`, `game-ui.ts`, `game.css`, splash and standalone metadata with storm/preview HUD, beam feedback, city milestone, best-wave comparison and visible package-derived v0.41. Keep failure paths and reduced motion.
 - [x] Synchronize README, historical-status notes and release verification. Run `npm run check`, `npm test`, both builds, `git diff --check`; inspect public copy and run controlled browser scenarios at desktop/mobile sizes.
-- [ ] Review final diff, commit once as v0.41, fast-forward main, push/tag, verify deployment source and public bundle. Commit documentation-only release evidence without increasing the gameplay version.
+- [x] Review final diff, commit once as v0.41, fast-forward main, push/tag, verify deployment source and public bundle. Commit documentation-only release evidence without increasing the gameplay version.
+
+Completed 2026-11-14. Gameplay tag `v0.41` / main `78435b2`; production deployment and live evidence are in `docs/v0-41-verification-2026-11-14.md`.

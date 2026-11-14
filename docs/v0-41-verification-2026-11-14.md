@@ -23,6 +23,11 @@
 
 ## Release state
 
-Local implementation verified; final build/readback, main integration, Git tag and Vercel production verification pending. Do not treat this paragraph as evidence of publication until updated with deployment results.
+- Final typecheck, 23 tests, standalone/Devvit builds and whitespace checks passed. Final UI screenshots were re-inspected after moving the storm/goal information below the playfield; final rhythm smoke again reached 12 PERFECT clears / 3,750 points / 100% shield across all four phases.
+- Main fast-forwarded and pushed at `78435b220aa78b2cd06d014ac6c87e233b04da4b`. Annotated Git tag `v0.41` points to this gameplay release and was pushed.
+- Vercel production deployment `dpl_8TbdVAGH9N3RHm978buCYG1r52P2` reached READY, sourced from that exact main commit, and owns `last-shield.vercel.app`.
+- Public readback displayed DAILY SURVIVAL · v0.41. Served `/assets/index-CN01St4N.js` SHA-256 `f939e85c3bd57753c0b4c92b188fb0f62b87310664f93c484b939c9013143569` and `/assets/index-D5CtVL_N.css` SHA-256 `cdc883d2a0e198197c12171bd05ce316b161d3e39a1de948ea8ef5d5c9f91836` both matched the verified local build.
+- Live Start/hold/release smoke displayed PERFECT BEAM 32%, then 200 points, 100% shield and 1 / 10 cores, with no page errors. It was paused/reloaded back to intro before game-over to avoid writing a test record.
+- Final documentation-only evidence changes use the existing ignored-build gate; they do not constitute a new gameplay version or require a production rebuild.
 
 No backend endpoints, response formats, schema, migrations, functions, schedules or provider secrets changed. The standalone is static. Reddit remains deliberately uninitialized/unpublished; a successful Devvit build does not establish a Reddit release. Real iOS/Android hardware and human audio review remain unperformed.

@@ -1,6 +1,6 @@
 # v0.41 — precision and storm rhythm
 
-Status: authorized by MK's request to implement the proposed experience improvements, 2026-11-14. Baseline: released v0.40 (`927e61b`). This document supersedes survival-1 mechanics where described below.
+Status: implemented and production-verified as v0.41, 2026-11-14. Authorized by MK's request to implement the proposed experience improvements. Baseline: released v0.40 (`927e61b`). This document supersedes survival-1 mechanics where described below.
 
 ## Scope
 
