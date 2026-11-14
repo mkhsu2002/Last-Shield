@@ -42,6 +42,11 @@
 
 ## 發布狀態
 
-本機驗證完成；尚待 main/tag 推送及正式 Vercel SHA、bundle 雜湊、live behavior 讀回。完成此段後才標記發布。
+- 已 fast-forward 合併並推送 main：`b95f2c11c620725f35856de07018003ef8e806f4`。Annotated tag `v0.43` 指向此遊戲版本並已推送。
+- 正式 Vercel deployment `dpl_77Eegha8k1YUtV6hUsSiZzsm9V7n` 為 READY，API 讀回來源是上述 main SHA，正式 alias `last-shield.vercel.app` 指向它。
+- 公開 JS `/assets/index-DTma6VD8.js` SHA-256 `2cb474edbb361a4ffcc184c9e1ae6252342e47e9204104416955b14b7e9f53fb`；CSS `/assets/index-BBFoXcFB.css` SHA-256 `68bbd67a72e085839d29fad98e5b544d3cbaa6e0cf0c76696d6a8b13ff9ea187`。均與最終本機建置相同。
+- 正式站可見 v0.43，練習完成顯示「這就是完美起手」，原有 localStorage 字串未改變。正式挑戰中普通攻擊後到第 5 波仍三格；第 6 波四顆剩 .4 秒時手動按鈕即清場、100% 護盾、能量歸零、清除四顆訊息正確。
+- 正式 smoke 無 JavaScript errors；完成後暫停、重載回開場並恢復實際時鐘，沒有完成測試局以免寫入正式站本機紀錄。
+- 發布證據補記為 docs-only，使用既有 ignored-build gate，並不另升遊戲版號。音效合成、server/API、schema、Devvit 與部署設定對 v0.42 均無差異。
 
 不涉及後端環境、帳本、migration、Functions、排程或 secret。既有 Reddit 平台仍未初始化／上傳／發布。本次僅發布 Vercel 靜態獨立站。Phaser bundle 大小提示仍存在；真實手機硬體手感與主觀遊戲性仍留待 MK 試玩。

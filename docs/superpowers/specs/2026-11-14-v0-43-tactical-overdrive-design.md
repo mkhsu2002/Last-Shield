@@ -1,6 +1,6 @@
 # v0.43 — 主動超載與真正的碎星危機
 
-Status: implementation authorized by MK's gameplay feedback, 2026-11-14. Replaces v0.42 survival-3 scheduling, passive overdrive and precision presentation. Sound and established Chinese visual direction are accepted and retained.
+Status: implemented and production-verified as v0.43, 2026-11-14; authorized by MK's gameplay feedback. Replaces v0.42 survival-3 scheduling, passive overdrive and precision presentation. Sound and established Chinese visual direction are accepted and retained.
 
 ## Cause and design
 
