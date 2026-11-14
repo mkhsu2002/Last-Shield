@@ -1,4 +1,4 @@
-import { RULES_VERSION, WAVE_COUNT } from '../shared/game-logic.ts';
+import { RULES_VERSION } from '../shared/game-logic.ts';
 export type BestRecord = {
   version: string; day: number; score: number; perfect: number; cleared: number; bestCombo: number;
 };
@@ -9,7 +9,7 @@ function valid(value: unknown, day: number): value is BestRecord {
   const r = value as BestRecord;
   return r.version === RULES_VERSION && r.day === day &&
     [r.score, r.perfect, r.cleared, r.bestCombo].every(n => Number.isSafeInteger(n) && n >= 0) &&
-    r.score <= 20_000 && r.cleared <= WAVE_COUNT && r.perfect <= r.cleared && r.bestCombo <= r.cleared;
+    r.perfect <= r.cleared && r.bestCombo <= r.cleared;
 }
 export function readBest(storage: RecordStorage | null, day: number): BestRecord | null {
   try {

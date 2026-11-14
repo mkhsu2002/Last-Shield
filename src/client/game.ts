@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { context } from '@devvit/web/client';
-import { chargeCue, DefenseRun, RULES_VERSION, RUN_DURATION_MS, utcDaySeed, WAVE_COUNT, WAVE_SLOT_MS } from '../shared/game-logic';
+import { DefenseRun, meteorGeometry, RULES_VERSION, SHIELD_RADIUS, utcDaySeed } from '../shared/game-logic';
 import type { RunEvent } from '../shared/game-logic';
 import { SynthAudio } from './audio';
 import { element, mountGameUI, show, text } from './game-ui';
@@ -9,7 +9,7 @@ import type { BestRecord, RecordStorage } from './records';
 
 const W = 540, H = 900, CX = 270, CY = 410, TAU = Math.PI * 2;
 const MINT = 0xa1f4d1, GOLD = 0xffd58b, CORAL = 0xff9777;
-type Phase = 'intro' | 'playing' | 'paused' | 'results';
+type Phase = 'intro' | 'playing' | 'paused' | 'breaking' | 'results';
 
 mountGameUI();
 
@@ -28,7 +28,9 @@ class ShieldScene extends Phaser.Scene {
   private fxImpact = false;
   private fxSector = 0;
   private feedbackMs = 0;
-  private previousCount = -1;
+  private breakMs = 0;
+  private fxX = CX;
+  private fxY = CY;
   private previousWave = -1;
   private previousReady = false;
   private lastScore = 0;
@@ -94,7 +96,7 @@ class ShieldScene extends Phaser.Scene {
     const stamp = String(day);
     text('day', `${stamp.slice(0, 4)}.${stamp.slice(4, 6)}.${stamp.slice(6)} UTC`);
     this.best = readBest(this.storage, day);
-    text('intro-best', this.best ? `TODAY'S BEST ON THIS DEVICE · ${this.best.score.toLocaleString('en-US')}` : '25 WAVES · SAME DAILY PATTERN · BEST SAVED ON THIS DEVICE');
+    text('intro-best', this.best ? `TODAY'S BEST ON THIS DEVICE · ${this.best.score.toLocaleString('en-US')}` : 'SURVIVE UNTIL THE SHIELD BREAKS · BEST SAVED ON THIS DEVICE');
   }
 
   private setPhase(phase: Phase): void {
@@ -102,7 +104,7 @@ class ShieldScene extends Phaser.Scene {
     document.querySelector<HTMLElement>('.interface')!.dataset.state = phase;
     for (const [id, visible] of [
       ['intro', phase === 'intro'], ['results', phase === 'results'], ['paused', phase === 'paused'],
-      ['run-hud', phase === 'playing' || phase === 'paused'], ['action', phase === 'playing' || phase === 'paused'],
+      ['run-hud', phase === 'playing' || phase === 'paused' || phase === 'breaking'], ['action', phase === 'playing' || phase === 'paused' || phase === 'breaking'],
       ['pause', phase === 'playing'], ['footer', phase === 'intro'],
     ] as const) show(id, visible);
   }
@@ -112,8 +114,8 @@ class ShieldScene extends Phaser.Scene {
     this.audio.unlock();
     this.run = new DefenseRun(utcDaySeed(new Date()));
     this.loadDay();
-    this.previousCount = -1; this.previousWave = -1; this.previousReady = false;
-    this.fx = 0; this.feedbackMs = 0; this.lastScore = 0; this.passedBest = false;
+    this.breakMs = 0; this.previousWave = -1; this.previousReady = false;
+    this.fx = 0; this.fxImpact = false; this.feedbackMs = 0; this.lastScore = 0; this.passedBest = false;
     text('feedback', ''); text('share-status', ''); show('share-box', false);
     this.setPhase('playing');
     element('game-container').focus({ preventScroll: true });
@@ -156,6 +158,7 @@ class ShieldScene extends Phaser.Scene {
     if (event.type === 'clear') {
       this.fx = 1; this.fxImpact = false; this.fxPerfect = event.grade === 'perfect';
       this.fxOverdrive = event.overdrive; this.fxSector = event.sector;
+      this.fxX = CX + event.point.x; this.fxY = CY + event.point.y;
       this.audio.clear(this.fxPerfect, event.overdrive);
       const label = event.overdrive ? 'OVERDRIVE' : event.grade === 'perfect' ? 'PERFECT' : event.grade === 'good' ? 'CORE BROKEN' : event.grade === 'early' ? 'EARLY · SAVED' : 'LATE · SAVED';
       this.feedback(`${label}  +${event.points}`, this.fxPerfect || event.overdrive ? 'perfect' : 'normal');
@@ -165,9 +168,16 @@ class ShieldScene extends Phaser.Scene {
       }
     } else if (event.type === 'impact') {
       this.fx = 1; this.fxImpact = true; this.fxOverdrive = false; this.fxSector = event.sector;
-      this.audio.impact(); this.feedback(`DEBRIS HIT  −${event.damage}% SHIELD`, 'impact');
-      if (!this.reducedMotion) this.cameras.main.shake(180, .008);
-    } else if (event.type === 'finish') this.finishRun();
+      this.fxX = CX + Math.cos((event.sector + .5) * TAU / 6 - Math.PI / 2) * SHIELD_RADIUS;
+      this.fxY = CY + Math.sin((event.sector + .5) * TAU / 6 - Math.PI / 2) * SHIELD_RADIUS;
+      this.audio.impact(); this.audio.shatter();
+      this.feedback(`SHIELD FRACTURED  −${event.damage}%`, 'impact');
+      if (!this.reducedMotion) this.cameras.main.shake(280, .016);
+    } else if (event.type === 'finish') {
+      this.releaseAll(); this.breakMs = 1250; this.fx = 1;
+      this.audio.shatter(true); this.setPhase('breaking');
+      text('cue', 'SHIELD SHATTERED'); text('cue-help', 'The last barrier is gone.');
+    }
   }
 
   private finishRun(): void {
@@ -177,18 +187,18 @@ class ShieldScene extends Phaser.Scene {
       version: RULES_VERSION, day: this.run.daySeed, score: this.run.score,
       perfect: this.run.perfect, cleared: this.run.cleared, bestCombo: this.run.bestCombo,
     });
-    text('result-kicker', this.run.reason === 'complete' ? 'ALL 25 WAVES FACED' : 'THE CITY NEEDS YOU AGAIN');
-    text('result-title', this.run.reason === 'complete' ? 'City defended.' : 'Shield down.');
+    text('result-kicker', `SURVIVED ${Math.floor(this.run.elapsedMs / 60000)}:${String(Math.floor(this.run.elapsedMs / 1000) % 60).padStart(2, '0')} · WAVE ${this.run.waveIndex + 1}`);
+    text('result-title', 'Shield shattered.');
     text('result-score', this.run.score.toLocaleString('en-US'));
     text('record-note', saved ? this.newBest ? 'NEW DAILY BEST · ON THIS DEVICE' : `DAILY BEST ON THIS DEVICE · ${Math.max(this.best?.score ?? 0, this.run.score).toLocaleString('en-US')}` : 'THIS RUN ONLY · RECORD COULD NOT BE SAVED');
     text('result-perfect', String(this.run.perfect));
     text('result-combo', String(this.run.bestCombo));
-    text('result-cleared', `${this.run.cleared}/${WAVE_COUNT}`);
+    text('result-cleared', String(this.run.cleared));
     const next = this.best && this.run.score < this.best.score ? `${this.best.score - this.run.score + 1} more points to beat your daily best. ` : '';
     const hint = this.run.firstMiss ? `Wave ${String(this.run.firstMiss).padStart(2, '0')} broke through. Hold until the core bursts.` :
       this.run.early > this.run.late ? 'Try pressing a little later, just as the rings meet.' :
       this.run.late > 0 ? 'Meet the rings a little sooner for more PERFECTs.' :
-      this.run.perfect < WAVE_COUNT ? 'Meet the rings more precisely to charge OVERDRIVE.' : 'Flawless defense. Share the daily challenge.';
+      'Meet the incoming ring precisely to charge OVERDRIVE.';
     text('retry-hint', next + hint);
     this.setPhase('results');
     element('retry').focus({ preventScroll: true });
@@ -198,7 +208,7 @@ class ShieldScene extends Phaser.Scene {
     if (this.sharing) return;
     this.sharing = true;
     const day = String(this.run.daySeed);
-    const message = `LAST SHIELD · ${day.slice(0, 4)}-${day.slice(4, 6)}-${day.slice(6)} UTC\n${this.run.score.toLocaleString('en-US')} pts · ${this.run.perfect} PERFECT · ${this.run.cleared}/25 cores\nBest combo: ${this.run.bestCombo}. Same sky. Can you beat my defense?`;
+    const message = `LAST SHIELD · ${day.slice(0, 4)}-${day.slice(4, 6)}-${day.slice(6)} UTC\n${this.run.score.toLocaleString('en-US')} pts · ${this.run.perfect} PERFECT · ${this.run.cleared} cores\nWave ${this.run.waveIndex + 1} · Best combo: ${this.run.bestCombo}. Same sky. Can you beat my defense?`;
     const local = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
     const postId = context?.postId;
     const url = postId ? `https://www.reddit.com/comments/${postId.replace(/^t3_/, '')}` : local ? '' : `${location.origin}${location.pathname}`;
@@ -216,7 +226,11 @@ class ShieldScene extends Phaser.Scene {
 
   update(_time: number, delta: number): void {
     const dt = Math.max(0, Math.min(100, delta));
-    this.fx = Math.max(0, this.fx - dt / 650);
+    this.fx = Math.max(0, this.fx - dt / (this.fxImpact ? 1250 : 650));
+    if (this.phase === 'breaking') {
+      this.breakMs -= dt;
+      if (this.breakMs <= 0) this.finishRun();
+    }
     if (this.phase === 'playing') {
       this.feedbackMs = Math.max(0, this.feedbackMs - dt);
       if (!this.feedbackMs) text('feedback', '');
@@ -224,13 +238,10 @@ class ShieldScene extends Phaser.Scene {
       const m = this.run.meteor;
       if (m && this.phase === 'playing') {
         if (this.previousWave !== this.run.waveIndex) {
-          this.previousWave = this.run.waveIndex; this.previousCount = -1; this.previousReady = false;
+          this.previousWave = this.run.waveIndex; this.previousReady = false;
         }
-        const cue = chargeCue(this.run.waveElapsedMs, m.chargeStartMs);
-        if (cue.phase === 'countdown' && cue.count !== this.previousCount) {
-          this.previousCount = cue.count; this.audio.tone(360 + (3 - cue.count) * 120, 650, .07, .025);
-        }
-        if (cue.phase === 'ready' && !this.previousReady) { this.previousReady = true; this.audio.tone(760, 1080, .1, .05); }
+        const ready = this.run.waveElapsedMs >= m.chargeStartMs;
+        if (ready && !this.previousReady) { this.previousReady = true; this.audio.tone(760, 1080, .1, .05); }
         this.audio.beam(m.firing ? 1 - m.mass / 100 : null, this.run.energy === 3);
       } else this.audio.stop();
       this.renderHUD();
@@ -241,12 +252,14 @@ class ShieldScene extends Phaser.Scene {
   private renderHUD(): void {
     const run = this.run;
     text('score', run.score.toLocaleString('en-US'));
-    text('clock', `${Math.ceil((RUN_DURATION_MS - run.elapsedMs) / 1000)}s`);
+    text('clock', `${run.integrity}%`);
+    element('clock').style.color = run.integrity <= 34 || (this.fxImpact && this.fx > .2) ? '#ff9777' : '#cae0d9';
     text('combo', `${run.combo} COMBO`);
     text('perfect-count', `${run.perfect} PERFECT`);
-    text('wave', `WAVE ${String(run.waveIndex + 1).padStart(2, '0')} / ${WAVE_COUNT}`);
+    text('wave', `WAVE ${String(run.waveIndex + 1).padStart(2, '0')}`);
     text('shield', `${run.integrity}%`);
-    element('run-progress').style.width = `${run.elapsedMs / RUN_DURATION_MS * 100}%`;
+    element('run-progress').style.width = `${run.integrity}%`;
+    element('run-progress').style.background = run.integrity <= 34 ? '#ff9777' : '#a1f4d1';
     element('shield-fill').style.width = `${run.integrity}%`;
     element('shield-fill').style.background = run.integrity <= 30 ? '#ff9777' : '#a1f4d1';
     element('energy').querySelectorAll('i').forEach((el, i) => el.classList.toggle('lit', i < run.energy));
@@ -257,21 +270,22 @@ class ShieldScene extends Phaser.Scene {
     }
     this.lastScore = run.score;
     text('target', this.best ? run.score > this.best.score ? 'NEW TERRITORY · KEEP THE CITY STANDING' : `${this.best.score - run.score + 1} TO BEAT YOUR DAILY BEST` : 'SET YOUR FIRST DAILY BEST · ON THIS DEVICE');
+    if (this.phase === 'breaking') return;
     const m = run.meteor;
     if (!m) {
       text('cue', this.fxImpact ? 'SHIELD HIT · REARM' : 'CORE BROKEN · RELEASE');
       text('cue-help', this.fxImpact ? 'You can recover. Meet the next rings.' : 'Breathe. The next wave is coming.');
       return;
     }
-    const cue = chargeCue(run.waveElapsedMs, m.chargeStartMs);
+    const ready = run.waveElapsedMs >= m.chargeStartMs;
     if (m.requireRelease) {
       text('cue', 'RELEASE TO REARM'); text('cue-help', 'A fresh hold for every meteor.');
     } else if (m.firing) {
       text('cue', `MELTING  ${Math.round(100 - m.mass)}%`);
       text('cue-help', m.kind === 'heavy' ? 'HEAVY CORE · Keep holding.' : 'Keep holding until the core breaks.');
-    } else if (cue.phase === 'countdown') {
-      text('cue', this.inputs.size ? 'HOLD · WAIT FOR ALIGNMENT' : `GET READY  ${cue.count}`);
-      text('cue-help', m.kind === 'fast' ? 'FAST CORE · Meet the rings.' : m.kind === 'heavy' ? 'HEAVY CORE · A longer hold.' : 'Meet the rings for a PERFECT.');
+    } else if (!ready) {
+      text('cue', this.inputs.size ? 'HOLD · LOCKING ON' : 'INCOMING · TRACK THE RING');
+      text('cue-help', m.kind === 'fast' ? 'FAST CORE · Meet the rings.' : m.kind === 'heavy' ? 'HEAVY CORE · A longer hold.' : 'When the ring lights up, press & hold.');
     } else {
       text('cue', 'HOLD NOW'); text('cue-help', 'Press anywhere. Hold until it breaks.');
     }
@@ -280,7 +294,7 @@ class ShieldScene extends Phaser.Scene {
   private draw(): void {
     const g = this.graphics; g.clear();
     g.fillStyle(0x071216); g.fillRect(0, 0, W, H);
-    const live = this.phase === 'playing' || this.phase === 'paused';
+    const live = this.phase === 'playing' || this.phase === 'paused' || this.phase === 'breaking' || (this.phase === 'results' && this.run.finished);
     // A restrained radar grid leads the eye to the ring alignment.
     for (let i = 0; i < 65; i++) {
       const x = (i * 173 + 41) % W, y = (i * 97 + 19) % 670;
@@ -293,116 +307,134 @@ class ShieldScene extends Phaser.Scene {
       g.lineBetween(0, 580 + i * 24, W, 580 + i * 24);
     }
     this.drawCity(g, live);
-    for (let i = 0; i < 6; i++) {
-      const a = -Math.PI / 2 + i * TAU / 6;
-      const hurt = live && this.run.sectors[i] > 0;
-      g.lineStyle(hurt ? 3 : 1, hurt ? CORAL : 0x507e6a, hurt ? .45 : .28);
-      g.beginPath(); g.arc(CX, CY, 185, a + .025, a + TAU / 6 - .025); g.strokePath();
-      const x = CX + Math.cos(a + TAU / 12) * 180, y = CY + Math.sin(a + TAU / 12) * 180;
-      if (hurt) { g.lineBetween(x - 8, y - 5, x + 3, y + 4); g.lineBetween(x + 3, y + 4, x - 4, y + 12); }
-    }
+    this.drawShield(g, live);
     if (live && this.run.meteor) this.drawMeteor(g);
     else if (!live) {
-      g.lineStyle(1, MINT, .15); g.strokeCircle(CX, CY, 100); g.strokeCircle(CX, CY, 110);
+      g.lineStyle(1, MINT, .15); g.strokeCircle(CX, CY, SHIELD_RADIUS);
     }
     if (this.fx > 0) this.drawBurst(g);
   }
 
   private drawCity(g: Phaser.GameObjects.Graphics, live: boolean): void {
-    for (let i = 0; i < 23; i++) {
-      const x = 24 + i * 22;
-      const height = 20 + (i * 47 % 60) + (i === 11 ? 48 : 0);
-      const sector = Math.min(5, Math.floor(i / 4));
+    for (let i = 0; i < 13; i++) {
+      const x = 166 + i * 16;
+      const height = 16 + (i * 19 % 40) + (i === 6 ? 22 : 0);
+      const sector = Math.min(5, Math.floor(i / 2.2));
       const damage = live ? this.run.sectors[sector] : 0;
-      g.fillStyle(0x0b2525, .9); g.fillRect(x, 630 - height, 17, height);
-      g.lineStyle(1, damage > 0 ? CORAL : MINT, damage > 0 ? .25 : .25);
-      g.strokeRect(x, 630 - height, 17, height);
-      for (let row = 0; row < Math.floor(height / 10) - 1; row++) {
-        for (let col = 0; col < 2; col++) {
-          const lit = (i + row + col) % 7 >= Math.min(6, Math.ceil(damage / 8));
-          g.fillStyle(lit ? MINT : 0x21362e, lit ? .4 : .5);
-          g.fillRect(x + 4 + col * 6, 637 - height + row * 10, 2, 3);
+      g.fillStyle(0x102e2b, .95); g.fillRect(x, 480 - height, 12, height);
+      g.lineStyle(1, damage > 0 ? CORAL : MINT, .5); g.strokeRect(x, 480 - height, 12, height);
+      for (let row = 0; row < Math.floor(height / 9) - 1; row++) {
+        const lit = (i + row) % 7 >= Math.min(6, Math.ceil(damage / 8));
+        g.fillStyle(lit ? MINT : 0x21362e, lit ? .65 : .5);
+        g.fillRect(x + 3, 486 - height + row * 9, 2, 3);
+        g.fillRect(x + 8, 486 - height + row * 9, 2, 3);
+      }
+    }
+    g.lineStyle(1, MINT, .35); g.lineBetween(165, 482, 374, 482);
+  }
+
+  private drawShield(g: Phaser.GameObjects.Graphics, live: boolean): void {
+    const shattered = live && this.run.integrity === 0;
+    const collapse = shattered ? 1 - this.fx : 0;
+    g.fillStyle(MINT, shattered ? .015 : .035); g.fillCircle(CX, CY, SHIELD_RADIUS);
+    for (let i = 0; i < 6; i++) {
+      const a = -Math.PI / 2 + i * TAU / 6;
+      const center = a + TAU / 12;
+      const damage = live ? this.run.sectors[i] : 0;
+      const displaced = shattered && !this.reducedMotion ? collapse * 100 : 0;
+      const x = CX + Math.cos(center) * displaced, y = CY + Math.sin(center) * displaced + (this.reducedMotion ? 0 : collapse * collapse * 130);
+      g.lineStyle(damage > 0 ? 4 : 3, damage > 0 ? CORAL : MINT, shattered ? this.fx : .8);
+      g.beginPath(); g.arc(x, y, SHIELD_RADIUS, a + .025, a + TAU / 6 - .025); g.strokePath();
+      if (damage > 0 || shattered) {
+        const lines = Math.min(4, 1 + Math.floor(damage / 15));
+        for (let branch = 0; branch < lines; branch++) {
+          const angle = center + (branch - (lines - 1) / 2) * .13;
+          const px = x + Math.cos(angle) * (SHIELD_RADIUS - 2), py = y + Math.sin(angle) * (SHIELD_RADIUS - 2);
+          const qx = x + Math.cos(angle + .08) * 92, qy = y + Math.sin(angle + .08) * 92;
+          const rx = x + Math.cos(angle - .12) * 62, ry = y + Math.sin(angle - .12) * 62;
+          g.lineStyle(2.5, 0xffc5aa, shattered ? this.fx : .85);
+          g.lineBetween(px, py, qx, qy); g.lineBetween(qx, qy, rx, ry);
+          g.lineStyle(1.5, CORAL, shattered ? this.fx : .7);
+          g.lineBetween(qx, qy, qx + Math.cos(angle + 1.2) * 25, qy + Math.sin(angle + 1.2) * 25);
         }
       }
     }
-    g.lineStyle(1, MINT, .3); g.lineBetween(20, 632, 520, 632);
   }
 
   private drawMeteor(g: Phaser.GameObjects.Graphics): void {
     const m = this.run.meteor!;
     const elapsed = this.run.waveElapsedMs;
+    const geometry = meteorGeometry(m, elapsed, m.mass);
+    const x = CX + geometry.x, y = CY + geometry.y, radius = geometry.radius;
     const ready = elapsed >= m.chargeStartMs;
     const progress = Math.min(1, elapsed / m.chargeStartMs);
     const color = this.run.energy === 3 ? GOLD : MINT;
-    const radius = (m.kind === 'heavy' ? 58 : m.kind === 'fast' ? 32 : 44) * (.65 + .35 * Math.min(1, elapsed / m.durationMs)) * Math.sqrt(m.mass / 100);
-    const targetR = 99;
-    // Exact same target time drives rings, countdown, tone and timing grade.
-    g.lineStyle(2, color, .4); g.strokeCircle(CX, CY, targetR);
-    const ringR = ready ? targetR : targetR + 76 * (1 - progress);
-    g.lineStyle(ready ? 5 : 3, ready ? color : 0x86a99c, ready ? .9 : .65);
-    g.strokeCircle(CX, CY, ringR);
-    for (let i = 0; i < 4; i++) {
-      const a = i * TAU / 4;
-      g.lineStyle(2, color, .65);
-      g.lineBetween(CX + Math.cos(a) * (targetR - 6), CY + Math.sin(a) * (targetR - 6), CX + Math.cos(a) * (targetR + 6), CY + Math.sin(a) * (targetR + 6));
-    }
-    if (ready) {
-      g.fillStyle(color, m.firing ? .055 : .025); g.fillCircle(CX, CY, targetR);
-    }
-    // Faceted shell shrinks while bright fractures expose the core.
+    // The trail, core and impact all use the simulator's shared trajectory.
+    g.lineStyle(2, CORAL, .2);
+    g.lineBetween(x, y, x + Math.cos(geometry.angle) * 35, y + Math.sin(geometry.angle) * 35);
+    g.lineStyle(1, MINT, .2);
+    g.lineBetween(x, y, CX + Math.cos(geometry.angle) * SHIELD_RADIUS, CY + Math.sin(geometry.angle) * SHIELD_RADIUS);
+    const targetR = radius + 12;
+    g.lineStyle(1, color, .45); g.strokeCircle(x, y, targetR);
+    g.lineStyle(ready ? 3 : 2, ready ? color : 0x86a99c, .85);
+    g.strokeCircle(x, y, targetR + (ready ? 0 : 30 * (1 - progress)));
     const points: Phaser.Math.Vector2[] = [];
     for (let i = 0; i < 9; i++) {
-      const a = i * TAU / 9 + (this.reducedMotion ? .3 : elapsed / 4000);
-      const r = radius * (i % 2 ? .85 : 1.05);
-      points.push(new Phaser.Math.Vector2(CX + Math.cos(a) * r, CY + Math.sin(a) * r));
+      const a = i * TAU / 9 + (this.reducedMotion ? .3 : elapsed / 3000);
+      const r = radius * (i % 2 ? .88 : 1);
+      points.push(new Phaser.Math.Vector2(x + Math.cos(a) * r, y + Math.sin(a) * r));
     }
     g.fillStyle(0x82523d); g.fillPoints(points, true);
-    g.lineStyle(2, 0xe6af7c, .85); g.strokePoints(points, true);
-    g.fillStyle(m.firing ? GOLD : 0xc88855, m.firing ? .85 : .5); g.fillCircle(CX, CY, Math.max(2, radius * .24));
-    for (let i = 0; i < 5; i++) {
-      const a = i * TAU / 5 + .5;
-      g.lineStyle(m.firing ? 3 : 1, m.firing ? GOLD : 0xffc38b, m.firing ? .9 : .4);
-      g.lineBetween(CX + Math.cos(a) * radius * .2, CY + Math.sin(a) * radius * .2, CX + Math.cos(a + .2) * radius * .82, CY + Math.sin(a + .2) * radius * .82);
+    g.lineStyle(2, 0xffc38b, .95); g.strokePoints(points, true);
+    g.lineStyle(1.5, 0xffc38b, .75); g.strokeCircle(x, y, radius);
+    g.fillStyle(m.firing ? GOLD : 0xc88855, .9); g.fillCircle(x, y, Math.max(2, radius * .28));
+    for (let i = 0; i < 4; i++) {
+      const a = i * TAU / 4 + .5;
+      g.lineStyle(m.firing ? 2 : 1, GOLD, m.firing ? .95 : .4);
+      g.lineBetween(x + Math.cos(a) * radius * .2, y + Math.sin(a) * radius * .2, x + Math.cos(a + .2) * radius * .85, y + Math.sin(a + .2) * radius * .85);
     }
-    if (m.kind === 'heavy') {
-      g.lineStyle(3, 0xd79c76, .45); g.strokeCircle(CX, CY, radius + 7);
-    } else if (m.kind === 'fast') {
-      g.lineStyle(2, 0xffd58b, .7);
-      g.lineBetween(CX - 10, CY - radius - 24, CX, CY - radius - 12);
-      g.lineBetween(CX, CY - radius - 12, CX + 10, CY - radius - 24);
+    if (m.kind === 'heavy') { g.lineStyle(3, 0xd79c76, .7); g.strokeCircle(x, y, radius + 5); }
+    if (m.kind === 'fast') {
+      g.lineStyle(2, GOLD, .8);
+      g.lineBetween(x + 5, y - radius - 7, x, y - radius - 2);
+      g.lineBetween(x, y - radius - 2, x - 5, y - radius - 7);
     }
     if (m.firing) {
-      const width = this.run.energy === 3 ? 18 : 10;
-      g.lineStyle(width + 18, color, .12); g.lineBetween(CX, 646, CX, CY);
-      g.lineStyle(width, color, .7); g.lineBetween(CX, 646, CX, CY);
-      g.lineStyle(3, 0xf0fff2, .95); g.lineBetween(CX, 646, CX, CY);
-      for (let i = 0; i < 10; i++) {
-        const a = i * TAU / 10 + (this.reducedMotion ? 0 : elapsed / 170);
-        const distance = radius + 10 + i % 3 * 7;
-        g.fillStyle(GOLD, .7); g.fillCircle(CX + Math.cos(a) * distance, CY + Math.sin(a) * distance, 2);
+      const width = this.run.energy === 3 ? 14 : 7;
+      g.lineStyle(width + 14, color, .14); g.lineBetween(CX, 470, x, y);
+      g.lineStyle(width, color, .75); g.lineBetween(CX, 470, x, y);
+      g.lineStyle(2, 0xf0fff2, .95); g.lineBetween(CX, 470, x, y);
+      for (let i = 0; i < 8; i++) {
+        const a = i * TAU / 8 + (this.reducedMotion ? 0 : elapsed / 170);
+        g.fillStyle(GOLD, .8); g.fillCircle(x + Math.cos(a) * (radius + 8), y + Math.sin(a) * (radius + 8), 2);
       }
-      // A ring of remaining shell gives continuous feedback without another text bar.
-      g.lineStyle(5, GOLD, .9); g.beginPath(); g.arc(CX, CY, 74, -Math.PI / 2, -Math.PI / 2 + TAU * m.mass / 100); g.strokePath();
     }
   }
 
   private drawBurst(g: Phaser.GameObjects.Graphics): void {
     const t = 1 - this.fx;
     const color = this.fxImpact ? CORAL : this.fxOverdrive || this.fxPerfect ? GOLD : MINT;
-    const a = (this.fxSector + .5) * TAU / 6 - Math.PI / 2;
-    const x = this.fxImpact ? CX + Math.cos(a) * 130 : CX;
-    const y = this.fxImpact ? CY + Math.sin(a) * 130 : CY;
+    const x = this.fxX;
+    const y = this.fxY;
     if (this.reducedMotion) {
       g.lineStyle(3, color, this.fx * .6); g.strokeCircle(x, y, 100); return;
     }
     g.fillStyle(color, this.fx * .07); g.fillCircle(x, y, 25 + t * 170);
     g.lineStyle(1 + this.fx * 4, color, this.fx * .8); g.strokeCircle(x, y, 25 + t * (this.fxOverdrive ? 240 : 155));
-    const count = this.fxOverdrive ? 26 : this.fxPerfect ? 18 : 12;
+    const fatal = this.fxImpact && this.run.integrity === 0;
+    if (this.fxImpact) { g.fillStyle(CORAL, this.fx * .04); g.fillRect(0, 0, W, H); }
+    const count = this.fxImpact ? (this.run.integrity === 0 ? 42 : 24) : this.fxOverdrive ? 26 : this.fxPerfect ? 18 : 12;
     for (let i = 0; i < count; i++) {
       const angle = i * TAU / count + .2;
       const distance = 20 + t * (75 + i % 4 * 30);
-      const px = x + Math.cos(angle) * distance, py = y + Math.sin(angle) * distance;
-      g.fillStyle(color, this.fx); g.fillRect(px, py, 2 + this.fx * 3, 2 + this.fx * 3);
+      const px = (fatal ? CX : x) + Math.cos(angle) * (distance + (fatal ? 60 : 0));
+      const py = (fatal ? CY : y) + Math.sin(angle) * (distance + (fatal ? 60 : 0)) + (this.fxImpact ? t * t * 150 : 0);
+      g.fillStyle(color, this.fx);
+      if (this.fxImpact) {
+        const shard = 4 + this.fx * (i % 4 + 3);
+        const points = [new Phaser.Math.Vector2(px - shard, py - shard), new Phaser.Math.Vector2(px + shard * .6, py - shard * .3), new Phaser.Math.Vector2(px + shard, py + shard)];
+        g.fillPoints(points, true); g.lineStyle(1, 0xffdec3, this.fx); g.strokePoints(points, true);
+      } else g.fillRect(px, py, 2 + this.fx * 3, 2 + this.fx * 3);
       g.lineStyle(1, color, this.fx * .4); g.lineBetween(px, py, px - Math.cos(angle) * 15, py - Math.sin(angle) * 15);
     }
   }

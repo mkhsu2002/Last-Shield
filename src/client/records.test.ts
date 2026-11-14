@@ -34,3 +34,9 @@ test('denied storage is a recoverable failure', () => {
   assert.equal(records.storeBest(denied, record), false);
   assert.equal(records.storeBest(null, record), false);
 });
+test('survival records beyond the old wave and score caps remain valid', () => {
+  const storage = memory();
+  const long = { ...record, score: 45000, cleared: 150, perfect: 140, bestCombo: 90 };
+  assert.equal(records.storeBest(storage, long), true);
+  assert.deepEqual(records.readBest(storage, record.day), long);
+});

@@ -1,5 +1,6 @@
 # Daily defense MVP verification
 
+> Archived 2026-11-14: v0.3 fixed-duration gameplay was superseded by v0.4 shield survival after player feedback. These are historical checks/design decisions, not the current gameplay contract. See `docs/survival-verification-2026-11-14.md`.
 Verified locally on 2026-11-14. Starting remote commit: `20e94cd` (upstream synchronized countdown/ring cues retained). Version: `0.3.0`; local record namespace: `daily-1`.
 
 ## Completed evidence

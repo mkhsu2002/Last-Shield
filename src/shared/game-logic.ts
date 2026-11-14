@@ -1,8 +1,7 @@
 // Deterministic rules shared by the standalone and Reddit clients.
-export const RULES_VERSION = 'daily-1';
-export const RUN_DURATION_MS = 75_000;
-export const WAVE_SLOT_MS = 3000;
-export const WAVE_COUNT = RUN_DURATION_MS / WAVE_SLOT_MS;
+export const RULES_VERSION = 'survival-1';
+export const SHIELD_RADIUS = 132;
+export const METEOR_SPAWN_RADIUS = 218;
 export const PERFECT_WINDOW_MS = 120;
 export type TimingGrade = 'perfect' | 'good' | 'early' | 'late';
 export type MeteorSpec = {
@@ -11,6 +10,7 @@ export type MeteorSpec = {
   chargeStartMs: number;
   burnMs: number;
   kind: 'normal' | 'fast' | 'heavy';
+  recoveryMs: number;
 };
 export type Meteor = MeteorSpec & {
   mass: number;
@@ -20,8 +20,8 @@ export type Meteor = MeteorSpec & {
   firing: boolean;
 };
 export type RunEvent =
-  | { type: 'clear'; grade: TimingGrade; points: number; overdrive: boolean; sector: number }
-  | { type: 'impact'; damage: number; sector: number }
+  | { type: 'clear'; grade: TimingGrade; points: number; overdrive: boolean; sector: number; point: { x: number; y: number } }
+  | { type: 'impact'; damage: number; sector: number; point: { x: number; y: number } }
   | { type: 'wave'; index: number }
   | { type: 'finish' };
 
@@ -39,17 +39,30 @@ function hash(seed: number, index: number): number {
 }
 
 export function meteorSpec(daySeed: number, index: number): MeteorSpec {
-  // Fixed slots ensure early clears never create extra scoring opportunities.
-  const beat = index % 6;
-  const kind = index < 3 ? 'normal' : beat === 3 ? 'fast' : beat === 5 ? 'heavy' : 'normal';
-  const variance = (hash(daySeed, index) % 5) * 40;
+  const pick = hash(daySeed + 31, index) % 7;
+  const kind = index < 2 ? 'normal' : pick === 6 ? 'heavy' : pick >= 4 ? 'fast' : 'normal';
+  const pressure = Math.min(80, index);
+  const jitter = hash(daySeed, index) % 401 - 200;
+  const durationMs = index < 2 ? 3000 : kind === 'heavy' ? Math.max(1800, 3450 - pressure * 18 + jitter) :
+    kind === 'fast' ? Math.max(1050, 1950 - pressure * 14 + jitter / 2) : Math.max(1350, 3000 - pressure * 22 + jitter);
   return {
-    sector: hash(daySeed + 7919, index) % 6,
-    kind,
-    durationMs: kind === 'heavy' ? 2800 : kind === 'fast' ? 2200 : 2600,
-    chargeStartMs: (kind === 'heavy' ? 1100 : kind === 'fast' ? 700 : 900) + variance,
-    burnMs: kind === 'heavy' ? 900 : kind === 'fast' ? 500 : 680,
+    sector: hash(daySeed + 7919, index) % 6, kind, durationMs,
+    chargeStartMs: Math.round(durationMs * (.28 + (hash(daySeed + 97, index) % 11) / 100)),
+    burnMs: kind === 'heavy' ? 900 : kind === 'fast' ? 380 : 620,
+    recoveryMs: (kind === 'heavy' ? 460 : 180) + hash(daySeed + 157, index) % Math.max(150, 500 - pressure * 4),
   };
+}
+
+/** Drawing and damage use this exact geometry. Smaller residual cores travel
+ * farther before contact instead of disappearing at an invisible deadline. */
+export function meteorGeometry(spec: MeteorSpec, elapsedMs: number, mass: number) {
+  const baseRadius = spec.kind === 'heavy' ? 25 : spec.kind === 'fast' ? 13 : 19;
+  const radius = baseRadius * (.35 + .65 * Math.sqrt(Math.max(0, mass) / 100));
+  const speed = (METEOR_SPAWN_RADIUS - SHIELD_RADIUS - baseRadius) / spec.durationMs;
+  const distance = Math.max(0, METEOR_SPAWN_RADIUS - Math.max(0, elapsedMs) * speed);
+  const angle = -Math.PI / 2 + (spec.sector + .5) * Math.PI / 3;
+  return { x: Math.cos(angle) * distance, y: Math.sin(angle) * distance,
+    distance, radius, angle, clearance: distance - radius - SHIELD_RADIUS };
 }
 
 export function judgeTiming(offsetMs: number): TimingGrade {
@@ -58,17 +71,8 @@ export function judgeTiming(offsetMs: number): TimingGrade {
   return offsetMs <= 450 ? 'good' : 'late';
 }
 
-export type ChargeCue = { phase: 'wait' | 'countdown' | 'ready'; count: 0 | 1 | 2 | 3 };
-export function chargeCue(elapsedMs: number, chargeStartMs: number): ChargeCue {
-  if (elapsedMs >= chargeStartMs) return { phase: 'ready', count: 0 };
-  const windowMs = Math.min(1500, chargeStartMs);
-  const remaining = chargeStartMs - elapsedMs;
-  if (remaining > windowMs) return { phase: 'wait', count: 0 };
-  return { phase: 'countdown', count: Math.min(3, Math.ceil(remaining / (windowMs / 3))) as 1 | 2 | 3 };
-}
-
 export function debrisDamage(mass: number): number {
-  return mass <= 0 ? 0 : Math.max(1, Math.ceil(26 * Math.pow(Math.min(100, mass) / 100, 1.2)));
+  return mass <= 0 ? 0 : Math.max(1, Math.ceil(34 * Math.pow(Math.min(100, mass) / 100, 1.2)));
 }
 
 export class DefenseRun {
@@ -88,7 +92,9 @@ export class DefenseRun {
   energy = 0;
   firstMiss: number | null = null;
   finished = false;
-  reason: 'complete' | 'destroyed' | null = null;
+  reason: 'destroyed' | null = null;
+  private waveStartedMs = 0;
+  private nextWaveAt = Infinity;
   private wasHolding = false;
 
   constructor(daySeed: number) {
@@ -96,7 +102,7 @@ export class DefenseRun {
     this.meteor = this.newMeteor(false);
   }
 
-  get waveElapsedMs(): number { return this.elapsedMs - this.waveIndex * WAVE_SLOT_MS; }
+  get waveElapsedMs(): number { return this.elapsedMs - this.waveStartedMs; }
 
   private newMeteor(holding: boolean): Meteor {
     return {
@@ -110,7 +116,7 @@ export class DefenseRun {
   step(deltaMs: number, holding: boolean): RunEvent[] {
     const events: RunEvent[] = [];
     if (this.finished || !Number.isFinite(deltaMs) || deltaMs < 0) return events;
-    let remaining = Math.min(deltaMs, RUN_DURATION_MS - this.elapsedMs);
+    let remaining = deltaMs;
     const m = this.meteor;
     if (m) {
       if (!holding) { m.requireRelease = false; m.firing = false; }
@@ -120,29 +126,29 @@ export class DefenseRun {
     }
     this.wasHolding = holding;
     while (remaining > 0 && !this.finished) {
-      const dt = Math.min(10, remaining, WAVE_SLOT_MS - this.waveElapsedMs);
+      if (!this.meteor && this.elapsedMs >= this.nextWaveAt) {
+        this.waveIndex++;
+        this.waveStartedMs = this.elapsedMs;
+        this.meteor = this.newMeteor(holding);
+        events.push({ type: 'wave', index: this.waveIndex });
+      }
+      const dt = Math.min(10, remaining, this.meteor ? Infinity : this.nextWaveAt - this.elapsedMs);
       const before = this.waveElapsedMs;
       this.elapsedMs += dt;
       remaining -= dt;
       const current = this.meteor;
       if (current) {
         const after = this.waveElapsedMs;
-        const burnTime = Math.max(0, Math.min(after, current.durationMs) - Math.max(before, current.chargeStartMs));
+        const burnTime = Math.max(0, after - Math.max(before, current.chargeStartMs));
         current.firing = holding && !current.requireRelease && burnTime > 0;
         if (current.firing) {
           current.grade ??= current.pressedGrade;
           current.mass = Math.max(0, current.mass - burnTime * 100 / current.burnMs);
         }
         if (current.mass <= .000001) this.clear(current, events);
-        else if (after >= current.durationMs) this.impact(current, events);
+        else if (meteorGeometry(current, after, current.mass).clearance <= 1e-9) this.impact(current, events);
       }
-      if (this.integrity <= 0) this.finish('destroyed', events);
-      else if (this.elapsedMs >= RUN_DURATION_MS) this.finish('complete', events);
-      else if (this.waveElapsedMs >= WAVE_SLOT_MS) {
-        this.waveIndex++;
-        this.meteor = this.newMeteor(holding);
-        events.push({ type: 'wave', index: this.waveIndex });
-      }
+      if (this.integrity <= 0) this.finish(events);
     }
     return events;
   }
@@ -160,8 +166,10 @@ export class DefenseRun {
     const base = grade === 'perfect' ? 200 : grade === 'good' ? 100 : 70;
     const points = Math.round(base * (m.kind === 'heavy' ? 1.5 : 1)) + Math.min(100, (this.combo - 1) * 10) + (overdrive ? 200 : 0);
     this.score += points;
+    const point = meteorGeometry(m, this.waveElapsedMs, m.mass);
     this.meteor = null;
-    events.push({ type: 'clear', grade, points, overdrive, sector: m.sector });
+    this.nextWaveAt = this.elapsedMs + m.recoveryMs;
+    events.push({ type: 'clear', grade, points, overdrive, sector: m.sector, point });
   }
 
   private impact(m: Meteor, events: RunEvent[]): void {
@@ -171,13 +179,15 @@ export class DefenseRun {
     this.combo = 0;
     this.energy = Math.max(0, this.energy - 1);
     this.firstMiss ??= this.waveIndex + 1;
+    const point = meteorGeometry(m, this.waveElapsedMs, m.mass);
     this.meteor = null;
-    events.push({ type: 'impact', damage, sector: m.sector });
+    this.nextWaveAt = this.elapsedMs + Math.max(700, m.recoveryMs);
+    events.push({ type: 'impact', damage, sector: m.sector, point });
   }
 
-  private finish(reason: 'complete' | 'destroyed', events: RunEvent[]): void {
+  private finish(events: RunEvent[]): void {
     this.finished = true;
-    this.reason = reason;
+    this.reason = 'destroyed';
     this.meteor = null;
     events.push({ type: 'finish' });
   }

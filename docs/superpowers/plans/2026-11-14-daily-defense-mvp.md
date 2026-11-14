@@ -1,5 +1,6 @@
 # Daily Defense MVP Implementation Plan
 
+> Archived 2026-11-14: v0.3 fixed-duration gameplay was superseded by v0.4 shield survival after player feedback. These are historical checks/design decisions, not the current gameplay contract. See `docs/survival-verification-2026-11-14.md`.
 **Goal:** Ship the approved single-player daily-defense MVP on top of `20e94cd`.
 
 **Architecture:** Shared deterministic simulator owns run rules and events. Phaser owns audiovisual feedback; a DOM overlay owns accessible controls and local records. Existing Reddit server remains unchanged.

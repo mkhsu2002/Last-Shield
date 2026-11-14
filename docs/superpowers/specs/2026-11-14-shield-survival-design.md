@@ -1,0 +1,10 @@
+# Shield survival revision
+
+Status: implemented and locally verified, 2026-11-14; see `docs/survival-verification-2026-11-14.md` for publication state. Supersedes the fixed-duration daily-defense MVP after MK's hands-on feedback. This revision is authorized for implementation; Reddit initialization/publication is explicitly deferred until development is complete and MK is guided through the platform flow.
+
+- A run ends only when shield integrity reaches zero. Remove the 75-second timer, 25-wave cap and visual/audio numerical countdown. Keep single-button holds, timing grades, combo, overdrive and local records.
+- Show the shield as a dome around the city. Each meteor approaches along its actual sector trajectory. The shared meteorGeometry function supplies both drawing coordinates and collision clearance. Full cores hit only when their edge touches the shield. Melting decreases their radius, so residual cores remain visible and travel farther before actual contact.
+- Generate the next wave after resolving the current meteor and its seeded recovery delay. Vary normal/fast/heavy approach times and intervals; increase pressure with wave count while preserving a viable hold window. First two waves teach the mechanic.
+- Full misses remove 34 integrity; residual mass scales damage. Each hit leaves permanent branching cracks, dims the corresponding city section, resets combo and loses one overdrive charge. Emphasize damage with large HP, fracture audio, glass shards and restrained shake. At zero HP, show a 1.25-second collapse before the results panel.
+- Version records as survival-1 and accept long-run scores/wave counts. Do not compare old fixed-round records with survival runs. Share wave reached and core count without a fixed denominator.
+- Verify contact boundaries, partial residual contact, changing cadence, survival beyond 75 seconds/25 waves, fatal damage, control rearming, overdrive, local-record failure and reduced-motion handling. Inspect desktop/mobile renders before and after impact and during final collapse.
