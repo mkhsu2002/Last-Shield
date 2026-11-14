@@ -87,3 +87,14 @@ export function applyShieldDamage(integrity: number, mass: number): {
   const remaining = Math.max(0, integrity - damage);
   return { integrity: remaining, damage, destroyed: remaining === 0 };
 }
+
+export type ChargeCue = { phase: 'wait' | 'countdown' | 'ready'; count: 0 | 1 | 2 | 3 };
+
+/** The final 1.5s before charging becomes available is a visible 3-2-1 countdown. */
+export function chargeCue(elapsedMs: number, chargeStartMs: number): ChargeCue {
+  if (elapsedMs >= chargeStartMs) return { phase: 'ready', count: 0 };
+  const remaining = chargeStartMs - elapsedMs;
+  if (remaining > 1500) return { phase: 'wait', count: 0 };
+  const count = Math.max(1, Math.min(3, Math.ceil(remaining / 500))) as 1 | 2 | 3;
+  return { phase: 'countdown', count };
+}
