@@ -18,8 +18,8 @@ Verified locally on 2026-11-14. Starting remote commit: `20e94cd` (upstream sync
 ## Release status
 
 - Type check, 16 final tests and both final builds: passed with Node.js 24.20.0. The standalone bundle retains the Phaser size advisory (about 368 kB gzip); no build errors.
-- GitHub main integration/push: pending.
-- Vercel deployment/readback for this MVP: pending. Existing project and production connection were verified through the Vercel connector; the previous READY production deployment was `20e94cd`.
+- GitHub main integration/push: MVP `e96418c` merged and pushed.
+- First Vercel attempt (`e96418c`) was rejected before build because inline ignoreCommand exceeded 256 characters. The command was moved into `scripts/ignore-build.sh`; replacement deployment/readback pending. Previous READY production deployment: `20e94cd`.
 - Reddit upload/authenticated playtest/publication: not performed. Existing server endpoint and backend contract are unchanged.
 - Real touch hardware and human listening: not performed.
 
