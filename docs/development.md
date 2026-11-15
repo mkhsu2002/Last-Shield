@@ -1,6 +1,6 @@
 # 開發與發布參考
 
-Status: 2026-11-14 從 README 移入。v0.46 的 Vercel 證據有效；Reddit v0.47／package 0.47.1 已上傳、送審並安裝至私人測試社群；不代表已具備公開評審存取。後續即時狀態以 `reddit-release-2026-11-14.md` 為準。根目錄 README 會成為 Reddit App Directory 對外說明，因此僅保留玩家與管理員需要的內容。
+Status: 2026-11-14 從 README 移入。v0.46 的 Vercel 段落為歷史證據；目前 Vercel 已部署 v0.47／0.47.1 與政策頁，Reddit v0.47／package 0.47.1 已上傳、送審並安裝至私人測試社群；不代表已具備公開評審存取。後續即時狀態以 `reddit-release-2026-11-14.md` 為準。根目錄 README 會成為 Reddit App Directory 對外說明，因此僅保留玩家與管理員需要的內容。
 
 # 最後防線 · Last Shield
 
@@ -30,7 +30,7 @@ Status: 2026-11-14 從 README 移入。v0.46 的 Vercel 證據有效；Reddit v0
 
 ## 政策頁與網域
 
-- `public/terms/index.html` 與 `public/privacy/index.html` 由 Vite 複製到 standalone 輸出，分別提供 `/terms/`、`/privacy/`；正式連結使用 `https://last-shield.vercel.app`。
+- `public/terms/index.html` 與 `public/privacy/index.html` 由 Vite 複製到 standalone 輸出，分別提供 `/terms/`、`/privacy/`；正式連結使用 `https://last-shield.vercel.app`；兩頁均匿名 HTTP 200 且與原始檔相同，Reddit Directory listing 已儲存並重新載入驗證。
 - MK 指定未來使用 `neobabylon.app`，本輪不變更 DNS、不宣稱已綁定。網域切換時須先驗證政策頁，再同步 Reddit Developer Settings、README 與本文件，舊政策網址仍應可存取或有正確轉址。
 
 ## 開發與檔案

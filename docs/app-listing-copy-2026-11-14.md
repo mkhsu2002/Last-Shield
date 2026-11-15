@@ -1,6 +1,6 @@
 # App Directory 欄位與政策草稿｜2026-11-14
 
-狀態：MK 已授權將政策頁上線並儲存 Reddit 設定。公開頁正文以 `public/terms/index.html`、`public/privacy/index.html` 為準；本文件保留原始文案供對照。部署與儲存結果以 `reddit-release-2026-11-14.md` 的實際讀回紀錄為準。
+狀態：MK 已授權將政策頁上線並儲存 Reddit 設定。公開頁正文以 `public/terms/index.html`、`public/privacy/index.html` 為準；本文件保留原始文案供對照。兩頁已正式上線且匿名 HTTP 200、內容比對一致；官方 API 已儲存，Developer Settings 重新載入確認四個公開欄位正確、NSFW false。詳細證據見 `reddit-release-2026-11-14.md`。
 
 ## Directory listing
 
@@ -16,9 +16,9 @@ Last Shield
 Defend Neo Babylon with one-button timing. Hold to shatter meteors, chain perfect clears, and unleash Overdrive when the storm closes in. Play directly on Reddit.
 ```
 
-**Terms and conditions**：`https://last-shield.vercel.app/terms/`（正式開啟驗證後再儲存）。
+**Terms and conditions**：`https://last-shield.vercel.app/terms/`（已驗證並儲存）。
 
-**Privacy policy**：`https://last-shield.vercel.app/privacy/`（正式開啟驗證後再儲存）。
+**Privacy policy**：`https://last-shield.vercel.app/privacy/`（已驗證並儲存）。
 
 **Is this app NSFW?**：保持關閉。
 
