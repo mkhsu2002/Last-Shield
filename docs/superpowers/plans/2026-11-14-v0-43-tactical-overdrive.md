@@ -1,5 +1,7 @@
 # v0.43 實作安排
 
+> Archived 2026-11-14：v0.44 已取代時機與前段難度，以下為 v0.43 歷史安排。
+
 Authorized: MK requests meaningful pressure, understandable precision and optional manual special use. Work inline in the existing checkout on `codex/last-shield-v0-43`.
 
 - [x] Write failing tests for banking/manual spending, empty/paused/repeat safety, 4–6-core early storms and same-crisis decision outcomes. Retain physical contact, timing/grade locks and render partition tests.

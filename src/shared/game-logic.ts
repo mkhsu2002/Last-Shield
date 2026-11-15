@@ -1,8 +1,9 @@
 // Deterministic rules shared by the standalone and Reddit clients.
-export const RULES_VERSION = "survival-4";
+export const RULES_VERSION = "survival-5";
 export const SHIELD_RADIUS = 132;
 export const METEOR_SPAWN_RADIUS = 218;
-export const PERFECT_WINDOW_MS = 120;
+export const PERFECT_WINDOW_MS = 180;
+export const RETRY_INTERVAL_MS = 1000;
 export type TimingGrade = "perfect" | "good" | "early" | "late";
 export type StormPhase = "approach" | "surge" | "breaker" | "respite" | "storm";
 export type Mistakes = {
@@ -31,10 +32,10 @@ export function beamPower(grade: TimingGrade): number {
   return grade === "perfect"
     ? 3
     : grade === "early"
-    ? 0.55
+    ? 0.85
     : grade === "late"
-    ? 0.75
-    : 1;
+    ? 1
+    : 1.15;
 }
 export type MeteorSpec = {
   sector: number;
@@ -69,7 +70,7 @@ export type RunEvent =
       sector: number;
       point: { x: number; y: number };
     }
-  | { type: "engage"; grade: TimingGrade; offsetMs: number }
+  | { type: "engage"; grade: TimingGrade; offsetMs: number; retained?: boolean }
   | { type: "overdrive"; cleared: number }
   | { type: "wave"; index: number }
   | { type: "finish" };
@@ -119,7 +120,9 @@ export function meteorSpec(daySeed: number, index: number): MeteorSpec {
       ? Math.max(1350, 2150 - index * 12 + jitter)
       : Math.max(1500, 2700 - index * 18 + jitter);
   const durationMs = Math.round(
-    flight * scale + (phase === "respite" ? 350 : 0)
+    flight * scale * (1 + 0.25 * Math.max(0, 1 - index / 24)) +
+      (phase === "respite" ? 350 : 0) +
+      (phase === "storm" ? 600 * Math.max(0, 1 - index / 24) : 0)
   );
   return {
     sector: hash(daySeed + 7919, index) % 6,
@@ -147,8 +150,8 @@ export function volleySpecs(daySeed: number, index: number): MeteorSpec[] {
       : phase === "respite"
       ? 1
       : phase === "storm"
-      ? Math.min(6, 4 + Math.floor(index / 18))
-      : Math.min(5, (phase === "surge" ? 3 : 2) + Math.floor(level / 2));
+      ? Math.min(6, index < 11 ? 3 : 4 + Math.floor(index / 18))
+      : Math.min(5, (phase === "surge" && index >= 5 ? 3 : 2) + Math.floor(level / 2));
   const first = meteorSpec(daySeed, index),
     result = [first];
   // Sky sectors are distinct; neither arrival nor readiness waits for a previous clear.
@@ -228,10 +231,17 @@ export function contactInMs(
   return Math.max(0, meteorGeometry(spec, elapsedMs, mass).clearance / speed);
 }
 
+/** Nearest recurring gold window, shared by input, HUD and target rings. */
+export function timingOffset(spec: MeteorSpec, elapsedMs: number): number {
+  const sinceFirst = elapsedMs - spec.chargeStartMs;
+  const cycle = Math.max(0, Math.round(sinceFirst / RETRY_INTERVAL_MS));
+  return sinceFirst - cycle * RETRY_INTERVAL_MS;
+}
+
 export function judgeTiming(offsetMs: number): TimingGrade {
   if (offsetMs < -PERFECT_WINDOW_MS) return "early";
   if (offsetMs <= PERFECT_WINDOW_MS) return "perfect";
-  return offsetMs <= 450 ? "good" : "late";
+  return offsetMs <= 400 ? "good" : "late";
 }
 
 export function debrisDamage(mass: number): number {
@@ -328,22 +338,29 @@ export class DefenseRun {
         m.firing = false;
         m.requireRelease = false;
       }
-      this.selectedId = null;
+      // Keep the live target so a corrective re-press resumes the same core.
     } else if (!this.wasHolding && !this.needsRelease) {
       const target = this.meteors.find((m) => m.id === targetId) ?? this.meteor;
       if (target) {
         this.selectedId = target.id;
-        if (target.grade === null) {
-          const offsetMs = this.waveElapsedMs - target.chargeStartMs;
-          target.pressedGrade = judgeTiming(offsetMs);
-          events.push({ type: "engage", grade: target.pressedGrade, offsetMs });
-        }
+        const offsetMs = timingOffset(target, this.waveElapsedMs);
+        const candidate = judgeTiming(offsetMs);
+        const retained =
+          target.grade !== null && beamPower(target.grade) >= beamPower(candidate);
+        target.pressedGrade = retained ? target.grade! : candidate;
+        if (target.grade !== null) target.grade = target.pressedGrade;
+        events.push({
+          type: "engage",
+          grade: target.pressedGrade,
+          offsetMs,
+          ...(retained ? { retained: true } : {}),
+        });
       } else this.needsRelease = true;
     }
     this.wasHolding = holding;
     let remaining = deltaMs;
-    while (remaining > 0 && !this.finished) {
-      if (!this.meteors.length && this.elapsedMs >= this.nextWaveAt) {
+    while (remaining > 1e-7 && !this.finished) {
+      if (!this.meteors.length && this.elapsedMs + 1e-7 >= this.nextWaveAt) {
         this.waveIndex++;
         this.waveStartedMs = this.elapsedMs;
         this.meteors = this.newVolley(holding);
@@ -357,7 +374,7 @@ export class DefenseRun {
       const beam = this.meteors.find((m) => m.id === this.selectedId);
       if (beam && holding && !this.needsRelease) {
         const untilReady = beam.chargeStartMs - this.waveElapsedMs;
-        if (untilReady > 0) dt = Math.min(dt, untilReady);
+        if (untilReady > 1e-7) dt = Math.min(dt, untilReady);
         else {
           const grade = beam.grade ?? beam.pressedGrade;
           // Resolve the exact clear boundary across different screen frame rates.

@@ -55,8 +55,8 @@ export function retryAdvice(run: {
   if (run.mistakes[dominant] > 0) {
     return {
       unarmed: "擊碎一顆後先放開，再按住攻擊下一顆；一直按住不會自動換目標。",
-      released: "按住直到核心爆裂再放開；縮小的隕石仍會撞傷護盾。",
-      late: "試著早一點，在圓環變金色時按住；完美起手有 3 倍光束，擊碎後超載 +1。",
+      released: "融解進度會保留；金色循環時可放開重按補救，再按到核心爆裂。",
+      late: "金色每秒循環；錯過可等下一輪重按補救。完美光束 3 倍，擊碎後超載 +1。",
       untouched: "鎖定圓環變金色時，按住發射。系統會替你鎖定最危險的隕石。",
     }[dominant];
   }

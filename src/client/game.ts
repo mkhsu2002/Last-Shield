@@ -9,6 +9,7 @@ import {
   meteorGeometry,
   contactInMs,
   PERFECT_WINDOW_MS,
+  timingOffset,
 } from "../shared/game-logic";
 import type { RunEvent } from "../shared/game-logic";
 import { SynthAudio } from "./audio";
@@ -320,11 +321,13 @@ class ShieldScene extends Phaser.Scene {
     if (event.type === "engage") {
       const offset = Math.abs(event.offsetMs / 1000).toFixed(2);
       const label =
-        event.grade === "perfect"
-          ? "完美起手！光束 3 倍"
+        event.retained
+          ? "接續光束 · 保留較佳判定"
+          : event.grade === "perfect"
+          ? "完美命中！光束 3 倍"
           : event.offsetMs < 0
           ? `早了 ${offset} 秒 · 等金色再按會更強`
-          : `慢了 ${offset} 秒 · 本次不是完美起手`;
+          : `慢了 ${offset} 秒 · 可等下一輪金色，放開重按補救`;
       this.feedback(label, event.grade === "perfect" ? "perfect" : "normal");
       if (event.grade === "perfect") this.audio.tone(990, 1480, 0.12, 0.06);
     } else if (event.type === "overdrive") {
@@ -364,8 +367,8 @@ class ShieldScene extends Phaser.Scene {
         text(
           "practice-explanation",
           perfect
-            ? "你在金色重合時按下，用 3 倍光束擊碎了核心，並得到 1 格能量。正式守城的金色時機不會停留；抓準它，將超載留給真正的危機。"
-            : "提早按住仍能攻擊，但光束很弱。再練一次：等圓環與下方指標變成金色，再按住直到核心擊碎。"
+            ? "你在金色重合時按下，用 3 倍光束擊碎了核心，並得到 1 格能量。正式守城的金色時機會循環；錯過可等下一輪，放開重按補救，將超載留給真正的危機。"
+            : "提早按住仍能攻擊，也可等下一輪金色放開重按，進度保留。再練一次：等圓環與下方指標變成金色，再按住直到核心擊碎。"
         );
       }
     } else if (event.type === "impact") {
@@ -644,7 +647,7 @@ class ShieldScene extends Phaser.Scene {
     const goal = milestone(run.cleared);
     text("milestone", `擊碎 ${run.cleared}／${goal.target} 顆`);
     element("milestone-fill").style.width = `${goal.progress * 10}%`;
-    const offset = m ? run.waveElapsedMs - m.chargeStartMs : -600;
+    const offset = m ? timingOffset(m, run.waveElapsedMs) : -600;
     const perfect = !!m && Math.abs(offset) <= PERFECT_WINDOW_MS;
     ui.dataset.timing = perfect
       ? "perfect"
@@ -688,19 +691,24 @@ class ShieldScene extends Phaser.Scene {
           m.grade === "perfect"
             ? "完美光束 ×3"
             : m.grade === "early"
-            ? "偏早光束 ×0.55"
+            ? "偏早光束 ×0.85"
             : m.grade === "late"
-            ? "遲發光束 ×0.75"
-            : "普通光束 ×1"
+            ? "遲發光束 ×1"
+            : "普通光束 ×1.15"
         } ${Math.round(100 - m.mass)}%`
       );
       text(
         "cue-help",
         m.grade === "perfect"
           ? "完美起手！按到擊碎，超載 +1。"
-          : "本次起手不是完美。仍可融解、減少撞擊傷害。"
+          : perfect
+          ? "補救時機！放開再按，融解進度保留。"
+          : "可在下一輪金色放開重按，改善光束；進度保留。"
       );
-      text("fire-label", "保持按住");
+      text(
+        "fire-label",
+        perfect && m.grade !== "perfect" ? "放開再按補救" : "保持按住"
+      );
       text("fire-detail", "擊碎後再放開");
     } else if (perfect) {
       text("cue", "完美時機，現在按住！");
@@ -713,12 +721,12 @@ class ShieldScene extends Phaser.Scene {
       text("fire-label", "按住發射");
       text("fire-detail", "提早按住是弱光束");
     } else {
-      text("cue", "完美時機已過，仍可攔截");
+      text("cue", "這輪錯過了，還能補救");
       text(
         "cue-help",
         run.energy === 3 && run.meteors.length >= 3
           ? "多顆同步逼近，可手動超載救急。"
-          : "仍可按住融解；下次等金色重合再起手。"
+          : "金色每秒再來一次；可先融解，再放開重按補救。"
       );
       text("fire-label", "按住攔截");
       text("fire-detail", "普通攻擊不消耗超載");

@@ -2,9 +2,10 @@ import {
   DefenseRun,
   contactInMs,
   stormPhase,
+  timingOffset,
 } from "../src/shared/game-logic.ts";
 
-export type Strategy = "bank" | "early" | "never" | "hold-early";
+export type Strategy = "bank" | "early" | "never" | "hold-early" | "retry";
 export function simulateDefense(
   day: number,
   strategy: Strategy,
@@ -35,7 +36,7 @@ export function simulateDefense(
       ...run.meteors.map((m) => contactInMs(m, run.waveElapsedMs, m.mass))
     );
     const emergency =
-      strategy === "bank" &&
+      (strategy === "bank" || strategy === "retry") &&
       stormPhase(run.waveIndex) === "storm" &&
       nearest <= 350;
     const spendEarly = strategy === "early" && run.waveIndex >= 3;
@@ -43,14 +44,17 @@ export function simulateDefense(
       run.activateOverdrive(held);
       run.step(0, false);
       held = false;
+    } else if (target && held && strategy === "retry" && target.grade !== "perfect" && Math.abs(timingOffset(target, run.waveElapsedMs)) <= 80) {
+      run.step(0, false);
+      run.step(0, true);
     } else if (target && !held && !target.requireRelease) {
       const saveForStorm =
-        strategy === "bank" &&
+        (strategy === "bank" || strategy === "retry") &&
         stormPhase(run.waveIndex) === "storm" &&
         run.energy === 3;
       if (
         !saveForStorm &&
-        (strategy === "hold-early" || run.waveElapsedMs >= target.chargeStartMs)
+        (strategy === "hold-early" || run.waveElapsedMs >= target.chargeStartMs + (strategy === "retry" ? 350 : 0))
       ) {
         run.step(0, true);
         held = true;
@@ -82,7 +86,7 @@ if (process.argv[1]?.endsWith("balance-sim.ts")) {
   console.log(
     JSON.stringify(
       days.flatMap((day) =>
-        (["bank", "early", "never", "hold-early"] as Strategy[]).map(
+        (["bank", "early", "never", "hold-early", "retry"] as Strategy[]).map(
           (strategy) => simulateDefense(day, strategy)
         )
       ),

@@ -1,5 +1,7 @@
 # v0.43 — 主動超載與真正的碎星危機
 
+> Archived 2026-11-14：v0.44 已取代單次窗口、鎖定判定與前段難度；以下保留 v0.43 的歷史證據，不代表目前玩法。
+
 Status: implemented and production-verified as v0.43, 2026-11-14; authorized by MK's gameplay feedback. Replaces v0.42 survival-3 scheduling, passive overdrive and precision presentation. Sound and established Chinese visual direction are accepted and retained.
 
 ## Cause and design

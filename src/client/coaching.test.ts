@@ -21,7 +21,7 @@ test("advice follows actual impact causes ahead of successful timing grades", ()
   );
   assert.match(
     retryAdvice({ ...base, mistakes: { ...base.mistakes, late: 2 } }),
-    /早一點/
+    /下一輪重按補救/
   );
   assert.match(
     retryAdvice({ ...base, mistakes: { ...base.mistakes, untouched: 2 } }),

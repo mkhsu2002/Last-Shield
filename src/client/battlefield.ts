@@ -3,6 +3,7 @@ import {
   meteorGeometry,
   SHIELD_RADIUS,
   PERFECT_WINDOW_MS,
+  timingOffset,
   contactInMs,
 } from "../shared/game-logic";
 import type { DefenseRun, Meteor } from "../shared/game-logic";
@@ -225,9 +226,9 @@ function core(g: Graphics, m: Meteor, state: State): void {
     y = FIELD.y + geometry.y,
     radius = geometry.radius;
   const target = run.meteor === m;
-  const offset = elapsed - m.chargeStartMs;
+  const offset = timingOffset(m, elapsed);
   const ready =
-    (m.grade === null && Math.abs(offset) <= PERFECT_WINDOW_MS) ||
+    (Math.abs(offset) <= PERFECT_WINDOW_MS) ||
     (m.firing && m.grade === "perfect");
   const angle = geometry.angle;
   const color = m.grade === "perfect" ? GOLD : target ? CYAN : CORAL;
@@ -284,7 +285,7 @@ function core(g: Graphics, m: Meteor, state: State): void {
   }
   // Only the selected core carries a bright timing ring; others have quieter brackets.
   if (target) {
-    const progress = Math.min(1, elapsed / m.chargeStartMs);
+    const gap = 28 * Math.max(0, Math.min(1, -offset / 600));
     const timingColor = ready
       ? GOLD
       : offset > PERFECT_WINDOW_MS
@@ -293,7 +294,7 @@ function core(g: Graphics, m: Meteor, state: State): void {
     g.lineStyle(1, timingColor, 0.5);
     g.strokeCircle(x, y, radius + 11);
     g.lineStyle(ready ? 3 : 2, timingColor, 0.95);
-    g.strokeCircle(x, y, radius + 11 + (ready ? 0 : 28 * (1 - progress)));
+    g.strokeCircle(x, y, radius + 11 + (ready ? 0 : gap));
     for (let i = 0; i < 4; i++) {
       const a = (i * TAU) / 4;
       g.lineStyle(2, timingColor, 0.9);
