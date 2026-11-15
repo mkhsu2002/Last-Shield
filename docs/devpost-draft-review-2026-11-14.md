@@ -1,5 +1,7 @@
 # Devpost 草稿與提交前檢討｜2026-11-14
 
+> 歷史快照：以下記錄送出前的草稿狀態。同日後續 MK 已親自提交成功，最新狀態為 SUBMITTED、5/5；見 [提交後確認](devpost-submission-confirmation-2026-11-14.md)。
+
 ## 外部平台狀態
 
 查核日期：2026-11-14，America/Vancouver。僅準備並儲存草稿，agent 未操作條款核取方塊或正式提交。

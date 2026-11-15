@@ -42,7 +42,7 @@
 - 2026-11-14 已經由 Reddit 官方社群類型變更介面提交公開要求，API 讀回 `public`、2 名成員、非 NSFW；原有內容與單一貼文保留。舊第三方 API 雖回成功但未改變類型，未將該回應誤標完成。
 - MK 親自完成新未登入 context 的真人驗證後，原生 trusted click 開啟 Devvit 0.47.1 splash → game，英文 v0.47。完美練習完成、正式長按擊碎得分 100 並進入 wave 2、100% 護盾、暫停／捲動後繼續均可操作。
 - `docs/media/last-shield-v0.47-reddit-gameplay.png` 為此輪未登入真實遊玩截圖；沒有合成或改分。
-- 完整英文文案、必要連結、評審步驟與剩餘人工確認，見 `devpost-submission-2026-11-14.md`。Devpost 草稿已於同日後續填妥，4/5 步，尚未正式送件；見 `devpost-draft-review-2026-11-14.md`。
+- 完整英文文案、必要連結、評審步驟與剩餘人工確認，見 `devpost-submission-2026-11-14.md`。Devpost 已於同日由 MK 親自正式送出，讀回 SUBMITTED、5/5；見 `devpost-submission-confirmation-2026-11-14.md`。
 - 根 README 已補原生貼文、社群與 listing 連結、每日重玩、分享、本機紀錄及開發方式。文件變更不建立新遊戲版本、不觸發完整建置。
 - 評審存取保留至 2026-12-16 18:00 PST；未建立關閉排程、付費限制或配額，也未建立持續監控任務。正式送件前仍需再次確認成員數。
 
@@ -57,5 +57,5 @@
 - 本輪已完成 39 秒英文 Reddit 原生連續實玩，從貼文啟動、完美接力到手動 Overdrive，包含原始音效，未改遊戲分數或時間。
 - MK 指定 NeoBabylon／M.K. Said，並明確授權使用當前管理員身分上傳；已發布至 @neobabylon-mk，而非 M.K. 暢談古往今來頻道。
 - 正式公開影片：https://www.youtube.com/watch?v=LVJTJTfkgRk ，video ID LVJTJTfkgRk。YouTube Studio 已發布提示／清單公開狀態、匿名 oEmbed 200、觀看頁實際播放均已讀回；著作權檢查當下無問題。
-- README、Devpost 英文提交包、`demo/v0.47/README.md` 與 publication JSON 已同步。Devpost 尚未正式提交；本輪沒有宣稱已送件。
+- README、Devpost 英文提交包、`demo/v0.47/README.md` 與 publication JSON 已同步。影片發布時尚未送件；同日後續已由 MK 親自提交，見提交後確認紀錄。
 - 本輪只有媒體／文件與外部影片狀態變更，維持遊戲 v0.47／package 0.47.1，文件變更不觸發遊戲部署。
