@@ -1,6 +1,6 @@
 # 開發與發布參考
 
-Status: 2026-11-14 從 README 移入。v0.46 的 Vercel 證據有效；Reddit 首次發布正準備為 v0.47，尚未上傳／安裝／送審。後續即時狀態以 `reddit-release-2026-11-14.md` 為準。根目錄 README 會成為 Reddit App Directory 對外說明，因此僅保留玩家與管理員需要的內容。
+Status: 2026-11-14 從 README 移入。v0.46 的 Vercel 證據有效；Reddit v0.47／package 0.47.1 已上傳、送審並安裝至私人測試社群；不代表已具備公開評審存取。後續即時狀態以 `reddit-release-2026-11-14.md` 為準。根目錄 README 會成為 Reddit App Directory 對外說明，因此僅保留玩家與管理員需要的內容。
 
 # 最後防線 · Last Shield
 
@@ -27,6 +27,11 @@ Status: 2026-11-14 從 README 移入。v0.46 的 Vercel 證據有效；Reddit �
 
 另外以相同實際鍵盤節奏、無模擬時鐘在 390×844 瀏覽器比較：看見金色後等 120ms、按住 520ms、放開 160ms，不用超載。v0.44 首場碎星潮後剩 66%；v0.45 三顆皆完美擊破，剩 100%。三顆大型核心的壓力案例也以逐顆擊碎／放開 180ms 再按驗證，能保留滿盾。
 這些是可重現的壓力與選擇差異，不代表主觀遊戲性已通過 MK 的實際試玩。
+
+## 政策頁與網域
+
+- `public/terms/index.html` 與 `public/privacy/index.html` 由 Vite 複製到 standalone 輸出，分別提供 `/terms/`、`/privacy/`；正式連結使用 `https://last-shield.vercel.app`。
+- MK 指定未來使用 `neobabylon.app`，本輪不變更 DNS、不宣稱已綁定。網域切換時須先驗證政策頁，再同步 Reddit Developer Settings、README 與本文件，舊政策網址仍應可存取或有正確轉址。
 
 ## 開發與檔案
 

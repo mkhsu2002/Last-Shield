@@ -29,6 +29,10 @@ Each UTC day has a shared meteor sequence. Your best score and language choice a
 
 After installing Last Shield, open your community menu and choose **Create a Last Shield game post** to create a playable post. Players open the post and select **Start defending** to play.
 
+## Terms and privacy
+
+Read the [Terms and Conditions](https://last-shield.vercel.app/terms/) and [Privacy Policy](https://last-shield.vercel.app/privacy/) for Last Shield.
+
 ## Credits
 
 Last Shield is set in the original Neo Babylon world. Rights to the original world, characters, artwork and audiovisual assets remain with their creators.
