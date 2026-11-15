@@ -1,6 +1,6 @@
 # 開發與發布參考
 
-Status: 2026-11-14 從 README 移入。v0.46 的 Vercel 段落為歷史證據；目前 Vercel 已部署 v0.47／0.47.1 與政策頁，Reddit v0.47／package 0.47.1 已上傳、送審並安裝至私人測試社群；不代表已具備公開評審存取。後續即時狀態以 `reddit-release-2026-11-14.md` 為準。根目錄 README 會成為 Reddit App Directory 對外說明，因此僅保留玩家與管理員需要的內容。
+Status: 2026-11-14 從 README 移入。v0.46 的 Vercel 段落為歷史證據；目前 Vercel 已部署 v0.47／0.47.1 與政策頁，Reddit v0.47／package 0.47.1 已核准為公開版本並安裝；r/last_shield_dev 已公開，未登入原生實玩驗證通過，詳見 `devpost-submission-2026-11-14.md`。後續即時狀態以 `reddit-release-2026-11-14.md` 為準。根目錄 README 會成為 Reddit App Directory 對外說明，因此僅保留玩家與管理員需要的內容。
 
 # 最後防線 · Last Shield
 
@@ -48,7 +48,7 @@ npm run build
 
 開發獨立站：`npx vite --config vite.standalone.config.ts`。
 建置預覽：`npx vite preview --config vite.standalone.config.ts --host 127.0.0.1 --port 4173`。
-Reddit 仍待完成正式平台導入；不要用 scaffold 覆蓋此專案。
+Reddit 已完成 Devvit 0.47.1 安裝與公開貼文驗證；不要用 scaffold 覆蓋此專案。
 
 - `src/shared/game-logic.ts`：日期序列、多顆波次、鎖定、融解、碰撞、能量與得分，無 Phaser／Reddit 依賴。
 - `src/client/battlefield.ts`：城市／護盾／隕石／光束與多個同時發生的特效。繪製使用與碰撞相同的幾何。
@@ -60,19 +60,19 @@ Reddit 仍待完成正式平台導入；不要用 scaffold 覆蓋此專案。
 - `scripts/balance-sim.ts`：重現策略、危機損傷及能量使用差異的診斷器。
 - `src/client/records.ts`：可容錯的本機紀錄驗證與儲存。
 - `src/client/version.ts`：由 package.json 產生公開版號。
-- `src/server/index.ts`：既有 Reddit 管理員建文端點；此次未修改、未發布 Reddit 後端。
+- `src/server/index.ts`：Reddit 管理員建文端點；0.47.1 已使用 post.permalink 並與 client／permissions 同步部署安裝。
 
 ## 發布與驗證
 
 Vercel 專案 `last-shield` 連接 GitHub `main`，正式站為 [last-shield.vercel.app](https://last-shield.vercel.app)。`vercel.json` 建置獨立前端，`scripts/ignore-build.sh` 對照前次部署 SHA，文件變更會跳過建置。沒有 cron 或 GitHub Actions。
 
-即時狀態見 [v0.46 驗證紀錄](v0-46-verification-2026-11-14.md)。[v0.45](v0-45-verification-2026-11-14.md)、[v0.44](v0-44-verification-2026-11-14.md)、[v0.43](v0-43-verification-2026-11-14.md)、[v0.42](v0-42-verification-2026-11-14.md)、[v0.41](v0-41-verification-2026-11-14.md)、[v0.40](survival-verification-2026-11-14.md) 與 [v0.3](mvp-verification-2026-11-14.md) 均是歷史版本，不代表新規則。
+即時狀態見 [Reddit 發布紀錄](reddit-release-2026-11-14.md) 與 [Devpost 提交包](devpost-submission-2026-11-14.md)。[v0.46 驗證紀錄](v0-46-verification-2026-11-14.md)、[v0.45](v0-45-verification-2026-11-14.md)、[v0.44](v0-44-verification-2026-11-14.md)、[v0.43](v0-43-verification-2026-11-14.md)、[v0.42](v0-42-verification-2026-11-14.md)、[v0.41](v0-41-verification-2026-11-14.md)、[v0.40](survival-verification-2026-11-14.md) 與 [v0.3](mvp-verification-2026-11-14.md) 均是歷史版本，不代表新規則。
 
-本次無後端 schema、migration、RPC、API 格式、Function、排程或 provider secret 變更，正式獨立站為靜態前端。Reddit 尚未初始化／上傳／發布，建置成功不代表已上線 Reddit。沒有跨裝置帳號、全球排行榜、伺服器驗證分數、城市共建或追蹤分析。真實 iOS／Android 與人工試聽仍待確認；瀏覽器音效輸出／波形通過不代表主觀聽感已驗收。Phaser 套件大小提示與先前記錄的 Devvit CLI 間接依賴 advisories 仍存在。
+正式獨立站為靜態前端；Reddit 0.47.1 的 client、server 與 permissions 已完整部署安裝，公開貼文已由未登入玩家實際啟動。未加入 schema／migration、外部 API、排程或 provider secret。沒有跨裝置帳號、全球排行榜、伺服器驗證分數、城市共建或追蹤分析。真實 iOS／Android 與人工試聽仍待確認；瀏覽器音效輸出／波形通過不代表主觀聽感已驗收。Phaser 套件大小提示見 v0.47 建置紀錄；Devvit CLI 間接依賴 advisories 為前版紀錄，本輪未重新稽核。
 
 ## 版本規則
 
-每個完成驗證並推送的新遊戲版本增加 **v0.01**：v0.40 → v0.41 → v0.42 → v0.43 → v0.44 → v0.45 → v0.46。`package.json` 以 `0.46.0` 對應 v0.46，UI、Reddit 開場與分享共用該來源，發布建立相同 Git tag。文件驗證補記不另升遊戲版本；計分／玩法變動須隔離 `RULES_VERSION`，避免比較不相容紀錄。
+每個完成驗證並推送的新遊戲版本增加 **v0.01**：v0.40 → v0.41 → v0.42 → v0.43 → v0.44 → v0.45 → v0.46 → v0.47。`package.json` 以 `0.47.1` 對應 v0.47（首次 Reddit 發布同批修補），UI、Reddit 開場與分享共用該來源，發布建立相同 Git tag。文件驗證補記不另升遊戲版本；計分／玩法變動須隔離 `RULES_VERSION`，避免比較不相容紀錄。
 
 ## 原創權利
 
