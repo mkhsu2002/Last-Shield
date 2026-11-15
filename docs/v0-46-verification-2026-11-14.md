@@ -22,6 +22,11 @@
 
 ## 發布狀態
 
-待 main／tag v0.46 推送後讀回 Vercel 來源、正式 alias、公開資產 SHA-256 與即時語言切換。
+- main 已 fast-forward 合併並推送 `424ba5fc6a6f68ae7769fb3cf1b1586f854c5bc7`；annotated tag v0.46 指向相同遊戲版本並已推送。
+- Vercel API 讀回 `dpl_H1tZcqaDbSV9bTXEVV9CjuJ52eBB` 為 READY，來源為該 main SHA，alias 包含 last-shield.vercel.app。
+- 公開 HTML 初始 lang=en／英文標題；JS `/assets/index-p5KStfCe.js` SHA-256 `fd86a21608aab203f6ccc1116ac68308e5ccf7bd5be69648d5ccbac552270139`，CSS `/assets/index-VaoL6ipG.css` SHA-256 `92a23308750a17ef46c35a49f26214ed9ae915ca8506a1e1040a368b82fb7571`，均與本機最終建置完全相同。
+- 正式站 390×844 可見 v0.46、預設 en／Start defending；切繁中後重載仍為 zh-Hant／開始守城。切回英文完成練習，標題 That’s a perfect lock.。正式一顆完美擊碎回饋 Perfect clear · Charge +1 +200，暫停切繁中顯示中文，200 分未改；英文可見與所有 ARIA 掃描無殘留漢字（語言選項繁中除外）。
+- 最佳紀錄字串未改，沒有完成正式測試局；驗證後還原測試前語言偏好並重載回開場。正式與本機 console 無 ERROR／WARNING。
+- 發布證據補記為 docs-only，既有 skip-build gate 返回 0，不另升遊戲版本。
 
 僅靜態獨立站發布；Reddit 尚未初始化／上傳／發布。既有 Phaser bundle 大小提示仍存在。真實手機硬體主觀手感沿用待確認狀態，本輪沒有重新人工試聽。

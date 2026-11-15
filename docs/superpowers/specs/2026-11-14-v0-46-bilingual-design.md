@@ -1,6 +1,6 @@
 # v0.46 雙語介面
 
-Status: implemented and locally verified; production pending, 2026-11-14. MK requests English or bilingual support, default English. Existing release authorization applies.
+Status: implemented and production-verified as v0.46, 2026-11-14. MK requests English or bilingual support, default English. Existing release authorization applies.
 
 - English on first use even with a Chinese browser locale. EN／繁中 selector available throughout game phases, persists a valid local preference when storage permits. Runtime switching updates copy without remounting/resetting gameplay; storage denial must not block session switching.
 - Source-language keyed local catalog covers static text, numeric/nested dynamic cues, coaching, energy, practice, pause, result/error/status text, share/clipboard fallback, ARIA, document language/title/description and Reddit splash. No network translation or provider/API/backend changes.
