@@ -37,5 +37,8 @@
     "http": {
       "enable": false
     }
+  },
+  "dev": {
+    "subreddit": "last_shield_dev"
   }
 }
