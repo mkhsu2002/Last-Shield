@@ -51,3 +51,11 @@
 - 依 MK 後續要求，已完成四項素材、短文案、分類與社群入口，透過官方 API SaveChanges、SubmitForReview，重新載入 portal 與 GetDisplay 核對。
 - Game → Arcade／Action／Daily；主影片為本輪 v0.47 真實連續 12 秒遊玩，1500 × 1000、25 fps、靜音，704,924 bytes。其餘圖片依編輯器尺寸要求完成，逐張肉眼檢查。
 - 素材審核 request 62c5467b-2a88-48f4-91d4-6eac5ecd6008，目前 PENDING；這與遊戲 0.47.1 的 APPROVED 為不同狀態，不能宣稱已出現在 Games catalog。完整記錄見 `catalog/v0.47/README.md`。
+
+## YouTube 原生實玩影片
+
+- 本輪已完成 39 秒英文 Reddit 原生連續實玩，從貼文啟動、完美接力到手動 Overdrive，包含原始音效，未改遊戲分數或時間。
+- MK 指定 NeoBabylon／M.K. Said，並明確授權使用當前管理員身分上傳；已發布至 @neobabylon-mk，而非 M.K. 暢談古往今來頻道。
+- 正式公開影片：https://www.youtube.com/watch?v=LVJTJTfkgRk ，video ID LVJTJTfkgRk。YouTube Studio 已發布提示／清單公開狀態、匿名 oEmbed 200、觀看頁實際播放均已讀回；著作權檢查當下無問題。
+- README、Devpost 英文提交包、`demo/v0.47/README.md` 與 publication JSON 已同步。Devpost 尚未正式提交；本輪沒有宣稱已送件。
+- 本輪只有媒體／文件與外部影片狀態變更，維持遊戲 v0.47／package 0.47.1，文件變更不觸發遊戲部署。

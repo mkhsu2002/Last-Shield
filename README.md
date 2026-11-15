@@ -6,6 +6,7 @@ The sky is falling over Neo Babylon. Hold the city’s last shield against an es
 
 Open the [playable Reddit post](https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/) and choose **Start defending**. The game runs inside Reddit; no external game website is required.
 
+- [Watch the Reddit gameplay demo](https://www.youtube.com/watch?v=LVJTJTfkgRk)
 - [Devvit app listing](https://developers.reddit.com/apps/last-shield)
 - [Public test community](https://www.reddit.com/r/last_shield_dev/)
 - [Source repository](https://github.com/mkhsu2002/Last-Shield)

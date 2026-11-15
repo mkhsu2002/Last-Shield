@@ -1,0 +1,28 @@
+{
+  "videoId": "LVJTJTfkgRk",
+  "url": "https://www.youtube.com/watch?v=LVJTJTfkgRk",
+  "shortUrl": "https://youtu.be/LVJTJTfkgRk",
+  "channelId": "UCK_TQy_y3e-Q0fdOUBArRpQ",
+  "channelHandle": "@neobabylon-mk",
+  "channelName": "NeoBabylon | The Si-Fi about Humanity Gone.",
+  "title": "Last Shield — Daily Meteor Defense on Reddit | Gameplay",
+  "visibility": "public",
+  "publishedDateVancouver": "2026-11-14",
+  "category": "Gaming",
+  "language": "en",
+  "checks": "YouTube Studio copyright checks completed with no issues found",
+  "readback": {
+    "studio": "Published confirmation and channel content row both report public, duration 0:39",
+    "anonymousOEmbedStatus": 200,
+    "oEmbedAuthorUrl": "https://www.youtube.com/@neobabylon-mk",
+    "watchPlayerReadyState": 4,
+    "watchPlayerCurrentTimeSeconds": 8.463382,
+    "watchPlayerDurationSeconds": 39.041,
+    "watchPlayerVideoSize": [
+      1152,
+      720
+    ],
+    "watchPlayerError": null
+  },
+  "authorization": "MK explicitly authorized uploading with the existing NeoBabylon channel manager identity in this session."
+}
