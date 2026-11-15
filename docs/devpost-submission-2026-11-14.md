@@ -123,7 +123,7 @@ The game is free to play and has no app purchase, invitation requirement, or usa
 
 ## In-app catalog
 
-這是 Reddit Games catalog、分類瀏覽與推薦版位的宣傳素材／分類／點入目的地設定，不是遊戲內購商品。官方參賽規則未將 catalog assets 列為必要提交項目；申請官方 Featuring 則明確要求更新 catalog assets。本輪不改動 catalog、不送出推薦申請，避免把未準備的宣傳素材當成已完成。
+這是 Reddit Games catalog、分類瀏覽與推薦版位的宣傳素材／分類／點入目的地設定，不是遊戲內購商品。官方參賽規則未將 catalog assets 列為必要提交項目；申請官方 Featuring 則明確要求更新 catalog assets。後續 MK 已明確要求補齊：現已完成圖示、12 秒實錄 MP4、備援圖片、Tile、兩段短文案、Game／Arcade／Action／Daily 分類及 last_shield_dev 入口，已儲存並送審，素材狀態 PENDING；尚未送出獨立 Featuring 申請。詳見 [catalog 紀錄](catalog/v0.47/README.md)。
 
 - 官方素材說明：https://developers.reddit.com/docs/guides/launch/in-app-assets
 - 官方推薦條件：https://developers.reddit.com/docs/guides/launch/feature-guide

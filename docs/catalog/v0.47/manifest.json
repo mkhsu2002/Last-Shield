@@ -1,0 +1,174 @@
+{
+  "gameVersion": "v0.47",
+  "packageVersion": "0.47.1",
+  "checkedDate": "2026-11-14",
+  "assetReviewRequestId": "62c5467b-2a88-48f4-91d4-6eac5ecd6008",
+  "assetReviewStatus": "PENDING",
+  "categories": [
+    {
+      "id": 1,
+      "name": "GAME"
+    },
+    {
+      "id": 4,
+      "name": "ARCADE"
+    },
+    {
+      "id": 23,
+      "name": "ACTION"
+    },
+    {
+      "id": 57,
+      "name": "DAILY"
+    }
+  ],
+  "featuringDescription": "Catch gold. Hold. Defend the city.",
+  "tileTagline": "Hold. Time. Survive.",
+  "featuredSubreddit": "last_shield_dev",
+  "postSort": "HOT",
+  "postFlairs": [],
+  "assets": {
+    "gameIcon": {
+      "assetId": "1f881f63-a184-4770-977b-62d05422fdd3",
+      "mediaId": "xuyf13tu4p1i1",
+      "file": "last-shield-icon.png",
+      "size": 76368,
+      "sha256": "07488ad7c31754128868f29e7e977cf001639f747b1bdd2e8d420fdc61e1ccc0"
+    },
+    "featuring": {
+      "assetId": "d1b7c3c5-bb89-41f0-b449-39a1f94d7b0b",
+      "mediaId": "0q86m2xu4p1i1",
+      "file": "last-shield-featuring.mp4",
+      "size": 704924,
+      "sha256": "6fbd6e4738d07f054a108129f607cd6d99a375120b5e49191cf223eb412d91d2"
+    },
+    "fallback": {
+      "assetId": "263e7cee-dd13-47b3-990e-684c2824f1dc",
+      "mediaId": "p8yapwzu4p1i1",
+      "file": "last-shield-fallback.png",
+      "size": 349368,
+      "sha256": "75670c23ca8f7823b7b053339d979dec1d2f5ea96b03640352cd705ca6df8cfa"
+    },
+    "tile": {
+      "assetId": "9e673a77-cdb1-43ef-9744-6966e821cb31",
+      "mediaId": "sj6m9m1v4p1i1",
+      "file": "last-shield-tile.png",
+      "size": 60096,
+      "sha256": "13dffe4c434abc995fd466176073e67d4a97edd1589ab5aea011c23a9065dd32"
+    }
+  },
+  "capture": {
+    "source": "https://last-shield.vercel.app/",
+    "title": "Last Shield | Defend Neo Babylon",
+    "version": "v0.47",
+    "language": "en",
+    "viewport": {
+      "width": 500,
+      "height": 1000
+    },
+    "durationMs": 12051.089042,
+    "frames": 719,
+    "actions": [
+      {
+        "ms": 975,
+        "action": "hold"
+      },
+      {
+        "ms": 1498,
+        "action": "release",
+        "score": "200",
+        "wave": "Wave 1"
+      },
+      {
+        "ms": 2702,
+        "action": "hold"
+      },
+      {
+        "ms": 3226,
+        "action": "release",
+        "score": "410",
+        "wave": "Wave 2"
+      },
+      {
+        "ms": 4449,
+        "action": "hold"
+      },
+      {
+        "ms": 4909,
+        "action": "release",
+        "score": "630",
+        "wave": "Wave 3"
+      },
+      {
+        "ms": 6232,
+        "action": "hold"
+      },
+      {
+        "ms": 6693,
+        "action": "release",
+        "score": "860",
+        "wave": "Wave 4"
+      },
+      {
+        "ms": 6750,
+        "action": "hold"
+      },
+      {
+        "ms": 7099,
+        "action": "release",
+        "score": "1,100",
+        "wave": "Wave 4"
+      },
+      {
+        "ms": 8249,
+        "action": "hold"
+      },
+      {
+        "ms": 8715,
+        "action": "release",
+        "score": "1,350",
+        "wave": "Wave 5"
+      },
+      {
+        "ms": 8776,
+        "action": "hold"
+      },
+      {
+        "ms": 9066,
+        "action": "release",
+        "score": "1,610",
+        "wave": "Wave 5"
+      },
+      {
+        "ms": 9469,
+        "action": "overdrive"
+      },
+      {
+        "ms": 11293,
+        "action": "hold"
+      },
+      {
+        "ms": 11759,
+        "action": "release",
+        "score": "3,100",
+        "wave": "Wave 7"
+      }
+    ],
+    "final": {
+      "score": "3,100",
+      "wave": "Wave 7",
+      "perfect": "Perfect clears 8",
+      "health": "100%"
+    },
+    "notes": "Continuous real-time screen capture. Native input only; no game clock or score manipulation. Muted promotional export."
+  },
+  "export": {
+    "width": 1500,
+    "height": 1000,
+    "durationSeconds": 12,
+    "fps": 25,
+    "codec": "H.264",
+    "audio": false,
+    "edit": "Original vector key art alongside continuous game capture; no gameplay speed, clock, or score changes."
+  }
+}

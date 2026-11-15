@@ -45,3 +45,9 @@
 - 完整英文文案、必要連結、評審步驟與剩餘人工確認，見 `devpost-submission-2026-11-14.md`。尚未建立 Devpost 草稿／正式送件。
 - 根 README 已補原生貼文、社群與 listing 連結、每日重玩、分享、本機紀錄及開發方式。文件變更不建立新遊戲版本、不觸發完整建置。
 - 評審存取保留至 2026-12-16 18:00 PST；未建立關閉排程、付費限制或配額，也未建立持續監控任務。正式送件前仍需再次確認成員數。
+
+## In-app catalog 素材
+
+- 依 MK 後續要求，已完成四項素材、短文案、分類與社群入口，透過官方 API SaveChanges、SubmitForReview，重新載入 portal 與 GetDisplay 核對。
+- Game → Arcade／Action／Daily；主影片為本輪 v0.47 真實連續 12 秒遊玩，1500 × 1000、25 fps、靜音，704,924 bytes。其餘圖片依編輯器尺寸要求完成，逐張肉眼檢查。
+- 素材審核 request 62c5467b-2a88-48f4-91d4-6eac5ecd6008，目前 PENDING；這與遊戲 0.47.1 的 APPROVED 為不同狀態，不能宣稱已出現在 Games catalog。完整記錄見 `catalog/v0.47/README.md`。
