@@ -1,3 +1,4 @@
+import { translate, localizedAttribute, localizedValue } from "./i18n";
 import * as Phaser from "phaser";
 import { context } from "@devvit/web/client";
 import {
@@ -98,7 +99,7 @@ class ShieldScene extends Phaser.Scene {
       this.audio.muted = !this.audio.muted;
       if (!this.audio.muted) this.audio.tone(440, 880);
       text("sound", this.audio.muted ? "音效關" : "音效開");
-      element("sound").setAttribute(
+      localizedAttribute(element("sound"),
         "aria-label",
         this.audio.muted ? "開啟音效" : "關閉音效"
       );
@@ -152,7 +153,7 @@ class ShieldScene extends Phaser.Scene {
       if (
         event.code === "KeyE" &&
         !event.repeat &&
-        !target?.matches("textarea,input")
+        !target?.matches("textarea,input,select,option")
       ) {
         event.preventDefault();
         this.activateOverdrive();
@@ -160,7 +161,7 @@ class ShieldScene extends Phaser.Scene {
       }
       if (
         event.code !== "Space" ||
-        (target?.matches("button,textarea") && target.id !== "fire")
+        (target?.matches("button,textarea,select,option") && target.id !== "fire")
       )
         return;
       event.preventDefault();
@@ -455,7 +456,7 @@ class ShieldScene extends Phaser.Scene {
       "result-overdrive",
       `手動超載 ${this.run.overdriveUses} 次 · 清除 ${this.run.overdriveCleared} 顆威脅`
     );
-    text("retry-hint", next + retryAdvice(this.run));
+    text("retry-hint", [next, retryAdvice(this.run)]);
     this.setPhase("results");
     element("retry").focus({ preventScroll: true });
   }
@@ -483,12 +484,12 @@ class ShieldScene extends Phaser.Scene {
       : local
       ? ""
       : `${location.origin}${location.pathname}`;
-    const challenge = message + (url ? `\n${url}` : "");
+    const challenge = translate(message) + (url ? `\n${url}` : "");
     try {
       await navigator.clipboard.writeText(challenge);
       text("share-status", "戰績已複製，貼給朋友就能邀請挑戰。");
     } catch {
-      element<HTMLTextAreaElement>("share-text").value = challenge;
+      localizedValue(element<HTMLTextAreaElement>("share-text"), [message, url ? `\n${url}` : ""]);
       show("share-box", true);
       element<HTMLTextAreaElement>("share-text").focus();
       element<HTMLTextAreaElement>("share-text").select();
@@ -597,7 +598,7 @@ class ShieldScene extends Phaser.Scene {
         : energy.help
     );
     element("energy").setAttribute("aria-valuenow", String(run.energy));
-    element("energy").setAttribute(
+    localizedAttribute(element("energy"),
       "aria-valuetext",
       `${run.energy}／3，滿氣後手動釋放`
     );

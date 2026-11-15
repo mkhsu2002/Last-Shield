@@ -64,3 +64,5 @@ small {
   width: 100px;
   height: 110px;
 }
+
+.language-select { position: absolute; top: 12px; right: 12px; min-height: 44px; background: #102037; color: #edf5ff; border: 1px solid #adcbe744; border-radius: 10px; padding: 6px; }

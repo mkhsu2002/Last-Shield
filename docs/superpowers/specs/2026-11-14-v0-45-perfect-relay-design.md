@@ -1,5 +1,7 @@
 # v0.45 完美鎖定與擊破接力
 
+> Historical release note, 2026-11-14：v0.46 改為預設英文／可切繁中；以下保留 v0.45 發布證據，survival-6 玩法仍沿用。
+
 Status: implemented and production-verified as v0.45, authorized by MK's request to fix perfect-shot pressure and ambiguous repeated timing, including multiple large cores. 2026-11-14. Existing authorization allows implementation and release without another approval gate.
 
 The live v0.44 UI was played with actual keyboard input, no mocked clock: 390×844, 120ms after the gold cue, 520ms hold, 160ms release gap, no blast. First five waves stayed at 100%, first three-core storm ended at 66% despite nine perfect clears. This is a reproducible input/cue bottleneck, not a human playtest endorsement.

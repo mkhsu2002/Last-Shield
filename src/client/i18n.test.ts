@@ -1,0 +1,41 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { translate, readLanguage, LANGUAGE_KEY } from "./i18n.ts";
+import { MESSAGES } from "./messages.ts";
+
+test("English is the default regardless of missing, malformed or denied storage", () => {
+  assert.equal(readLanguage(null), "en");
+  for (const value of [null, "", "fr", "zh", "en"])
+    assert.equal(readLanguage({ getItem: () => value, setItem() {} }), "en");
+  assert.equal(readLanguage({ getItem() { throw new Error("denied"); }, setItem() {} }), "en");
+  assert.equal(readLanguage({ getItem(key) { assert.equal(key, LANGUAGE_KEY); return "zh-Hant"; }, setItem() {} }), "zh-Hant");
+});
+
+test("live numeric cues and nested target labels translate without changing gameplay values", () => {
+  assert.equal(translate("完美鎖定 · 擊破 47%", "en"), "Perfect lock · 47% cleared");
+  assert.equal(translate("超載蓄能 2／3", "en"), "Overdrive 2/3");
+  assert.equal(translate("目前目標：重型核心 · 可按住別顆換目標。", "en"), "Target: Heavy core · Hold another meteor to switch.");
+  assert.equal(translate("護盾遭撞擊　−34%", "en"), "Shield impact −34%");
+  assert.equal(translate("完美鎖定 · 擊破 47%", "zh-Hant"), "完美鎖定 · 擊破 47%");
+});
+
+test("all catalog messages render in English with their interpolation values intact", () => {
+  for (const source of Object.keys(MESSAGES)) {
+    const sample = source.replace(/\{(\d+)\}/g, (_, slot: string) => `VALUE${slot}`);
+    const result = translate(sample, "en");
+    assert.doesNotMatch(result, /\p{Script=Han}|\{\d+\}/u, source);
+    for (const slot of sample.match(/VALUE\d+/g) ?? []) assert.ok(result.includes(slot), source);
+  }
+});
+
+test("English sharing preserves the challenge date, score and line breaks", () => {
+  const source = "最後防線 v0.46 · 2026-11-14 UTC\n1,234 分 · 完美擊破 8 次 · 擊碎 12 顆隕石\n守到第 7 波 · 最高連擊 9。同一片天空，換你守守看！";
+  const result = translate(source, "en");
+  assert.equal(result, "Last Shield v0.46 · 2026-11-14 UTC\n1,234 points · 8 perfect clears · 12 meteors cleared\nWave 7 · Best combo 9. Same sky. Your turn to defend!");
+  assert.equal(translate(source, "zh-Hant"), source);
+});
+
+test("clear feedback keeps the charge bonus separate from awarded points", () => {
+  assert.equal(translate("完美擊破 · 超載 +1　+200", "en"), "Perfect clear · Charge +1 +200");
+  assert.equal(translate("核心擊碎　+110", "en"), "Core shattered +110");
+});

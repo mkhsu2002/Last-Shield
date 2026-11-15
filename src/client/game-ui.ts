@@ -1,3 +1,4 @@
+import { localizeTree, localizedText, bindLanguageSelect, localizedAttribute } from "./i18n";
 import { GAME_VERSION } from "./version";
 
 const shieldIcon =
@@ -12,7 +13,7 @@ export function mountGameUI(): void {
     <div class="interface" data-energy="charging">
       <header class="topbar">
         <div class="brand">${shieldIcon}<div><span class="eyebrow">新巴比倫 · 城市守衛</span><h1>最後防線<span class="version">${GAME_VERSION}</span></h1></div></div>
-        <div class="tools"><button id="sound" class="icon-button" aria-label="關閉音效" aria-pressed="true">音效開</button><button id="pause" class="icon-button" aria-label="暫停遊戲" hidden>暫停</button></div>
+        <div class="tools"><select id="language" class="language-select" aria-label="Interface language" data-no-translate><option value="en" lang="en">EN</option><option value="zh-Hant" lang="zh-Hant">繁中</option></select><button id="sound" class="icon-button" aria-label="關閉音效" aria-pressed="true">音效開</button><button id="pause" class="icon-button" aria-label="暫停遊戲" hidden>暫停</button></div>
       </header>
       <section id="run-hud" class="run-hud" hidden aria-label="守城狀態">
         <div class="score-row"><div class="health-block"><span class="label">護盾完整度</span><strong id="clock">100<span>%</span></strong></div><div class="score-block"><span class="label">守城得分</span><strong id="score">0</strong></div></div>
@@ -52,14 +53,16 @@ export function mountGameUI(): void {
       <section id="paused" class="panel pause-panel" hidden aria-labelledby="pause-title"><span class="eyebrow">喘口氣，再繼續</span><h2 id="pause-title">城市，暫時安靜。</h2><p>遊戲已暫停，護盾與隕石都不會前進。<br>先放開手指，再繼續防守。</p><p class="pause-tip">金色重合時「按下」＝完美起手，光束 3 倍。保持按住直到擊碎，超載 +1。<br><br>超載滿氣後可以保留；按「超載震爆」或 E 才會清場。普通攻擊與撞擊不會消耗能量。<br><br>完美鎖定後，時機尺會變成擊破進度：持續按住，不用重按。該顆會被光束定住，放開後繼續逼近。<br><br>完美擊碎後有短暫金色接力：先放開，再按下一顆。失手仍可等下一輪金色重按補救，進度保留。<br><br>想改打別顆？先放開，再按住指定隕石。</p><button id="resume" class="primary">繼續防守 <span aria-hidden="true">↗</span></button></section>
       <section id="trained" class="panel practice-panel" hidden aria-labelledby="practice-title"><span class="eyebrow">完美起手練習</span><h2 id="practice-title">掌握金色時機。</h2><p id="practice-explanation"></p><button id="practice-again" class="secondary">再練一次</button><button id="practice-start" class="primary">開始正式守城 <span aria-hidden="true">↗</span></button></section>
     </div>`;
+  localizedAttribute(root, "aria-label", "最後防線，每日隕石守城遊戲");
+  localizeTree(root);
+  bindLanguageSelect();
 }
 
 export function element<T extends HTMLElement = HTMLElement>(id: string): T {
   return document.getElementById(id) as T;
 }
-export function text(id: string, value: string): void {
-  const el = element(id);
-  if (el.textContent !== value) el.textContent = value;
+export function text(id: string, value: string | string[]): void {
+  localizedText(element(id), value);
 }
 export function show(id: string, visible: boolean): void {
   element(id).hidden = !visible;

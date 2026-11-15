@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link
@@ -8,11 +8,12 @@
     />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="splash.css" />
-    <title>最後防線｜新巴比倫</title>
+    <title>Last Shield | Defend Neo Babylon</title>
   </head>
   <body>
     <main class="wrap">
-      <div class="eyebrow">新巴比倫 · 城市守衛</div>
+      <select class="language-select" aria-label="Interface language" data-no-translate><option value="en">EN</option><option value="zh-Hant">繁中</option></select>
+      <div id="splash-brand" class="eyebrow">NEO BABYLON · CITY DEFENSE</div>
       <div class="shield" aria-hidden="true">
         <svg viewBox="0 0 32 36" fill="none">
           <path
@@ -23,13 +24,10 @@
           <path d="m9 18 5 5 9-12" stroke="currentColor" stroke-width="1.5" />
         </svg>
       </div>
-      <h1>最後防線</h1>
-      <p>
-        金色時按下，完美起手有 3
-        倍光束；擊碎後放開再迎擊。集滿三格超載可保留，危急時手動震爆全場。
-      </p>
-      <button id="start" type="button">開始守城</button>
-      <small>每日生存挑戰 · 按住發射 · <span id="version"></span></small>
+      <h1 id="splash-title">Last Shield</h1>
+      <p id="splash-copy">Catch the gold and hold until the meteor shatters. Release and press for the next relay. Bank 3 charges and use Overdrive when danger strikes.</p>
+      <button id="start" type="button">Start defending</button>
+      <small><span id="splash-detail">Daily survival · Hold to fire ·</span> <span id="version"></span></small>
     </main>
     <script type="module" src="splash.ts"></script>
   </body>
