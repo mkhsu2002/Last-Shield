@@ -28,6 +28,11 @@
 
 ## 發布狀態
 
-待 main／tag v0.45 推送，正式 Vercel API 來源與 alias、公開 bundle hash、live 接力查核。
+- main 已 fast-forward 合併並推送 `7dfb7bf15be9c45c8816e47b61b3bfb8386f25a5`；annotated tag v0.45 已推送，指向同一遊戲版本。
+- Vercel API 讀回 `dpl_FCCGHmgfEx8hPpuEoDAZNJixoHwT` 為 READY，來源為上述 main SHA，alias 包含 last-shield.vercel.app。
+- 公開 JS `/assets/index-DXXWeI1w.js` SHA-256 `3ba8738f9b92121d29ab05765dc990c8033e7956b8d843beb263d0a57ca4ef6d`；CSS `/assets/index-sicJB5ll.css` SHA-256 `324bbb9b4813e458ac19f837cd1a5d454eccc3bff4726176096d959611593869`，均與最終本機建置相同。
+- 正式頁可見 v0.45，以同樣 120ms／520ms／160ms 實際按鍵節奏、不用超載重玩，首潮三顆全完美，第七波仍 100%，共完美 10 次；完美發射中為「擊破 47%」、游標不可見、尺標明示持續按住，擊碎後改成放開再按下一顆。測試後暫停並重載回開場，未完成該局，localStorage 最佳紀錄字串未改。
+- 瀏覽器的 clock 安裝狀態會跨同 context 的頁籤影響；正式重玩前先 resume 共用時鐘，後續全程實際時間操作，沒有 runFor／pauseAt。第一次正式檢查因本機觸控 QA 遺留暫停時鐘而未推進，已排除後重跑；不可把該次沒有進展當成功證據。
+- 正式與本機 console 無 ERROR／WARNING。發布證據為 docs-only 補記，既有 skip-build gate 返回 0，不另升遊戲版號。
 
 靜態獨立站發布；無後端 migration、Function、API 契約、帳本或排程變更。Reddit 仍未初始化／上傳／發布。既有 Phaser bundle 大小提示仍存在。

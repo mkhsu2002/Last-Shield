@@ -1,6 +1,6 @@
 # v0.45 完美鎖定與擊破接力
 
-Status: implemented and locally verified; production pending, authorized by MK's request to fix perfect-shot pressure and ambiguous repeated timing, including multiple large cores. 2026-11-14. Existing authorization allows implementation and release without another approval gate.
+Status: implemented and production-verified as v0.45, authorized by MK's request to fix perfect-shot pressure and ambiguous repeated timing, including multiple large cores. 2026-11-14. Existing authorization allows implementation and release without another approval gate.
 
 The live v0.44 UI was played with actual keyboard input, no mocked clock: 390×844, 120ms after the gold cue, 520ms hold, 160ms release gap, no blast. First five waves stayed at 100%, first three-core storm ended at 66% despite nine perfect clears. This is a reproducible input/cue bottleneck, not a human playtest endorsement.
 
