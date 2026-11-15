@@ -43,6 +43,70 @@ test("retrying never downgrades an earned perfect or grants energy before a clea
   assert.equal(run.energy, 1);
 });
 
+test("a gold-caught heavy core is held away from contact until the beam finishes", () => {
+  const run = atWave(41);
+  const m = run.meteors.find(m => m.kind === "heavy")!;
+  run.meteors = [m];
+  // A later recurring gold opportunity, just before this core's contact.
+  m.chargeStartMs = m.durationMs - 1000 - 60;
+  run.step(m.durationMs - 60, false);
+  run.step(0, true, m.id);
+  const distance = rules.meteorGeometry(m, run.waveElapsedMs, m.mass).distance;
+  run.step(100, true);
+  assert.equal(m.grade, "perfect");
+  assert.equal(rules.meteorGeometry(m, run.waveElapsedMs, m.mass).distance, distance);
+  run.step(250, true);
+  assert.ok(!run.meteors.includes(m), "even a heavy perfect core clears within 350ms");
+  assert.equal(run.perfect, 1);
+});
+
+test("perfect arrest affects only the selected core and ends on release", () => {
+  const run = atWave(3), m = run.meteor!;
+  const other = run.meteors.find(x => x !== m)!;
+  run.step(m.chargeStartMs, false);
+  const origin = rules.meteorGeometry(m, run.waveElapsedMs, m.mass).distance;
+  const otherOrigin = rules.meteorGeometry(other, run.waveElapsedMs, other.mass).distance;
+  run.step(100, true);
+  assert.equal(rules.meteorGeometry(m, run.waveElapsedMs, m.mass).distance, origin);
+  assert.ok(rules.meteorGeometry(other, run.waveElapsedMs, other.mass).distance < otherOrigin);
+  run.step(0, false);
+  run.step(100, false);
+  assert.ok(rules.meteorGeometry(m, run.waveElapsedMs, m.mass).distance < origin);
+});
+
+test("three large cores can be chained with a realistic release and re-press delay", () => {
+  const run = atWave(5);
+  for (const m of run.meteors) { m.kind = "heavy"; m.burnMs = 1050; }
+  run.step(run.meteor!.chargeStartMs + 100, false);
+  for (let i = 0; i < 3; i++) {
+    const target = run.meteor!;
+    const events = run.step(0, true);
+    assert.ok(events.some(e => e.type === "engage" && e.grade === "perfect"));
+    while (run.meteors.includes(target) && !run.finished) run.step(5, true);
+    run.step(180, false);
+  }
+  assert.equal(run.integrity, 100);
+  assert.equal(run.perfect, 3);
+  assert.equal(run.energy, 3);
+});
+
+test("relay expires, requires a new press and never grants free energy", () => {
+  const run = atWave(3);
+  const first = run.meteor!;
+  run.step(first.chargeStartMs, false);
+  while (run.meteors.includes(first)) run.step(5, true);
+  assert.ok(run.chainRemainingMs > 0);
+  assert.equal(run.energy, 1);
+  const next = run.meteor!;
+  run.step(100, true);
+  assert.equal(next.mass, 100);
+  run.step(rules.CHAIN_WINDOW_MS + 1, false);
+  assert.equal(run.chainRemainingMs, 0);
+  next.chargeStartMs = run.waveElapsedMs - 350;
+  assert.ok(run.step(0, true).some(e => e.type === "engage" && e.grade === "good"));
+  assert.equal(run.energy, 1);
+});
+
 function atWave(wave: number, day = 20261114) {
   const run = new rules.DefenseRun(day);
   run.waveIndex = wave;
@@ -206,7 +270,7 @@ test("release retains an explicitly selected damaged core even when another is m
   assert.equal(chosen.grade, "perfect");
 });
 
-test("choosing an earlier golden target can earn more energy than default priority", () => {
+test("perfect relay makes both valid target orders recoverable", () => {
   const play = (choose: boolean) => {
     const run = atWave(3);
     for (let i = 0; i < 2; i++) {
@@ -221,7 +285,7 @@ test("choosing an earlier golden target can earn more energy than default priori
     return run.energy;
   };
   assert.equal(play(true), 2);
-  assert.equal(play(false), 1);
+  assert.equal(play(false), 2);
 });
 test("target identities stay unique as six-core volleys advance", () => {
   const run = new rules.DefenseRun(20261114),
@@ -349,7 +413,10 @@ test("early forgiveness and later manual-blast pressure hold across thirty dates
     assert.equal(bank.firstStormAfter, bank.firstStormBefore);
     assert.ok(never.firstStormAfter! >= 60, "first storm is survivable without spending");
     assert.ok(coast.wave > 6, "non-perfect beginner survives first storm");
-    assert.ok(bank.wave > never.wave && bank.uses > 0, "saving blast matters later");
+    assert.ok(bank.wave > never.wave && bank.uses > 0);
+    const human = simulateDefense(day, "human");
+    assert.equal(human.firstStormAfter, human.firstStormBefore,
+      "early relay allows 120ms reactions plus a 160ms release interval");
     const run = new rules.DefenseRun(day), m = run.meteor!;
     run.step(m.chargeStartMs + 350, false);
     run.step(100, true);

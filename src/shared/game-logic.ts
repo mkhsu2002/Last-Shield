@@ -1,9 +1,10 @@
 // Deterministic rules shared by the standalone and Reddit clients.
-export const RULES_VERSION = "survival-5";
+export const RULES_VERSION = "survival-6";
 export const SHIELD_RADIUS = 132;
 export const METEOR_SPAWN_RADIUS = 218;
 export const PERFECT_WINDOW_MS = 180;
 export const RETRY_INTERVAL_MS = 1000;
+export const CHAIN_WINDOW_MS = 750;
 export type TimingGrade = "perfect" | "good" | "early" | "late";
 export type StormPhase = "approach" | "surge" | "breaker" | "respite" | "storm";
 export type Mistakes = {
@@ -46,6 +47,7 @@ export type MeteorSpec = {
   recoveryMs: number;
 };
 export type Meteor = MeteorSpec & {
+  arrestedMs?: number;
   mass: number;
   grade: TimingGrade | null;
   pressedGrade: TimingGrade;
@@ -122,7 +124,7 @@ export function meteorSpec(daySeed: number, index: number): MeteorSpec {
   const durationMs = Math.round(
     flight * scale * (1 + 0.25 * Math.max(0, 1 - index / 24)) +
       (phase === "respite" ? 350 : 0) +
-      (phase === "storm" ? 600 * Math.max(0, 1 - index / 24) : 0)
+      (phase === "storm" ? 1200 * Math.max(0, 1 - index / 24) : 0)
   );
   return {
     sector: hash(daySeed + 7919, index) % 6,
@@ -131,7 +133,7 @@ export function meteorSpec(daySeed: number, index: number): MeteorSpec {
     chargeStartMs: Math.round(durationMs * (phase === "storm" ? 0.43 : 0.29)),
     burnMs:
       kind === "heavy"
-        ? 1400
+        ? 1050
         : kind === "fast"
         ? 650
         : phase === "storm"
@@ -173,7 +175,7 @@ export function volleySpecs(daySeed: number, index: number): MeteorSpec[] {
       phase === "storm" ? i * 28 : phase === "surge" ? i * 70 : i * 230;
     const burnMs =
       kind === "heavy"
-        ? 1400
+        ? 1050
         : kind === "fast"
         ? 650
         : phase === "storm"
@@ -197,7 +199,7 @@ export function volleySpecs(daySeed: number, index: number): MeteorSpec[] {
 /** Drawing and damage use this exact geometry. Smaller residual cores travel
  * farther before contact instead of disappearing at an invisible deadline. */
 export function meteorGeometry(
-  spec: MeteorSpec,
+  spec: MeteorSpec & { arrestedMs?: number },
   elapsedMs: number,
   mass: number
 ) {
@@ -209,7 +211,7 @@ export function meteorGeometry(
     (METEOR_SPAWN_RADIUS - SHIELD_RADIUS - baseRadius) / spec.durationMs;
   const distance = Math.max(
     0,
-    METEOR_SPAWN_RADIUS - Math.max(0, elapsedMs) * speed
+    METEOR_SPAWN_RADIUS - Math.max(0, elapsedMs - (spec.arrestedMs ?? 0)) * speed
   );
   const angle = -Math.PI + ((spec.sector + 0.5) * Math.PI) / 6;
   return {
@@ -223,7 +225,7 @@ export function meteorGeometry(
 }
 
 export function contactInMs(
-  spec: MeteorSpec,
+  spec: MeteorSpec & { arrestedMs?: number },
   elapsedMs: number,
   mass = 100
 ): number {
@@ -274,6 +276,7 @@ export class DefenseRun {
   private waveStartedMs = 0;
   private nextWaveAt = Infinity;
   private wasHolding = false;
+  private chainEndsAt = -Infinity;
   private selectedId: number | null = null;
   private needsRelease = false;
   private recoveryMs = 0;
@@ -285,6 +288,14 @@ export class DefenseRun {
 
   get waveElapsedMs(): number {
     return this.elapsedMs - this.waveStartedMs;
+  }
+
+  get chainRemainingMs(): number {
+    return this.meteors.length ? Math.max(0, this.chainEndsAt - this.elapsedMs) : 0;
+  }
+
+  timingOffset(m: MeteorSpec): number {
+    return this.chainRemainingMs > 0 ? 0 : timingOffset(m, this.waveElapsedMs);
   }
 
   /** A held beam never jumps targets. Otherwise prioritize actual time to contact. */
@@ -306,6 +317,7 @@ export class DefenseRun {
   }
 
   private newVolley(holding: boolean): Meteor[] {
+    this.chainEndsAt = -Infinity;
     const specs = volleySpecs(this.daySeed, this.waveIndex);
     this.recoveryMs = Math.round(
       Math.max(...specs.map((m) => m.recoveryMs)) *
@@ -343,7 +355,7 @@ export class DefenseRun {
       const target = this.meteors.find((m) => m.id === targetId) ?? this.meteor;
       if (target) {
         this.selectedId = target.id;
-        const offsetMs = timingOffset(target, this.waveElapsedMs);
+        const offsetMs = this.timingOffset(target);
         const candidate = judgeTiming(offsetMs);
         const retained =
           target.grade !== null && beamPower(target.grade) >= beamPower(candidate);
@@ -403,6 +415,7 @@ export class DefenseRun {
         const direct = m === owner;
         m.firing = burnTime > 0 && direct;
         if (m.firing) {
+          if (m.grade === "perfect") m.arrestedMs = (m.arrestedMs ?? 0) + burnTime;
           const boost = beamPower(m.grade ?? m.pressedGrade);
           m.mass = Math.max(0, m.mass - (burnTime * 100 * boost) / m.burnMs);
         }
@@ -472,6 +485,8 @@ export class DefenseRun {
     this.score += points;
     const point = meteorGeometry(m, this.waveElapsedMs, m.mass);
     this.remove(m, holding);
+    if (grade === "perfect" && this.meteors.length)
+      this.chainEndsAt = this.elapsedMs + CHAIN_WINDOW_MS;
     events.push({
       type: "clear",
       grade,

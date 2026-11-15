@@ -2,23 +2,26 @@ import {
   DefenseRun,
   contactInMs,
   stormPhase,
-  timingOffset,
 } from "../src/shared/game-logic.ts";
 
-export type Strategy = "bank" | "early" | "never" | "hold-early" | "retry";
+export type Strategy =
+  | "bank" | "early" | "never" | "hold-early" | "retry"
+  | "human" | "human-blast";
 export function simulateDefense(
   day: number,
   strategy: Strategy,
-  maxMs = 90000
+  maxMs = 180000,
+  maxWaves = 48
 ) {
   const run = new DefenseRun(day);
   let held = false;
+  let releaseAt = 0, nextPressAt = 0, goldSeenAt: number | null = null;
   let firstStormBefore: number | null = null,
     firstStormAfter: number | null = null;
   let firstStormAtMs: number | null = null;
   for (
     let ticks = 0;
-    ticks < maxMs / 10 && !run.finished && run.waveIndex < 24;
+    ticks < maxMs / 10 && !run.finished && run.waveIndex < maxWaves;
     ticks++
   ) {
     if (run.waveIndex === 5 && firstStormBefore === null) {
@@ -28,6 +31,33 @@ export function simulateDefense(
     if (run.waveIndex > 5 && firstStormAfter === null)
       firstStormAfter = run.integrity;
     const target = run.meteor;
+    if (strategy === "human" || strategy === "human-blast") {
+      if (held && (!target || target.requireRelease))
+        releaseAt = Math.min(releaseAt, run.elapsedMs + 120);
+      if (held && run.elapsedMs >= releaseAt) {
+        run.step(0, false);
+        held = false;
+        nextPressAt = run.elapsedMs + 160;
+        goldSeenAt = null;
+      }
+      const imminent = Math.min(
+        ...run.meteors.map(m => contactInMs(m, run.waveElapsedMs, m.mass))
+      );
+      if (strategy === "human-blast" && run.energy === 3 && imminent < 400) {
+        run.activateOverdrive(held);
+      } else if (!held && target && run.elapsedMs >= nextPressAt) {
+        if (Math.abs(run.timingOffset(target)) <= 180) {
+          goldSeenAt ??= run.elapsedMs;
+          if (run.elapsedMs - goldSeenAt >= 120) {
+            run.step(0, true);
+            held = true;
+            releaseAt = Infinity;
+          }
+        } else goldSeenAt = null;
+      }
+      run.step(10, held);
+      continue;
+    }
     if (!target || target.requireRelease) {
       run.step(0, false);
       held = false;
@@ -44,7 +74,7 @@ export function simulateDefense(
       run.activateOverdrive(held);
       run.step(0, false);
       held = false;
-    } else if (target && held && strategy === "retry" && target.grade !== "perfect" && Math.abs(timingOffset(target, run.waveElapsedMs)) <= 80) {
+    } else if (target && held && strategy === "retry" && target.grade !== "perfect" && Math.abs(run.timingOffset(target)) <= 80) {
       run.step(0, false);
       run.step(0, true);
     } else if (target && !held && !target.requireRelease) {
@@ -86,7 +116,7 @@ if (process.argv[1]?.endsWith("balance-sim.ts")) {
   console.log(
     JSON.stringify(
       days.flatMap((day) =>
-        (["bank", "early", "never", "hold-early", "retry"] as Strategy[]).map(
+        (["bank", "early", "never", "hold-early", "retry", "human", "human-blast"] as Strategy[]).map(
           (strategy) => simulateDefense(day, strategy)
         )
       ),

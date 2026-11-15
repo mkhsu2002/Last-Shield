@@ -9,7 +9,6 @@ import {
   meteorGeometry,
   contactInMs,
   PERFECT_WINDOW_MS,
-  timingOffset,
 } from "../shared/game-logic";
 import type { RunEvent } from "../shared/game-logic";
 import { SynthAudio } from "./audio";
@@ -324,7 +323,7 @@ class ShieldScene extends Phaser.Scene {
         event.retained
           ? "接續光束 · 保留較佳判定"
           : event.grade === "perfect"
-          ? "完美命中！光束 3 倍"
+          ? "完美鎖定！持續按住"
           : event.offsetMs < 0
           ? `早了 ${offset} 秒 · 等金色再按會更強`
           : `慢了 ${offset} 秒 · 可等下一輪金色，放開重按補救`;
@@ -367,7 +366,7 @@ class ShieldScene extends Phaser.Scene {
         text(
           "practice-explanation",
           perfect
-            ? "你在金色重合時按下，用 3 倍光束擊碎了核心，並得到 1 格能量。正式守城的金色時機會循環；錯過可等下一輪，放開重按補救，將超載留給真正的危機。"
+            ? "金色按住後，核心會被定住，3 倍光束擊碎後得到 1 格能量。鎖定後不用重按；擊碎再放開，接續下一顆的金色接力。失手仍能等下一輪補救。"
             : "提早按住仍能攻擊，也可等下一輪金色放開重按，進度保留。再練一次：等圓環與下方指標變成金色，再按住直到核心擊碎。"
         );
       }
@@ -647,16 +646,30 @@ class ShieldScene extends Phaser.Scene {
     const goal = milestone(run.cleared);
     text("milestone", `擊碎 ${run.cleared}／${goal.target} 顆`);
     element("milestone-fill").style.width = `${goal.progress * 10}%`;
-    const offset = m ? timingOffset(m, run.waveElapsedMs) : -600;
+    const locked = !!m && (
+      m.grade === "perfect" ||
+      (this.inputs.size > 0 && !m.requireRelease && m.pressedGrade === "perfect")
+    );
+    const chain = run.chainRemainingMs > 0;
+    const offset = m ? run.timingOffset(m) : -600;
+    ui.dataset.aim = locked ? "locked" : chain ? "chain" : "timing";
+    element("beam-progress").style.width = `${locked && m ? 100 - m.mass : 0}%`;
+    text("timing-left", locked ? "命中鎖定" : chain ? "完美接力" : "等待");
+    text("timing-caption", locked
+      ? "持續按住・擊破才放開"
+      : chain ? "放開 → 再按下一顆" : "金色時按下");
+    text("timing-right", locked && m
+      ? `${Math.round(100 - m.mass)}%`
+      : chain ? `${(run.chainRemainingMs / 1000).toFixed(1)} 秒` : "下一輪");
     const perfect = !!m && Math.abs(offset) <= PERFECT_WINDOW_MS;
-    ui.dataset.timing = perfect
+    ui.dataset.timing = locked || perfect
       ? "perfect"
       : offset > PERFECT_WINDOW_MS
       ? "late"
       : "waiting";
     element("timing-marker").style.left = `${Math.max(
       0,
-      Math.min(100, (offset + 600) / 12)
+      Math.min(100, (locked ? 0 : offset + 600) / 12)
     )}%`;
     if (this.phase === "breaking") return;
     if (!m) {
@@ -681,16 +694,19 @@ class ShieldScene extends Phaser.Scene {
     }
     if (m.requireRelease) {
       text("cue", "先放開，再迎擊");
-      text("cue-help", "放開後，可按住指定隕石切換目標。");
+      text("cue-help", chain ? "完美接力已就緒！放開後再按，下一顆也能用完美光束。" : "放開後，可按住指定隕石切換目標。");
       text("fire-label", "放開換目標");
       text("fire-detail", `還有 ${run.meteors.length} 顆`);
+    } else if (locked) {
+      text("cue", this.inputs.size ? `完美鎖定 · 擊破 ${Math.round(100 - m.mass)}%` : "完美已保留，按住接續");
+      text("cue-help", this.inputs.size ? "持續按住，不用重按；光束會定住這顆隕石，擊碎後才放開。" : "按住即可恢復 3 倍光束，不用再等金色。");
+      text("fire-label", this.inputs.size ? "持續按住" : "按住接續");
+      text("fire-detail", "擊碎後，放開再按下一顆");
     } else if (m.firing) {
       text(
         "cue",
         `${
-          m.grade === "perfect"
-            ? "完美光束 ×3"
-            : m.grade === "early"
+          m.grade === "early"
             ? "偏早光束 ×0.85"
             : m.grade === "late"
             ? "遲發光束 ×1"
@@ -699,20 +715,18 @@ class ShieldScene extends Phaser.Scene {
       );
       text(
         "cue-help",
-        m.grade === "perfect"
-          ? "完美起手！按到擊碎，超載 +1。"
-          : perfect
+        perfect
           ? "補救時機！放開再按，融解進度保留。"
           : "可在下一輪金色放開重按，改善光束；進度保留。"
       );
       text(
         "fire-label",
-        perfect && m.grade !== "perfect" ? "放開再按補救" : "保持按住"
+        perfect ? "放開再按補救" : "保持按住"
       );
       text("fire-detail", "擊碎後再放開");
     } else if (perfect) {
-      text("cue", "完美時機，現在按住！");
-      text("cue-help", "現在按下＝完美起手，3 倍光束。");
+      text("cue", chain ? "完美接力，現在按住！" : "完美時機，現在按住！");
+      text("cue-help", chain ? "接力窗口內按住下一顆，即可完美鎖定。" : "現在按住，鎖定後持續發射，擊碎才放開。");
       text("fire-label", "現在按住！");
       text("fire-detail", "金色時機：光束 3 倍");
     } else if (offset < -PERFECT_WINDOW_MS) {

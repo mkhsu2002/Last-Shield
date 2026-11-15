@@ -3,7 +3,6 @@ import {
   meteorGeometry,
   SHIELD_RADIUS,
   PERFECT_WINDOW_MS,
-  timingOffset,
   contactInMs,
 } from "../shared/game-logic";
 import type { DefenseRun, Meteor } from "../shared/game-logic";
@@ -226,10 +225,9 @@ function core(g: Graphics, m: Meteor, state: State): void {
     y = FIELD.y + geometry.y,
     radius = geometry.radius;
   const target = run.meteor === m;
-  const offset = timingOffset(m, elapsed);
+  const offset = run.timingOffset(m);
   const ready =
-    (Math.abs(offset) <= PERFECT_WINDOW_MS) ||
-    (m.firing && m.grade === "perfect");
+    Math.abs(offset) <= PERFECT_WINDOW_MS || m.grade === "perfect";
   const angle = geometry.angle;
   const color = m.grade === "perfect" ? GOLD : target ? CYAN : CORAL;
   for (let i = 4; i >= 1; i--) {
@@ -285,7 +283,7 @@ function core(g: Graphics, m: Meteor, state: State): void {
   }
   // Only the selected core carries a bright timing ring; others have quieter brackets.
   if (target) {
-    const gap = 28 * Math.max(0, Math.min(1, -offset / 600));
+    const gap = m.grade === "perfect" ? 0 : 28 * Math.max(0, Math.min(1, -offset / 600));
     const timingColor = ready
       ? GOLD
       : offset > PERFECT_WINDOW_MS

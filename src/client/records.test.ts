@@ -83,7 +83,7 @@ test("score-best wave remains paired with that score and old survival records ar
   for (const invalid of [
     { ...record, waveReached: 1 },
     { ...record, waveReached: null },
-    { ...record, version: "survival-4" },
+    { ...record, version: "survival-5" },
   ]) {
     storage.setItem("", JSON.stringify(invalid));
     assert.equal(records.readBest(storage, record.day), null);

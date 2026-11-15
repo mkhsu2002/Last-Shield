@@ -24,7 +24,7 @@ export function mountGameUI(): void {
       <section id="intro" class="intro" aria-labelledby="intro-title">
         <div class="intro-copy"><span class="chapter">每日生存挑戰 <span id="day"></span></span><h2 id="intro-title">守住這座城。<br><em>直到最後一刻。</em></h2><p>天際正在崩落。你，是城市最後的光。</p></div>
         <div class="launch-card">
-          <div class="instructions"><div><b>01</b><span>金色時按下<span>光束 3 倍；錯過可等下一輪，放開重按。</span></span></div><div><b>02</b><span>失手也能補救<span>重按改善光束，融解進度與較佳判定保留。</span></span></div><div><b>03</b><span>超載留給危機<span>滿氣可保留，按「超載震爆」才會使用。</span></span></div></div>
+          <div class="instructions"><div><b>01</b><span>金色時按下<span>完美定住目標；持續按住，到擊碎才放開。</span></span></div><div><b>02</b><span>擊破接力<span>完美擊碎後，放開再按，接續下一顆金色。</span></span></div><div><b>03</b><span>超載留給危機<span>滿氣可保留，按「超載震爆」才會使用。</span></span></div></div>
           <p class="power-tip">${boltIcon}<span><b>碎星潮，數顆隕石同步撞擊</b><br>用完美光束搶時間，或手動超載一口氣清場。</span></p>
           <button id="start" class="primary">開始守城 <span aria-hidden="true">↗</span></button>
           <button id="practice" class="secondary practice-button">練習完美起手</button>
@@ -35,7 +35,7 @@ export function mountGameUI(): void {
         <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
         <div id="cue" class="cue">看準圓環</div>
         <p id="cue-help" class="cue-help">圓環變金色時按住，直到核心擊碎。</p>
-        <div class="timing-display" aria-hidden="true"><div class="timing-track"><i class="perfect-zone"></i><b id="timing-marker"></b></div><div class="timing-labels"><span>等待</span><strong>金色循環・可補救</strong><span>下一輪</span></div></div>
+        <div class="timing-display" aria-hidden="true"><div class="timing-track"><i class="perfect-zone"></i><b id="timing-marker"></b><i id="beam-progress"></i></div><div class="timing-labels"><span id="timing-left">等待</span><strong id="timing-caption">金色時按下</strong><span id="timing-right">下一輪</span></div></div>
         <button id="fire" class="fire-button" aria-label="按住發射光束"><strong id="fire-label">按住發射</strong><span id="fire-detail">也可以按住畫面或空白鍵</span></button>
         <div class="energy-card"><div class="energy-controls"><div><div class="energy-heading">${boltIcon}<strong id="energy-label">超載蓄能 0／3</strong></div><div id="energy" class="energy" role="progressbar" aria-label="超載蓄能" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><i>1</i><i>2</i><i>3</i></div></div><button id="overdrive" class="overdrive-button" disabled aria-label="手動釋放超載震爆">超載震爆<span>手動釋放 · E</span></button></div><p id="energy-help">完美起手並擊碎 +1；集滿後，可手動震爆全場。</p></div>
         <div class="city-line"><span id="milestone">擊碎 0／10 顆</span><span id="city-message" role="status">城市正等你守護。</span></div>
@@ -49,7 +49,7 @@ export function mountGameUI(): void {
         <button id="retry" class="primary">再守一次 <span aria-hidden="true">↗</span></button><button id="share" class="secondary">複製戰績，邀朋友挑戰</button>
         <div id="share-box" hidden><label for="share-text">請選取並複製戰績</label><textarea id="share-text" readonly rows="5"></textarea></div><p id="share-status" class="fineprint" role="status"></p>
       </section>
-      <section id="paused" class="panel pause-panel" hidden aria-labelledby="pause-title"><span class="eyebrow">喘口氣，再繼續</span><h2 id="pause-title">城市，暫時安靜。</h2><p>遊戲已暫停，護盾與隕石都不會前進。<br>先放開手指，再繼續防守。</p><p class="pause-tip">金色重合時「按下」＝完美起手，光束 3 倍。保持按住直到擊碎，超載 +1。<br><br>超載滿氣後可以保留；按「超載震爆」或 E 才會清場。普通攻擊與撞擊不會消耗能量。<br><br>金色每秒循環。錯過可放開重按，保留融解進度與較佳判定。<br><br>想改打別顆？先放開，再按住指定隕石。</p><button id="resume" class="primary">繼續防守 <span aria-hidden="true">↗</span></button></section>
+      <section id="paused" class="panel pause-panel" hidden aria-labelledby="pause-title"><span class="eyebrow">喘口氣，再繼續</span><h2 id="pause-title">城市，暫時安靜。</h2><p>遊戲已暫停，護盾與隕石都不會前進。<br>先放開手指，再繼續防守。</p><p class="pause-tip">金色重合時「按下」＝完美起手，光束 3 倍。保持按住直到擊碎，超載 +1。<br><br>超載滿氣後可以保留；按「超載震爆」或 E 才會清場。普通攻擊與撞擊不會消耗能量。<br><br>完美鎖定後，時機尺會變成擊破進度：持續按住，不用重按。該顆會被光束定住，放開後繼續逼近。<br><br>完美擊碎後有短暫金色接力：先放開，再按下一顆。失手仍可等下一輪金色重按補救，進度保留。<br><br>想改打別顆？先放開，再按住指定隕石。</p><button id="resume" class="primary">繼續防守 <span aria-hidden="true">↗</span></button></section>
       <section id="trained" class="panel practice-panel" hidden aria-labelledby="practice-title"><span class="eyebrow">完美起手練習</span><h2 id="practice-title">掌握金色時機。</h2><p id="practice-explanation"></p><button id="practice-again" class="secondary">再練一次</button><button id="practice-start" class="primary">開始正式守城 <span aria-hidden="true">↗</span></button></section>
     </div>`;
 }

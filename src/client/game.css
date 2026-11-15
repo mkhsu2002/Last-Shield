@@ -962,3 +962,18 @@ textarea {
     max-height: 82%;
   }
 }
+
+/* Once caught, the action is holding a beam, not chasing another timing pass. */
+#beam-progress {
+  display: none;
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--gold);
+  border-radius: inherit;
+  box-shadow: 0 0 14px #ffc46b55;
+}
+.interface[data-aim="locked"] #beam-progress { display: block; }
+.interface[data-aim="locked"] #timing-marker,
+.interface[data-aim="locked"] .perfect-zone,
+.interface[data-aim="chain"] #timing-marker { display: none; }
+.interface[data-aim="chain"] .perfect-zone { left: 0; width: 100%; }

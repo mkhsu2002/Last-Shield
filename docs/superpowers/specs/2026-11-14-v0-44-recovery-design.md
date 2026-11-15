@@ -1,5 +1,7 @@
 # v0.44 補救窗口與前段緩坡
 
+> Archived 2026-11-14：v0.45 已取代完美命中後仍循環的提示、重型工作量與單次擊破銜接；以下保留 v0.44 歷史證據。
+
 Status: implemented and production-verified as v0.44. Authorized by MK's request to reduce difficulty and allow a second attempt, 2026-11-14. Retain banked manual overdrive and meaningful later crises; supersede survival-4 single opportunity/locked bad grade and early density.
 
 - Gold opportunity repeats every 1000ms while a core remains alive; window widens ±120 → ±180ms. Input, timing marker, target ring and hints share the same cyclic timing function.
