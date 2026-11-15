@@ -6,7 +6,7 @@ const app = new Hono();
 
 app.post('/internal/menu/create-post', async (c) => {
   try {
-    const post = await reddit.submitCustomPost({ title: 'AEGIS: Last Shield | Daily Meteor Defense' });
+    const post = await reddit.submitCustomPost({ title: 'Last Shield | Daily Meteor Defense' });
     return c.json({ navigateTo: 'https://www.reddit.com/r/' + context.subredditName + '/comments/' + post.id });
   } catch (error) {
     console.error('Failed to create Last Shield post', error);

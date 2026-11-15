@@ -20,7 +20,7 @@
   "menu": {
     "items": [
       {
-        "label": "Create an AEGIS game post",
+        "label": "Create a Last Shield game post",
         "description": "Post a playable Last Shield round",
         "location": "subreddit",
         "forUserType": "moderator",
@@ -31,5 +31,11 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch"
+  },
+  "permissions": {
+    "reddit": true,
+    "http": {
+      "enable": false
+    }
   }
 }

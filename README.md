@@ -1,72 +1,34 @@
-# 最後防線 · Last Shield
+# Last Shield
 
-新巴比倫世界觀的單鍵隕石守城遊戲。[正式試玩](https://last-shield.vercel.app/)
+The sky is falling over Neo Babylon. Hold the city’s last shield against an escalating meteor storm.
 
-## v0.46 雙語介面，預設英文
+## How to play
 
-- **英文／繁體中文**：首次使用預設英文，不依瀏覽器語言自動切中文。頁首 EN／繁中可即時切換，包含開場、練習、操作回饋、暫停、結果、失敗提示、分享與 ARIA；選擇保存在本機 `last-shield:language`。儲存被拒絕時，仍可在當次工作階段切換。語言切換不重置對局／分數／能量；沿用 v0.45 的 `survival-6`，既有相容戰績不會因翻譯失效。HTML 初始標題、描述與 lang 預設英文，Reddit splash 也有同一語言選擇。
-- **普通攻擊**：按住畫面、發射按鈕或空白鍵。預設鎖定最接近撞擊的目標，也可以直接按住指定隕石。擊碎後放開，再迎擊下一顆；按住期間不會自動換目標。
-- **出手與持續發射分開**：等待時，金色窗口 ±180ms、每 1000ms 循環；失手可等下一輪放開重按補救。完美命中後，游標隱藏，時機尺改成擊破進度，明確提示「持續按住、擊碎才放開」。放開後仍保留已取得的完美判定與融解進度，按住即可接續，不必再追金色。
-- **完美光束定住單顆**：3 倍光束發射期間，選中的隕石停止前進；放開恢復飛行，其餘隕石繼續逼近。大型核心工作量由 1400 降至 1050ms，完美融解時間由約 467 降至 350ms。GOOD 1.15×／偏早 .85×／過晚 1×維持。必須真的擊碎才給 1 格能量，一顆最多一次。
-- **完美擊破接力**：完美擊碎後，同波剩餘目標有 750ms 金色接力，不必等待它原本的下一輪金色。先放開再按下一顆，接上下一道完美光束；持續壓住不會自動換目標／連殺。接力過期恢復循環窗口，清場後不帶到下一波。
-- **能量可以保留**：普通開火、放開、暫停或被撞都不會使用／扣除累積能量。三格充滿後，只有手動按「超載震爆」或 E 才會立即清除場上所有隕石。空場不浪費能量，暫停與練習不會啟動；一次扣三格，震爆擊碎不補完美能量。
-- **前段逐步加壓**：前三波單顆，第 4／5 波兩顆，第 6 波首場碎星潮三顆，第 12 波四顆、第 24 波五顆、第 42 波六顆。前 24 波逐步收回飛行寬限；首波飛行 3750 ms（原 3000 ms），早期碎星潮飛行額外寬限為 1200ms × max(0, 1-index/24)，讓連續出手有反應時間。後段仍有重疊期限、不同防區與持續加壓，融解工作量不跟著縮小。
-- **需要決定何時出招**：介面顯示實際最近撞擊秒數與同步逼近數量。保留超載可以清除危機，提早花掉也可能靠精準操作再集滿；不同日期的模式會改變代價。可指定先處理的目標；完美接力讓不同的合理順序都有補救空間。
-- **可操作的練習**：開場「練習完美起手」會停在金色重合處等玩家按住，完成後說明判定，再進入正式守城。提早按住／太早放開也有對應說明。練習不寫入每日紀錄。
-- **保留已認可的城市視覺與音效**：夜色城市、光盾、隕石尾跡、命中裂痕與重擊／餘震音效。金色標示完美窗口、接力與已鎖定的完美光束，超載有獨立可操作按鈕與全場震爆效果。減少動態模式停用震動／移動碎片；靜音、失焦與暫停保持一致。
-- **碰撞與生存**：共用幾何判斷隕石外緣是否碰上護盾，部分融解可減傷，縮小後繼續前進至實際接觸。完整撞擊 34 點傷害；100 護盾歸零才結束。沒有計時勝利或波數上限，首局維持開始時的 UTC 日期。
-- **本機每日紀錄**：只保留得分最高一局及其波數，不宣稱獨立最遠紀錄。`survival-6` 與舊規則分數隔離，紀錄容許每波最多六顆。結果呈現手動超載使用與清除數；儲存／複製失敗可恢復，分享與備援依目前語言顯示。
+1. **Press on gold.** When the ring turns gold, press and hold to catch the meteor with a perfect 3× beam. Keep holding until it shatters.
+2. **Release, then press for the next.** A perfect clear opens a short gold relay for the next meteor. The progress bar shows when to keep holding; release only after the clear.
+3. **Save your Overdrive.** Three perfect clears fill your charge. Press **Overdrive** or **E** to clear all incoming meteors. A full charge stays banked until you choose to use it.
 
-### 比較策略而非只驗證動畫
+Missed the timing? Gold returns every second. Release and retry; damage already dealt stays. A perfect beam stops its target while you hold it, while other meteors keep moving. You can hold a specific meteor to choose a different target.
 
-`npm run balance` 比較保留救急、提早花掉、完全不用、一直提早按住、慢按後補救、含反應延遲（使用／不用超載）七種控制策略，診斷範圍為前 48 波／最多 180 秒，並非遊戲結束限制。20261101–20261130 共 30 個日期中，含 120ms 出手／擊破反應與 160ms 放開間隔的控制器，均能在首場碎星潮不扣血；不用超載於第 18 波結束，使用超載則到第 18–29 波。理想操作保留救急到第 49 波診斷停止點；理想操作不用超載則於第 24–36 波結束。
+Your shield starts at 100%. Smaller, partly destroyed meteors deal less damage. Survive increasingly crowded waves until the shield falls, then try to beat your daily best.
 
-另外以相同實際鍵盤節奏、無模擬時鐘在 390×844 瀏覽器比較：看見金色後等 120ms、按住 520ms、放開 160ms，不用超載。v0.44 首場碎星潮後剩 66%；v0.45 三顆皆完美擊破，剩 100%。三顆大型核心的壓力案例也以逐顆擊碎／放開 180ms 再按驗證，能保留滿盾。
-這些是可重現的壓力與選擇差異，不代表主觀遊戲性已通過 MK 的實際試玩。
+## Controls and languages
 
-## 開發與檔案
+- **Phone or tablet:** hold the fire button or a meteor; tap Overdrive when charged.
+- **Keyboard:** hold **Space** to fire, **E** for Overdrive, and **Esc** to pause or resume.
+- Use the sound control to mute or enable audio. The game respects reduced-motion preferences.
+- English is the default. Switch to **繁中** in the header for Traditional Chinese; the game remembers your choice when device storage is available.
 
-Reddit Devvit Web、Phaser 4、TypeScript、Vite、Hono。Node.js **24.18.0 以上**。
+Try **Practice perfect timing** before starting the daily challenge.
 
-```sh
-npm ci
-npm run check
-npm test
-npm run balance
-npm run build:standalone
-npm run build
-```
+## Scores and privacy
 
-開發獨立站：`npx vite --config vite.standalone.config.ts`。
-建置預覽：`npx vite preview --config vite.standalone.config.ts --host 127.0.0.1 --port 4173`。
-Reddit 仍待完成正式平台導入；不要用 scaffold 覆蓋此專案。
+Each UTC day has a shared meteor sequence. Your best score and language choice are stored on your device when storage is available. Scores are not uploaded to a global leaderboard. The game remains playable if device storage is unavailable. Copying a score is an action you choose.
 
-- `src/shared/game-logic.ts`：日期序列、多顆波次、鎖定、融解、碰撞、能量與得分，無 Phaser／Reddit 依賴。
-- `src/client/battlefield.ts`：城市／護盾／隕石／光束與多個同時發生的特效。繪製使用與碰撞相同的幾何。
-- `src/client/game.ts`：場景生命週期、鍵盤／觸控／指定目標、手動超載、練習、雙語狀態、暫停與分享。
-- `src/client/game-ui.ts`、`game.css`：語意化雙語介面與手機版配置。
-- `src/client/audio.ts`：合成音效、壓縮主輸出、音源生命週期。`scheduleImpact`／`createMasterBus` 可供 OfflineAudioContext 重現實際撞擊混音。
-- `src/client/coaching.ts`：風暴／城市／手動超載說明、里程碑與失誤建議。
-- `src/client/messages.ts`、`i18n.ts`：本機雙語字串、數值訊息、語言偏好、文字／ARIA／分享備援更新；不依賴外部翻譯服務。
-- `scripts/balance-sim.ts`：重現策略、危機損傷及能量使用差異的診斷器。
-- `src/client/records.ts`：可容錯的本機紀錄驗證與儲存。
-- `src/client/version.ts`：由 package.json 產生公開版號。
-- `src/server/index.ts`：既有 Reddit 管理員建文端點；此次未修改、未發布 Reddit 後端。
+## For community moderators
 
-## 發布與驗證
+After installing Last Shield, open your community menu and choose **Create a Last Shield game post** to create a playable post. Players open the post and select **Start defending** to play.
 
-Vercel 專案 `last-shield` 連接 GitHub `main`，正式站為 [last-shield.vercel.app](https://last-shield.vercel.app)。`vercel.json` 建置獨立前端，`scripts/ignore-build.sh` 對照前次部署 SHA，文件變更會跳過建置。沒有 cron 或 GitHub Actions。
+## Credits
 
-即時狀態見 [v0.46 驗證紀錄](docs/v0-46-verification-2026-11-14.md)。[v0.45](docs/v0-45-verification-2026-11-14.md)、[v0.44](docs/v0-44-verification-2026-11-14.md)、[v0.43](docs/v0-43-verification-2026-11-14.md)、[v0.42](docs/v0-42-verification-2026-11-14.md)、[v0.41](docs/v0-41-verification-2026-11-14.md)、[v0.40](docs/survival-verification-2026-11-14.md) 與 [v0.3](docs/mvp-verification-2026-11-14.md) 均是歷史版本，不代表新規則。
-
-本次無後端 schema、migration、RPC、API 格式、Function、排程或 provider secret 變更，正式獨立站為靜態前端。Reddit 尚未初始化／上傳／發布，建置成功不代表已上線 Reddit。沒有跨裝置帳號、全球排行榜、伺服器驗證分數、城市共建或追蹤分析。真實 iOS／Android 與人工試聽仍待確認；瀏覽器音效輸出／波形通過不代表主觀聽感已驗收。Phaser 套件大小提示與先前記錄的 Devvit CLI 間接依賴 advisories 仍存在。
-
-## 版本規則
-
-每個完成驗證並推送的新遊戲版本增加 **v0.01**：v0.40 → v0.41 → v0.42 → v0.43 → v0.44 → v0.45 → v0.46。`package.json` 以 `0.46.0` 對應 v0.46，UI、Reddit 開場與分享共用該來源，發布建立相同 Git tag。文件驗證補記不另升遊戲版本；計分／玩法變動須隔離 `RULES_VERSION`，避免比較不相容紀錄。
-
-## 原創權利
-
-新巴比倫（Neo Babylon）的世界觀、角色、原創美術與視聽資產之權利保留予各自創作者。本專案未授予重用該等資產的權利；程式碼授權尚未選定。
-
-為 Reddit Game of the Day 2026 挑戰開發。
+Last Shield is set in the original Neo Babylon world. Rights to the original world, characters, artwork and audiovisual assets remain with their creators.
