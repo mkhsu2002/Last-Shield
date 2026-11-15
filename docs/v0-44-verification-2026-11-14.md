@@ -22,6 +22,11 @@
 
 ## 發布狀態
 
-待推送 main／tag v0.44，再以 Vercel API 讀回來源 SHA、正式 alias、公開資產 hash 與 live 補救操作。
+- main 已合併並推送 `48ce7ee5d3313fc60350382cc5dbfb1e7594c5ad`；annotated tag v0.44 已推送並指向相同遊戲 SHA。
+- Vercel API 讀回 deployment `dpl_7K4ysnJEW6EhDB8A3FtuQhxPZdA2` 為 READY，來源為該 main SHA，alias 包含 last-shield.vercel.app。
+- 公開 `/assets/index-C9DQ3Yj8.js` SHA-256 `65958651e06a6c9f18d59000f776dd75d1443833775a42ad86d573dc611795e3`；`/assets/index-Di3DVqag.css` SHA-256 `b98cbd1cfe5abb891772b457bd4a11eaca3f95488084c8435eb11ffbc103c8e0`，皆與本機最終建置完全相同。
+- 正式站 390×844 原生觸控：可見 v0.44，故意錯過首輪再按，普通光束融解 12%；放開等下一輪金色，重按接續至完美光束 18%，最後護盾 100%、完美 1／能量 1。localStorage 的最佳紀錄字串未改。
+- 正式站繼續以鍵盤累積到滿氣，暫停並按 E 後仍顯示「超載已就緒」。恢復後第 4 波兩顆逼近，手動按鈕立即清除兩顆，回饋正確且護盾 100%。測試後暫停、重載回開場、恢復實際時鐘，未完成測試局。
+- 正式 smoke 的 console 只有 Phaser 啟動 LOG，無 JavaScript errors。發布證據補記為 docs-only，使用既有 skip-build gate，不另升版。
 
 本次無後端 migration、Functions、API 契約、帳本或排程變更；僅發布靜態獨立站。Reddit 仍未初始化／上傳／發布。既有 Phaser bundle 大小提示仍存在。

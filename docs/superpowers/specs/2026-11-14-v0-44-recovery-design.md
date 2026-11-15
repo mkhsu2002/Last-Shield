@@ -1,6 +1,6 @@
 # v0.44 補救窗口與前段緩坡
 
-Status: implemented and locally verified; production pending. Authorized by MK's request to reduce difficulty and allow a second attempt, 2026-11-14. Retain banked manual overdrive and meaningful later crises; supersede survival-4 single opportunity/locked bad grade and early density.
+Status: implemented and production-verified as v0.44. Authorized by MK's request to reduce difficulty and allow a second attempt, 2026-11-14. Retain banked manual overdrive and meaningful later crises; supersede survival-4 single opportunity/locked bad grade and early density.
 
 - Gold opportunity repeats every 1000ms while a core remains alive; window widens ±120 → ±180ms. Input, timing marker, target ring and hints share the same cyclic timing function.
 - Releasing and pressing again can improve an existing grade/power; residual mass never resets and an earned better grade never downgrades. No automatic upgrade while holding, and no energy until an actual clear; one core still awards at most one perfect charge. Keep the selected live core through release so re-pressing the main control retries that core; explicit targeting may still switch.
