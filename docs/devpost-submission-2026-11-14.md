@@ -1,6 +1,6 @@
 # Devpost 提交包｜Last Shield｜2026-11-14
 
-狀態：英文提交資料已準備，尚未在 Devpost 建立或送出參賽表單。本輪未登入 Reddit 原生遊玩已實測通過；詳見末尾證據。以下英文區段可依實際表單欄位貼入。
+狀態（2026-11-14 Vancouver）：已沿用既有草稿 1301583 填寫並儲存，Devpost 顯示 DRAFT、4/5 steps done；停在 finalization，尚未正式送出；最後讀回條款 checkbox 已勾選，agent 未操作該 checkbox 或 Submit project。實際儲存的英文 Project Story 見 [完整文案](devpost-project-story-2026-11-14.md)，欄位讀回與提交前檢討見 [草稿紀錄](devpost-draft-review-2026-11-14.md)。以下保留其他欄位與評審操作參考。
 
 ## 必要連結
 
@@ -8,6 +8,8 @@
 | --- | --- |
 | Hackathon | https://redditgameofday2026.devpost.com/ |
 | 官方規則 | https://redditgameofday2026.devpost.com/rules |
+| Devpost 草稿預覽 | https://devpost.com/software/last-shield |
+| Devpost 最終確認頁（須登入） | https://devpost.com/submit-to/31644-reddit-s-game-of-the-day-hackathon/manage/submissions/1301583-last-shield/finalization |
 | Devvit app listing | https://developers.reddit.com/apps/last-shield |
 | 公開測試 subreddit | https://www.reddit.com/r/last_shield_dev/ |
 | YouTube 英文原生實玩影片（公開） | https://www.youtube.com/watch?v=LVJTJTfkgRk |
@@ -112,7 +114,8 @@ The game is free to play and has no app purchase, invitation requirement, or usa
 - 參賽者姓名／團隊成員、所在司法管轄區、年齡與資格、所有權與授權聲明，不代填未確認的個人事實。
 - 若表單詢問既有作品／參賽期間更新，依實際開發日期與既有 Neo Babylon 世界觀／素材來源填寫，不能把既有世界觀宣稱為本次新創。程式庫的本輪遊戲版本可由 Git 歷史核對。
 - 本輪 39 秒英文 v0.47 Reddit 原生實錄已在 NeoBabylon／M.K. Said（@neobabylon-mk）公開發布：https://www.youtube.com/watch?v=LVJTJTfkgRk 。含貼文啟動、完美接力、手動 Overdrive 與原始音效；影片、來源紀錄與公開讀回在 `demo/v0.47/`。Devpost 影片欄可填此 YouTube URL；v0.46 standalone 舊片與 12 秒 catalog 宣傳片均不是這支原生實錄。
-- 本文件是提交包，沒有宣稱 Devpost 草稿已儲存或正式參賽已完成。最終送出涉及官方規則的同意與聲明，依 MK 全域第 17 條須由 MK 在可見頁面親自確認。
+- Devpost 草稿已儲存，尚未正式參賽送出。最終送出涉及官方規則的同意與聲明，依 MK 全域第 17 條須由 MK 在可見頁面親自確認。
+- Additional info 的「ported game」目前選 No，依本次新遊戲於 hackathon 期間開發填寫；Neo Babylon 世界觀既有。請在送出前核對此分類；未將世界觀宣稱為本次新創。
 
 ## 本輪驗證與存取維持
 
