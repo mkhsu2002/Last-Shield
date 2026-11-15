@@ -104,7 +104,7 @@ The game is free to play and has no app purchase, invitation requirement, or usa
 
 - 參賽者姓名／團隊成員、所在司法管轄區、年齡與資格、所有權與授權聲明，不代填未確認的個人事實。
 - 若表單詢問既有作品／參賽期間更新，依實際開發日期與既有 Neo Babylon 世界觀／素材來源填寫，不能把既有世界觀宣稱為本次新創。程式庫的本輪遊戲版本可由 Git 歷史核對。
-- 可選影片目前沒有已驗證的公開影音平台 URL。既有 v0.46 本機 MP4 是 standalone 實錄，不能宣稱為本次 v0.47 Reddit 原生錄影，也不能把本機路徑填到 Devpost 影片網址欄。未上傳前可省略此可選欄位。
+- 已完成本輪 39 秒英文 v0.47 Reddit 原生實錄，含貼文啟動、完美接力、手動 Overdrive 與原始音效；影片與來源紀錄在 `demo/v0.47/`。YouTube 頻道已由 MK 指定為 NeoBabylon／M.K. Said，待專屬視窗切回對應 Google 帳號後上傳公開；未取得正式 URL 前，不能把本機路徑或 GitHub MP4 填成 Devpost 的影音平台 URL。v0.46 standalone 舊片與 12 秒 catalog 宣傳片均不是這支原生實錄。
 - 本文件是提交包，沒有宣稱 Devpost 草稿已儲存或正式參賽已完成。最終送出涉及官方規則的同意與聲明，依 MK 全域第 17 條須由 MK 在可見頁面親自確認。
 
 ## 本輪驗證與存取維持

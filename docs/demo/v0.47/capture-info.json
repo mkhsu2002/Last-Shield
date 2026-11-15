@@ -1,0 +1,383 @@
+{
+  "source": "https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/",
+  "gameHost": "last-shield-kwzxmp-0-47-1-webview.devvit.net",
+  "version": "v0.47",
+  "language": "en",
+  "recordedAt": "2026-11-15T03:46:06.667Z",
+  "width": 1280,
+  "height": 800,
+  "durationMs": 39242,
+  "frames": 2122,
+  "audioOffsetSeconds": 4.391,
+  "audioBytes": 362260,
+  "actions": [
+    {
+      "ms": 1717,
+      "action": "Open expanded game from Reddit post"
+    },
+    {
+      "ms": 4437,
+      "action": "Start challenge"
+    },
+    {
+      "ms": 5669,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 6348,
+      "action": "Release after clear",
+      "score": "200",
+      "wave": "Wave 2",
+      "perfect": "Perfect clears 1"
+    },
+    {
+      "ms": 7240,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 7701,
+      "action": "Release after clear",
+      "score": "410",
+      "wave": "Wave 2",
+      "perfect": "Perfect clears 2"
+    },
+    {
+      "ms": 8945,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 9408,
+      "action": "Release after clear",
+      "score": "630",
+      "wave": "Wave 3",
+      "perfect": "Perfect clears 3"
+    },
+    {
+      "ms": 10729,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 11275,
+      "action": "Release after clear",
+      "score": "860",
+      "wave": "Wave 4",
+      "perfect": "Perfect clears 4"
+    },
+    {
+      "ms": 11357,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 11665,
+      "action": "Release after clear",
+      "score": "1,100",
+      "wave": "Wave 4",
+      "perfect": "Perfect clears 5"
+    },
+    {
+      "ms": 12834,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 13300,
+      "action": "Release after clear",
+      "score": "1,350",
+      "wave": "Wave 5",
+      "perfect": "Perfect clears 6"
+    },
+    {
+      "ms": 13377,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 13689,
+      "action": "Release after clear",
+      "score": "1,610",
+      "wave": "Wave 5",
+      "perfect": "Perfect clears 7"
+    },
+    {
+      "ms": 15145,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 15684,
+      "action": "Release after clear",
+      "score": "1,880",
+      "wave": "Wave 6",
+      "perfect": "Perfect clears 8"
+    },
+    {
+      "ms": 15760,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 16216,
+      "action": "Release after clear",
+      "score": "2,160",
+      "wave": "Wave 6",
+      "perfect": "Perfect clears 9"
+    },
+    {
+      "ms": 16295,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 16680,
+      "action": "Release after clear",
+      "score": "2,550",
+      "wave": "Wave 6",
+      "perfect": "Perfect clears 10"
+    },
+    {
+      "ms": 18458,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 18926,
+      "action": "Release after clear",
+      "score": "2,850",
+      "wave": "Wave 7",
+      "perfect": "Perfect clears 11"
+    },
+    {
+      "ms": 20327,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 20722,
+      "action": "Release after clear",
+      "score": "3,150",
+      "wave": "Wave 8",
+      "perfect": "Perfect clears 12"
+    },
+    {
+      "ms": 20799,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 21109,
+      "action": "Release after clear",
+      "score": "3,450",
+      "wave": "Wave 8",
+      "perfect": "Perfect clears 13"
+    },
+    {
+      "ms": 22194,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 22742,
+      "action": "Release after clear",
+      "score": "3,850",
+      "wave": "Wave 9",
+      "perfect": "Perfect clears 14"
+    },
+    {
+      "ms": 22826,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 23136,
+      "action": "Release after clear",
+      "score": "4,150",
+      "wave": "Wave 9",
+      "perfect": "Perfect clears 15"
+    },
+    {
+      "ms": 23836,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 24301,
+      "action": "Release after clear",
+      "score": "4,450",
+      "wave": "Wave 10",
+      "perfect": "Perfect clears 16"
+    },
+    {
+      "ms": 24376,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 24692,
+      "action": "Release after clear",
+      "score": "4,750",
+      "wave": "Wave 10",
+      "perfect": "Perfect clears 17"
+    },
+    {
+      "ms": 25627,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 26168,
+      "action": "Release after clear",
+      "score": "5,050",
+      "wave": "Wave 11",
+      "perfect": "Perfect clears 18"
+    },
+    {
+      "ms": 26245,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 26643,
+      "action": "Release after clear",
+      "score": "5,350",
+      "wave": "Wave 11",
+      "perfect": "Perfect clears 19"
+    },
+    {
+      "ms": 26727,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 27117,
+      "action": "Release after clear",
+      "score": "5,650",
+      "wave": "Wave 11",
+      "perfect": "Perfect clears 20"
+    },
+    {
+      "ms": 27446,
+      "action": "Manual Overdrive",
+      "wave": "Wave 12",
+      "incoming": "4 incoming · Impact in 2.3s"
+    },
+    {
+      "ms": 29051,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 29576,
+      "action": "Release after clear",
+      "score": "7,600",
+      "wave": "Wave 13",
+      "perfect": "Perfect clears 21"
+    },
+    {
+      "ms": 30813,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 31221,
+      "action": "Release after clear",
+      "score": "7,900",
+      "wave": "Wave 14",
+      "perfect": "Perfect clears 22"
+    },
+    {
+      "ms": 31354,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 31627,
+      "action": "Release after clear",
+      "score": "8,200",
+      "wave": "Wave 14",
+      "perfect": "Perfect clears 23"
+    },
+    {
+      "ms": 32528,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 32996,
+      "action": "Release after clear",
+      "score": "8,600",
+      "wave": "Wave 15",
+      "perfect": "Perfect clears 24"
+    },
+    {
+      "ms": 33087,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 33319,
+      "action": "Release after clear",
+      "score": "8,900",
+      "wave": "Wave 15",
+      "perfect": "Perfect clears 25"
+    },
+    {
+      "ms": 34030,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 34417,
+      "action": "Release after clear",
+      "score": "9,200",
+      "wave": "Wave 16",
+      "perfect": "Perfect clears 26"
+    },
+    {
+      "ms": 34494,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 34829,
+      "action": "Release after clear",
+      "score": "9,500",
+      "wave": "Wave 16",
+      "perfect": "Perfect clears 27"
+    },
+    {
+      "ms": 35136,
+      "action": "Manual Overdrive",
+      "wave": "Wave 17",
+      "incoming": "3 incoming · Impact in 2.0s"
+    },
+    {
+      "ms": 36142,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 36685,
+      "action": "Release after clear",
+      "score": "11,000",
+      "wave": "Wave 18",
+      "perfect": "Perfect clears 28"
+    },
+    {
+      "ms": 36761,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 37167,
+      "action": "Release after clear",
+      "score": "11,300",
+      "wave": "Wave 18",
+      "perfect": "Perfect clears 29"
+    },
+    {
+      "ms": 37280,
+      "action": "Hold on gold"
+    },
+    {
+      "ms": 37645,
+      "action": "Release after clear",
+      "score": "11,500",
+      "wave": "Wave 18",
+      "perfect": "Perfect clears 30"
+    }
+  ],
+  "final": {
+    "score": "11,500",
+    "wave": "Wave 19",
+    "perfect": "Perfect clears 30",
+    "health": "66%"
+  },
+  "capture": "Continuous real-time native Reddit post launch and gameplay with original game Web Audio output mirrored to a recorder. No score, clock, speed, or game-rule changes.",
+  "export": {
+    "durationSeconds": 39.014333,
+    "width": 1280,
+    "height": 800,
+    "fps": 30,
+    "videoCodec": "H.264",
+    "audioCodec": "AAC",
+    "sha256": "27f3ac892723422e0b925a6cd1eb3d09cdb7dd13d7ac5fa8e1d745b928ed8b8b",
+    "bytes": 2487993,
+    "edits": "Encoded one continuous recording with original game audio synchronized to its actual start; no speed change or stitched gameplay."
+  }
+}
