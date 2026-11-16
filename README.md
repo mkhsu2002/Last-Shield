@@ -32,7 +32,11 @@ Try **Practice perfect timing** before starting the daily challenge.
 
 ## Scores and privacy
 
-Each UTC day has a shared meteor sequence. Your best score and language choice are stored on your device when storage is available. Scores are not uploaded to a global leaderboard. The game remains playable if device storage is unavailable. Copying a score is an action you choose.
+Your daily best and language choice are saved on your device when storage is available. The game remains playable without storage or a Reddit login.
+
+In the Reddit game, choose **Rankings & submit score** after a run to enter the daily board for the current subreddit. The board shows the top ten, players near you, and the points needed to pass the next defender. Each account keeps its highest accepted score per UTC day and rules version; ties share a rank. Starting a run does not publish your score. Submitting makes your Reddit username and score public on that community's board. You can remove your entry for a day. Records expire within 30 days of the challenge day's start. Submit within two hours of starting a run. Practice and the standalone web preview keep local scores only.
+
+Use **Share score & strategy** to preview your result and optionally add a strategy note. Copy the text, then open the Reddit post to paste, edit, and send your own comment. Nothing is posted automatically.
 
 ## Daily challenge and replay
 
@@ -40,7 +44,7 @@ The meteor sequence is seeded by the UTC day. Replays on the same day use the sa
 
 Pressure grows from individual meteors to volleys of up to six simultaneous targets. A perfect beam stops only its selected target; the others keep approaching. Partly melting a meteor reduces its eventual impact damage. Choosing your next target and deciding when to spend Overdrive matter as the sky fills.
 
-After a run, use the copy-results button to share your score and the game-post link in a comment or with a friend. Sharing is manual. Best scores are local to the current device; there is no shared leaderboard or verified competitive ranking in this version.
+After a run, share the choices that helped you survive: when did you use Overdrive, and which target did you clear first? The same daily sequence gives players a common challenge to discuss. You can also copy just your result and game-post link to invite a friend.
 
 ## For community moderators
 
@@ -54,21 +58,9 @@ Read the [Terms and Conditions](https://last-shield.vercel.app/terms/) and [Priv
 
 Last Shield is set in the original Neo Babylon world. Rights to the original world, characters, artwork and audiovisual assets remain with their creators.
 
-## Development
-
-Requires Node.js 24.18 or newer.
-
-```sh
-npm ci
-npm run check
-npm test
-npm run build
-```
-
-`npm run dev` starts the Devvit playtest workflow for a community you moderate after Devvit CLI authentication. `npm run build:standalone` builds the optional web preview into `dist/standalone`; the Reddit client and server build is separate.
-
-The project uses TypeScript, Devvit Web, Phaser, Vite, Hono, and Web Audio. Gameplay rules live in `src/shared/game-logic.ts`; `src/client/` contains the rendered game, controls, localization, audio, and local records; `src/server/index.ts` handles moderator-created playable posts. `devvit.json` defines the inline splash, expanded game, and moderator menu.
-
 ## Current release
 
-Public game version **v0.47**, Devvit package **0.47.1**. The public test post is free to play, with no app purchase, invite list, or game usage limit. It will remain available for hackathon judging through **December 16, 2026 at 6:00 p.m. PST**. Reddit may apply its own security checks.
+Game version **v0.48**, Devvit package **0.48.2**. The public test post is free to play, with no app purchase, invite list, or game usage limit. It will remain available for hackathon judging through **December 16, 2026 at 6:00 p.m. PST**. Reddit may apply its own security checks.
+
+
+For development and release information, see the [development notes](docs/development.md).

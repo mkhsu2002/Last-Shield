@@ -33,12 +33,13 @@
     "dev": "vite build --watch"
   },
   "permissions": {
+    "redis": true,
     "reddit": true,
     "http": {
       "enable": false
     }
   },
   "dev": {
-    "subreddit": "last_shield_dev"
+    "subreddit": "last_shield_stage"
   }
 }

@@ -1,6 +1,8 @@
+> 狀態補記（2026-11-15）：公開投稿版本仍為 v0.47／0.47.1。v0.48 社群功能開發與私人 staging 安裝進行中，詳見 [發布狀態](community-release-2026-11-15.md)。本文先前版本驗收是歷史紀錄，不能作為新 API 的 live 驗證。
+
 # 開發與發布參考
 
-Status: 2026-11-14 從 README 移入。v0.46 的 Vercel 段落為歷史證據；目前 Vercel 已部署 v0.47／0.47.1 與政策頁，Reddit v0.47／package 0.47.1 已核准為公開版本並安裝；r/last_shield_dev 已公開，未登入原生實玩驗證通過，詳見 `devpost-submission-2026-11-14.md`。後續即時狀態以 `reddit-release-2026-11-14.md` 為準。根目錄 README 會成為 Reddit App Directory 對外說明，因此僅保留玩家與管理員需要的內容。
+Status: 2026-11-14 從 README 移入。v0.46 的 Vercel 段落為歷史證據；目前 Vercel 已部署 v0.47／0.47.1 與政策頁，Reddit v0.47／package 0.47.1 已核准為公開版本並安裝；r/last_shield_dev 已公開，未登入原生實玩驗證通過，詳見 `devpost-submission-2026-11-14.md`。v0.47 發布歷史見 `reddit-release-2026-11-14.md`；目前開發與發布狀態以 `community-release-2026-11-15.md` 為準。根目錄 README 會成為 Reddit App Directory 對外說明，因此僅保留玩家與管理員需要的內容。
 
 # 最後防線 · Last Shield
 
@@ -79,3 +81,25 @@ Vercel 專案 `last-shield` 連接 GitHub `main`，正式站為 [last-shield.ver
 新巴比倫（Neo Babylon）的世界觀、角色、原創美術與視聽資產之權利保留予各自創作者。本專案未授予重用該等資產的權利；程式碼授權尚未選定。
 
 為 Reddit Game of the Day 2026 挑戰開發。
+
+## v0.48 development reference
+
+## Development
+
+Requires Node.js 24.18 or newer.
+
+```sh
+npm ci
+npm run check
+npm test
+npm run build
+```
+
+`npm run dev` starts the Devvit playtest workflow for a community you moderate after Devvit CLI authentication. `npm run build:standalone` builds the optional web preview into `dist/standalone`; the Reddit client and server build is separate.
+
+The project uses TypeScript, Devvit Web, Phaser, Vite, Hono, and Web Audio. Gameplay rules live in `src/shared/game-logic.ts`; `src/client/` contains the rendered game, controls, localization, audio, and local records; `src/server/index.ts` handles moderator-created playable posts and mounts the community API. `src/server/community-router.ts` defines its HTTP contract; `community-service.ts` owns sessions, daily rankings, and submission records. `src/shared/community.ts` replays submitted gameplay using the same rules as the client. `devvit.json` defines the inline splash, expanded game, and moderator menu.
+
+
+## Community development
+
+The default playtest target is the private `r/last_shield_stage`, separate from the public judging post in `r/last_shield_dev`. Do not playtest over the judging installation. The community API contract is `community-1`, and ranking keys include `survival-6`; this update does not change gameplay or scoring rules. The server recalculates scores from gameplay inputs, which prevents arbitrary score submissions but does not establish that a human performed the inputs. No external database, new scheduled job, or comment-as-user permission is required.

@@ -1,3 +1,5 @@
+> 歷史版本註記（2026-11-15）：本文保留 v0.47／0.47.1 原始投稿與當時查核結果；後續 v0.48 社群功能及發布狀態見 [發布紀錄](community-release-2026-11-15.md)。未重新修改 Devpost 已投稿欄位。
+
 # Devpost 提交包｜Last Shield｜2026-11-14
 
 狀態（2026-11-14 Vancouver）：MK 已親自按 Submit project；本輪重新讀回「Project submitted!」與 SUBMITTED、5/5 steps done，正式提交成功。作品頁：https://devpost.com/software/last-shield 。完整核對見 [提交後確認](devpost-submission-confirmation-2026-11-14.md)。實際英文 Project Story 見 [完整文案](devpost-project-story-2026-11-14.md)。

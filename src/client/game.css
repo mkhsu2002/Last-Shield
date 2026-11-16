@@ -1017,3 +1017,32 @@ html[lang="en"] .fire-button > span { max-width: 48%; text-align: right; }
   html[lang="en"] .topbar h1 { font-size: 17px; white-space: nowrap; }
   .topbar .version { display: block; margin: 3px 0 0; }
 }
+
+/* Social panels stay outside the active battlefield and support short screens. */
+.community-dialog {
+  pointer-events: auto;
+  width: min(94%, 560px);
+  max-height: 88dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px;
+  background: var(--surface);
+  color: var(--text);
+}
+.community-dialog::backdrop { background: #020811d9; }
+.dialog-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dialog-heading h2 { margin: 0; font-size: 23px; }
+.dialog-heading button { width: auto; min-height: 44px; margin: 0; }
+.community-dialog h3 { font-size: 15px; color: var(--gold); }
+.community-dialog p { line-height: 1.55; }
+.community-dialog textarea { display: block; width: 100%; margin: 8px 0 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text); padding: 10px; resize: vertical; }
+.community-dialog label { display: block; margin-top: 15px; }
+.leaderboard { list-style: none; padding: 0; }
+.leaderboard li { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 8px; padding: 10px 6px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.leaderboard li > span:nth-child(2) { overflow-wrap: anywhere; }
+.leaderboard small { grid-column: 2; color: var(--cyan); }
+.leaderboard .is-you { background: #78e5f212; }
+button:disabled { opacity: .5; cursor: default; }
+#intro-board { margin-top: 8px; }

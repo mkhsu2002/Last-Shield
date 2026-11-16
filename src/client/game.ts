@@ -24,6 +24,7 @@ import {
   energyCopy,
 } from "./coaching";
 import { GAME_VERSION } from "./version";
+import { Community } from "./community";
 import { drawBattlefield, FIELD } from "./battlefield";
 import type { BattleEffect } from "./battlefield";
 
@@ -39,6 +40,8 @@ mountGameUI();
 
 class ShieldScene extends Phaser.Scene {
   private graphics!: Phaser.GameObjects.Graphics;
+  private community!: Community;
+  private starting = false;
   private phase: Phase = "intro";
   private run = new DefenseRun(utcDaySeed(new Date()));
   private audio = new SynthAudio();
@@ -65,6 +68,7 @@ class ShieldScene extends Phaser.Scene {
 
   create(): void {
     this.graphics = this.add.graphics();
+    this.community = new Community();
     try {
       this.storage = window.localStorage;
     } catch {
@@ -209,7 +213,7 @@ class ShieldScene extends Phaser.Scene {
         ? `本機今日最佳 ${this.best.score.toLocaleString("zh-TW")} 分 · 第 ${
             this.best.waveReached
           } 波`
-        : "按住畫面或空白鍵 · 戰績只保存在這台裝置"
+        : "按住畫面或空白鍵 · 結算後可選擇參加社群榜"
     );
   }
 
@@ -236,11 +240,18 @@ class ShieldScene extends Phaser.Scene {
       this.run.meteors.length === 0;
   }
 
-  private startRun(practice = false): void {
+  private async startRun(practice = false): Promise<void> {
+    if (this.starting) return;
+    this.starting = true;
+    const launchButtons = ["start", "retry", "practice", "practice-again", "practice-start"].map(id => element<HTMLButtonElement>(id));
+    launchButtons.forEach(button => { button.disabled = true; });
+    const day = await this.community.begin(practice);
+    this.starting = false;
+    launchButtons.forEach(button => { button.disabled = false; });
     this.releaseAll();
     this.audio.stopAll();
     this.audio.unlock();
-    this.run = new DefenseRun(utcDaySeed(new Date()));
+    this.run = new DefenseRun(day);
     this.loadDay();
     this.breakMs = 0;
     this.previousTarget = -1;
@@ -261,8 +272,14 @@ class ShieldScene extends Phaser.Scene {
     this.renderHUD();
   }
 
+  private stepRun(delta: number, holding: boolean, target?: number): RunEvent[] {
+    this.community.record([delta, holding, target]);
+    return this.run.step(delta, holding, target);
+  }
+
   private activateOverdrive(): void {
     if (this.phase !== "playing" || this.practiceMode) return;
+    this.community.record([-1, this.inputs.size > 0]);
     for (const event of this.run.activateOverdrive(this.inputs.size > 0))
       this.handleEvent(event);
     this.renderHUD();
@@ -273,20 +290,20 @@ class ShieldScene extends Phaser.Scene {
     this.inputs.add(source);
     this.audio.unlock();
     this.audio.tone(180, 250, 0.06, 0.025, "triangle");
-    for (const event of this.run.step(0, true, targetId))
+    for (const event of this.stepRun(0, true, targetId))
       this.handleEvent(event);
   }
   private release(source: string): void {
     this.inputs.delete(source);
     if (!this.inputs.size) {
       this.audio.stop();
-      if (this.phase === "playing") this.run.step(0, false);
+      if (this.phase === "playing") this.stepRun(0, false);
     }
   }
   private releaseAll(): void {
     this.inputs.clear();
     this.audio.stop();
-    this.run.step(0, false);
+    this.stepRun(0, false);
   }
   private pauseRun(): void {
     if (this.phase !== "playing") return;
@@ -457,15 +474,14 @@ class ShieldScene extends Phaser.Scene {
       `手動超載 ${this.run.overdriveUses} 次 · 清除 ${this.run.overdriveCleared} 顆威脅`
     );
     text("retry-hint", [next, retryAdvice(this.run)]);
+    this.community.finish(this.shareMessage());
     this.setPhase("results");
     element("retry").focus({ preventScroll: true });
   }
 
-  private async share(): Promise<void> {
-    if (this.sharing) return;
-    this.sharing = true;
+  private shareMessage(): string {
     const day = String(this.run.daySeed);
-    const message = `最後防線 ${GAME_VERSION} · ${day.slice(0, 4)}-${day.slice(
+    return `最後防線 ${GAME_VERSION} · ${day.slice(0, 4)}-${day.slice(
       4,
       6
     )}-${day.slice(6)} UTC\n${this.run.score.toLocaleString(
@@ -475,6 +491,12 @@ class ShieldScene extends Phaser.Scene {
     } 顆隕石\n守到第 ${this.run.waveIndex + 1} 波 · 最高連擊 ${
       this.run.bestCombo
     }。同一片天空，換你守守看！`;
+  }
+
+  private async share(): Promise<void> {
+    if (this.sharing) return;
+    this.sharing = true;
+    const message = this.shareMessage();
     const local = ["localhost", "127.0.0.1", "[::1]"].includes(
         location.hostname
       ),
@@ -522,7 +544,7 @@ class ShieldScene extends Phaser.Scene {
               Math.max(0, target.chargeStartMs - this.run.waveElapsedMs)
             )
           : dt;
-      for (const event of this.run.step(practiceDelta, this.inputs.size > 0))
+      for (const event of this.stepRun(practiceDelta, this.inputs.size > 0))
         this.handleEvent(event);
       const m = this.run.meteor;
       if (m && this.phase === "playing") {

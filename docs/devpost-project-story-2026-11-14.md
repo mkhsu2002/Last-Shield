@@ -1,3 +1,5 @@
+> 歷史版本註記（2026-11-15）：本文保留 v0.47／0.47.1 原始投稿與當時查核結果；後續 v0.48 社群功能及發布狀態見 [發布紀錄](community-release-2026-11-15.md)。未重新修改 Devpost 已投稿欄位。
+
 # Last Shield
 
 Last Shield is a daily timing-and-survival game played directly in a Reddit post. Catch gold, hold the beam until the meteor shatters, release, and commit to the next threat. A perfect lock stops one target while the others keep approaching; banked Overdrive gives you a deliberate emergency choice.
