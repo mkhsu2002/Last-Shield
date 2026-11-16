@@ -1,6 +1,8 @@
 # Last Shield
 
-The sky is falling over Neo Babylon. Hold the city’s last shield against an escalating meteor storm.
+**One daily storm. A city to defend. A community score to beat.**
+
+Catch the gold, hold your beam, and defend Neo Babylon against an escalating meteor storm. Everyone faces the same daily sequence. Learn when to switch targets, save Overdrive for the right moment, then see how your best run ranks in your Reddit community.
 
 ## Play on Reddit
 
@@ -10,6 +12,18 @@ Open the [playable Reddit post](https://www.reddit.com/r/last_shield_dev/comment
 - [Devvit app listing](https://developers.reddit.com/apps/last-shield)
 - [Public test community](https://www.reddit.com/r/last_shield_dev/)
 - [Source repository](https://github.com/mkhsu2002/Last-Shield)
+
+## The daily defense
+
+- **A fresh storm each day.** A new UTC day brings a new meteor sequence. Same-day replays give you a chance to learn the pattern and improve your decisions.
+- **Timing with consequences.** A perfect beam stops its selected meteor while the others keep falling. Release after the clear, choose the next threat, and chain the gold relay.
+- **An emergency move you control.** Bank three perfect clears, then spend Overdrive when the sky becomes too crowded.
+- **Your community's daily board.** Submit your best run to see the top ten, the players near you, and the score needed to pass the next defender. Tied scores share a rank.
+- **Strategies worth discussing.** Preview your result, add an optional note about your run, and bring the conversation back to the Reddit post.
+
+New in **v0.49**: a clearer battlefield and a bottom fire control keep the defense within reach on smaller screens. Overdrive stays compact as your charge changes.
+
+New in **v0.48**: community rankings, scores recalculated from gameplay before ranking, and score-and-strategy sharing. You can play without logging in; joining the board is your choice.
 
 ## How to play
 
@@ -60,7 +74,7 @@ Last Shield is set in the original Neo Babylon world. Rights to the original wor
 
 ## Current release
 
-Game version **v0.48**, Devvit package **0.48.2**. The public test post is free to play, with no app purchase, invite list, or game usage limit. It will remain available for hackathon judging through **December 16, 2026 at 6:00 p.m. PST**. Reddit may apply its own security checks.
+Game version **v0.49**, Devvit package **0.49.0**. The public test post is free to play, with no app purchase, invite list, or game usage limit. It will remain available for hackathon judging through **December 16, 2026 at 6:00 p.m. PST**. Reddit may apply its own security checks.
 
 
 For development and release information, see the [development notes](docs/development.md).

@@ -1,3 +1,5 @@
+> 存檔狀態（2026-11-16）：本文是 v0.47 原始 listing／政策草稿。現在遊戲簡介來源為 [presentation-copy.json](presentation-copy.json)，政策來源為 public/；最新平台同步與素材審核狀態見 [展示同步](presentation-review-2026-11-16.md)。
+
 # App Directory 欄位與政策草稿｜2026-11-14
 
 狀態：MK 已授權將政策頁上線並儲存 Reddit 設定。公開頁正文以 `public/terms/index.html`、`public/privacy/index.html` 為準；本文件保留原始文案供對照。兩頁已正式上線且匿名 HTTP 200、內容比對一致；官方 API 已儲存，Developer Settings 重新載入確認四個公開欄位正確、NSFW false。詳細證據見 `reddit-release-2026-11-14.md`。

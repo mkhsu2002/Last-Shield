@@ -1046,3 +1046,72 @@ html[lang="en"] .fire-button > span { max-width: 48%; text-align: right; }
 .leaderboard .is-you { background: #78e5f212; }
 button:disabled { opacity: .5; cursor: default; }
 #intro-board { margin-top: 8px; }
+
+/* Keep instructions available without allowing translated copy to move controls. */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip-path: inset(50%);
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+.action { display: flex; flex-direction: column; gap: 7px; }
+.action .energy-card { margin: 0; padding: 5px 10px; }
+.energy-controls { min-height: 44px; }
+.energy-heading { gap: 6px; }
+.energy-heading > strong { font-size: 13px; line-height: 16px; white-space: nowrap; }
+.energy-heading > svg { width: 12px; height: 15px; }
+.energy { margin: 3px 0 0 18px; gap: 4px; }
+.energy i { width: 21px; height: 11px; font-size: 8px; }
+.overdrive-button { display: inline-flex; justify-content: center; align-items: center; gap: 7px; min-height: 44px; min-width: 104px; padding: 7px 10px; font-size: 13px; white-space: nowrap; }
+.overdrive-button kbd { font: inherit; font-size: 10px; padding: 2px 4px; border: 1px solid currentColor; border-radius: 4px; }
+.action .city-line { order: -1; margin: 0; }
+.action .meter { display: none; }
+.action .fire-button { min-height: 64px; height: 64px; flex-shrink: 0; }
+.fire-button strong { white-space: nowrap; }
+.fire-button > span { line-height: 1.35; }
+
+@media (max-width: 540px), (max-height: 760px) {
+  .interface { padding: 10px 14px max(10px, env(safe-area-inset-bottom)); }
+  .topbar { gap: 6px; }
+  .topbar .eyebrow { display: none; }
+  .brand { gap: 6px; }
+  .brand > svg { width: 20px; height: 27px; }
+  .tools { gap: 4px; }
+  .icon-button { padding: 6px; font-size: 11px; }
+  .language-select { padding: 5px; min-width: 48px; }
+  .run-hud { margin-top: 8px; }
+  .label { font-size: 10px; margin-bottom: 2px; }
+  .health-block strong { font-size: 30px; }
+  .score-block strong { font-size: 25px; }
+  .run-progress { margin-top: 6px; }
+  .stats-row { margin-top: 6px; font-size: 11px; gap: 4px; }
+  .storm-strip { margin-top: 4px; font-size: 10px; justify-content: flex-end; }
+  .storm-strip #storm, .target { display: none; }
+  .action { left: 12px; right: 12px; bottom: max(10px, env(safe-area-inset-bottom)); gap: 6px; }
+  .action .city-line, .action .cue-help { display: none; }
+  .action .feedback { min-height: 16px; line-height: 16px; font-size: 11px; }
+  .action .cue { margin: 0; font-size: clamp(16px, 4.8cqw, 21px); line-height: 1.2; }
+  html[lang="en"] .action .cue { font-size: clamp(16px, 4.8cqw, 21px); }
+  .action .timing-display { margin: 3px 4px 0; }
+  .timing-labels { margin-top: 4px; font-size: 9px; }
+  .action .fire-button { padding: 10px 14px; }
+  .fire-button strong { font-size: 18px; letter-spacing: 0; }
+  .fire-button > span { max-width: 46%; font-size: 10px; }
+  .overdrive-button kbd { display: none; }
+}
+@media (max-width: 430px) {
+  .interface[data-state="playing"] .version,
+  .interface[data-state="breaking"] .version { display: none; }
+}
+@media (max-width: 350px) {
+  .topbar .brand > svg { display: none; }
+  .interface { padding-left: 12px; padding-right: 12px; }
+  .icon-button { font-size: 10px; }
+  .fire-button strong { font-size: 16px; }
+  .energy-heading > strong { font-size: 12px; }
+}

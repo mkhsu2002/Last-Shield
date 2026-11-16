@@ -38,9 +38,9 @@ export function mountGameUI(): void {
         <div id="cue" class="cue">看準圓環</div>
         <p id="cue-help" class="cue-help">圓環變金色時按住，直到核心擊碎。</p>
         <div class="timing-display" aria-hidden="true"><div class="timing-track"><i class="perfect-zone"></i><b id="timing-marker"></b><i id="beam-progress"></i></div><div class="timing-labels"><span id="timing-left">等待</span><strong id="timing-caption">金色時按下</strong><span id="timing-right">下一輪</span></div></div>
-        <button id="fire" class="fire-button" aria-label="按住發射光束"><strong id="fire-label">按住發射</strong><span id="fire-detail">也可以按住畫面或空白鍵</span></button>
-        <div class="energy-card"><div class="energy-controls"><div><div class="energy-heading">${boltIcon}<strong id="energy-label">超載蓄能 0／3</strong></div><div id="energy" class="energy" role="progressbar" aria-label="超載蓄能" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><i>1</i><i>2</i><i>3</i></div></div><button id="overdrive" class="overdrive-button" disabled aria-label="手動釋放超載震爆">超載震爆<span>手動釋放 · E</span></button></div><p id="energy-help">完美起手並擊碎 +1；集滿後，可手動震爆全場。</p></div>
+        <div class="energy-card"><div class="energy-controls"><div><div class="energy-heading">${boltIcon}<strong id="energy-label">超載蓄能 0／3</strong></div><div id="energy" class="energy" role="progressbar" aria-label="超載蓄能" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><i>1</i><i>2</i><i>3</i></div></div><button id="overdrive" class="overdrive-button" disabled aria-label="手動釋放超載震爆" aria-describedby="energy-help">超載震爆<kbd aria-hidden="true">E</kbd></button></div><p id="energy-help" class="visually-hidden">完美起手並擊碎 +1；集滿後，可手動震爆全場。</p></div>
         <div class="city-line"><span id="milestone">擊碎 0／10 顆</span><span id="city-message" role="status">城市正等你守護。</span></div>
+        <button id="fire" class="fire-button" aria-label="按住發射光束"><strong id="fire-label">按住發射</strong><span id="fire-detail">也可以按住畫面或空白鍵</span></button>
         <div class="meter" aria-hidden="true"><i id="milestone-fill"></i></div>
       </section>
       <section id="results" class="panel results" hidden aria-labelledby="result-title">
