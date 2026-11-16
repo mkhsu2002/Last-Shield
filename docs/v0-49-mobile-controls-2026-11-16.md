@@ -1,6 +1,6 @@
 # v0.49 手機戰場與控制區
 
-狀態（2026-11-16）：本機驗證完成，準備完整發布 package 0.49.0；正式目前仍為 0.48.2。
+狀態（2026-11-16）：v0.49／package 0.49.0 已核准公開，staging 與正式完整同版安裝，正式 native 實玩通過。
 
 ## 變更
 
@@ -20,8 +20,8 @@
 
 ## 發布檢查
 
-- [ ] main 合併、commit/push。
-- [ ] Reddit 0.49.0 build READY／review APPROVED；staging 與正式同版完整安裝。
-- [ ] 原投稿貼文英文／繁中佈局、按住發射、匿名遊玩與排行榜 API 讀回。
-- [ ] Vercel 正式 alias／版本與政策頁讀回。
-- [ ] README、App Directory、Devpost 與新版展示素材同步，見 presentation-review-2026-11-16.md。
+- [x] main 合併、commit/push：bcecb7b。
+- [x] 官方 API 讀回 Reddit 0.49.0 PUBLIC、build READY／review APPROVED；staging 與正式同版完整安裝。
+- [x] staging 真實 200 分提交／移除成功；正式同樣實玩 200 分、上榜截圖與移除成功。匿名繁中可玩。Native 手機 frame 高 602px、發射鍵底部 592px／高度 64px，Overdrive 56px。
+- [x] Vercel production dpl_BEt23J895kYzNAkLHxx8YyVDsUxS READY、source bcecb7b，正式 alias 的 JS/CSS 與本機 standalone build 名稱相同。政策沿用未變動。
+- [x] README、App Directory、Devpost 與新版展示素材同步，見 presentation-review-2026-11-16.md。

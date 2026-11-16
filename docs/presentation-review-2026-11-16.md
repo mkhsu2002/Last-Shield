@@ -1,6 +1,6 @@
 # Last Shield 投稿展示同步
 
-狀態（2026-11-16）：README／遊戲簡介優化與 v0.49 手機控制修正同輪進行；此為營運狀態文件，公開文案來源為 README、presentation-copy.json、devpost-project-story-current.md。
+狀態（2026-11-16）：v0.49 已正式上線，README／遊戲簡介與 Devpost 已同步新版特點；此為營運狀態文件，公開文案來源為 README、presentation-copy.json、devpost-project-story-current.md。
 
 ## 已完成
 
@@ -10,12 +10,12 @@
 - Additional info 已補選 Feedback Awards，重新進入 finalization 仍顯示 SUBMITTED／5/5、Project submitted!。沿用 MK 先前完成問卷的既有確認紀錄；本輪未讀取或重送問卷答案。Helper Award／協助者提名維持空白，沒有可核實人選。
 - 0.47 catalog 素材本輪官方 GetDisplay 仍為 PENDING；保留原審核請求與四項素材，不為短文案重開審核。較短的新候選文字保存在 presentation-copy.json，未宣稱已獲推薦。
 
-## 尚待完成
+## 最後同步
 
-- [ ] v0.49 正式版本與新版原生畫面展示。
-- [ ] 補入新版手機控制與社群榜截圖到 README／Devpost，保留舊版實錄為玩法示範並清楚標示範圍。
-- [ ] 新版 story 的手機操作段落、公開頁 readback、Feedback Awards 選項讀回。
-- [ ] docs-only 合併推送，確認不觸發完整 build／production deploy。
+- [x] v0.49 正式版本已核准並同版安裝到 staging／正式，圖片由公開原投稿貼文實際操作取得。
+- [x] 已補兩張 v0.49 原生手機／榜單圖到 README 與 Devpost（gallery 原 3 張保留，共 5 張）；新圖逐張肉眼檢查，caption 與圖檔 byte size 配對核對。沒有改分、改時鐘、捏造玩家；拍攝後已移除測試用排名。舊 39 秒 v0.47 影片仍保留並在 README 標示展示範圍。
+- [x] 新版 story 的手機操作段落／社群榜與新 pitch 已由 Devpost 公開頁讀回；舊「分數只留本機」段落不存在。Feedback Awards 已回到 additional info 讀回。
+- [ ] 最後 docs／圖片／README 合併推送與 App Directory about 同步；以現有 ignore-build gate 排除完整部署。
 
 ## 評估方向與界線
 
@@ -26,3 +26,11 @@
 不捏造玩家、活躍數、留言、獎項或推薦狀態；不為了互動量群發、買讚、代玩家發言或修改已完成問卷。官方並不要求先公開 publish app 才參賽，既有核准上架不作為額外得獎保證，不為文案再走不必要的版本發布。
 
 來源於 2026-11-16 實際重新閱讀：[官方規則](https://redditgameofday2026.devpost.com/rules)、[活動頁](https://redditgameofday2026.devpost.com/)。
+
+## 素材與既有資料保護
+
+新版圖：`media/last-shield-v0.49-mobile-controls.png`（390×602、93,180 bytes），`media/last-shield-v0.49-community-board.png`（390×602、51,757 bytes）。來源為 production 0.49.0 Reddit iframe，展示分數 200，由一次真實完美擊破取得。
+
+Devpost 二次儲存曾回傳 optimistic-lock 訊息「This submission has changed since you’ve started editing it.」；重新讀回與已保存稿逐字比對後，只加入手機操作段落並成功保存，沒有覆寫未知變更。沒有再次按 Submit project 或切換既有條款 checkbox。
+
+`.codex-attachments/` 已加入 gitignore，避免未來 source archive 自動包含使用者附圖；使用者原始附圖未加入 repo，對外使用本輪另行拍攝的遊戲畫面。

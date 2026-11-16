@@ -25,6 +25,14 @@ New in **v0.49**: a clearer battlefield and a bottom fire control keep the defen
 
 New in **v0.48**: community rankings, scores recalculated from gameplay before ranking, and score-and-strategy sharing. You can play without logging in; joining the board is your choice.
 
+## Inside the Reddit game
+
+| Defend the city | Compare your daily best |
+| --- | --- |
+| ![Mobile gameplay with a clear battlefield, compact Overdrive charge and a bottom fire control](https://raw.githubusercontent.com/mkhsu2002/Last-Shield/main/docs/media/last-shield-v0.49-mobile-controls.png) | ![Daily community board showing a submitted score, personal rank and nearby players](https://raw.githubusercontent.com/mkhsu2002/Last-Shield/main/docs/media/last-shield-v0.49-community-board.png) |
+
+Both images show v0.49 running inside the Reddit game. The video linked above demonstrates the core timing and Overdrive gameplay from v0.47; it predates the community board and compact controls.
+
 ## How to play
 
 1. **Press on gold.** When the ring turns gold, press and hold to catch the meteor with a perfect 3× beam. Keep holding until it shatters.
