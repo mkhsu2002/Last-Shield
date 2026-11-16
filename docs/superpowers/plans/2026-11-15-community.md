@@ -28,4 +28,6 @@
 - [x] `package.json`/lock 升 0.48.0 並擴充 test script；跑 `npm test`、`npm run check`、`npm run build`、`npm run build:standalone`。
 - [x] 更新 README、development、隱私條款、發布 checklist；歷史投稿文件只加版本狀態指引。
 - [x] 官方 API/CLI 確認身分與既有 app/install；dev 驗證 Redis 實寫讀回、audit、匿名、跨日/重試、兩語手機/桌面。
-- [ ] 所有必要檢查通過後 commit/merge main/push、完整 Devvit 發布/安裝；讀回 deployed version、live behavior 與 standalone 政策。審核/帳號阻塞則回報確切錯誤，不硬切新前端。
+- [x] 所有必要檢查通過後 commit/merge main/push、完整 Devvit 發布/安裝；讀回 deployed version、live behavior 與 standalone 政策。審核/帳號阻塞則回報確切錯誤，不硬切新前端。
+
+完成狀態（2026-11-16）：main 已合併推送，Reddit 0.48.2 已核准公開並同版安裝到正式與 staging；驗證範圍與限制見 ../../community-release-2026-11-15.md。
