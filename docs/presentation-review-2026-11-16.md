@@ -15,7 +15,7 @@
 - [x] v0.49 正式版本已核准並同版安裝到 staging／正式，圖片由公開原投稿貼文實際操作取得。
 - [x] 已補兩張 v0.49 原生手機／榜單圖到 README 與 Devpost（gallery 原 3 張保留，共 5 張）；新圖逐張肉眼檢查，caption 與圖檔 byte size 配對核對。沒有改分、改時鐘、捏造玩家；拍攝後已移除測試用排名。舊 39 秒 v0.47 影片仍保留並在 README 標示展示範圍。
 - [x] 新版 story 的手機操作段落／社群榜與新 pitch 已由 Devpost 公開頁讀回；舊「分數只留本機」段落不存在。Feedback Awards 已回到 additional info 讀回。
-- [ ] 最後 docs／圖片／README 合併推送與 App Directory about 同步；以現有 ignore-build gate 排除完整部署。
+- [x] 最後 docs／圖片／README 已於 b7de3fd 合併推送，ignore-build gate 回傳 0；AppVersion.Update 已把 0.49.0 about 與完整 README 同步，讀回逐字一致。GitHub raw 的 README／兩張圖與本機 SHA-256 相同。
 
 ## 評估方向與界線
 
@@ -34,3 +34,5 @@
 Devpost 二次儲存曾回傳 optimistic-lock 訊息「This submission has changed since you’ve started editing it.」；重新讀回與已保存稿逐字比對後，只加入手機操作段落並成功保存，沒有覆寫未知變更。沒有再次按 Submit project 或切換既有條款 checkbox。
 
 `.codex-attachments/` 已加入 gitignore，避免未來 source archive 自動包含使用者附圖；使用者原始附圖未加入 repo，對外使用本輪另行拍攝的遊戲畫面。
+
+最終公開讀回：Devpost 新 pitch、手機操作段落、社群榜段落均存在，五張 gallery 圖載入成功，兩張新版 caption 正確；finalization 仍顯示 SUBMITTED／5/5 steps done／Project submitted!。
