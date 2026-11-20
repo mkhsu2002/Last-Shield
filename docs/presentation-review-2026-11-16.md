@@ -1,3 +1,5 @@
+> 歷史狀態補記（2026-11-19）：v0.50 已由 MK 人工驗收並正式發布；最新部署與展示進度見 [v0.50 發布紀錄](v0-50-release-2026-11-19.md)。下文保留原輪次證據，不代表最新平台狀態。
+
 # Last Shield 投稿展示同步
 
 狀態（2026-11-16）：v0.49 已正式上線，README／遊戲簡介與 Devpost 已同步新版特點；此為營運狀態文件，公開文案來源為 README、presentation-copy.json、devpost-project-story-current.md。
