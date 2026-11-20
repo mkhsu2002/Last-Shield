@@ -1135,6 +1135,8 @@ button:disabled { opacity: .5; cursor: default; }
 .daily-card .fineprint { display: block; margin-top: 6px; }
 .launch-guide { margin-bottom: 12px; }
 .rival-goal { font-size: 12px; color: #f0d584; margin: 2px 0 0; min-height: 0; }
+.storm-strip #storm { display: inline-block; max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.storm-strip { justify-content: space-between; gap: 8px; }
 .rival-goal:empty, .result-storm:empty, #result-rival:empty { display: none; }
 .result-storm { color: var(--cyan); margin: 6px 0; font-size: 14px; }
 .rival-pick { grid-column: 2 / -1; justify-self: start; border: 1px solid #78e5f250; border-radius: 6px; color: #bbf4fa; background: #78e5f210; padding: 7px 10px; font: inherit; font-size: 12px; cursor: pointer; }

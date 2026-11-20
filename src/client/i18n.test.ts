@@ -50,6 +50,7 @@ test('daily profile and rival copy remain meaningful in both languages',()=>{
   assert.equal(translate('再得 201 分，超過 u/Near','en'),'201 more points to pass u/Near');
   assert.equal(translate('追平 u/Near 的 500 分','en'),'Tied u/Near at 500 points');
   assert.equal(translate('本局已超過 u/Near 的 500 分','en'),'This run passed u/Near’s 500 points');
+  assert.equal(renderCopy(['重核雨',' · ','密集來襲'],'en'),'Heavy Rain · Surge');
 });
 test('language changes retain literal player notes and links in the complete share preview',()=>{
   const copy=['重核雨','\n\n',{literal:'繼續'},'\n',{literal:'https://www.reddit.com/comments/1xximge'}];

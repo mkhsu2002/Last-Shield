@@ -684,7 +684,7 @@ class ShieldScene extends Phaser.Scene {
       "storm",
       this.practiceMode
         ? "練習不計分、不儲存"
-        : [run.storm.title, ` · ${PHASE_LABELS[stormPhase(run.waveIndex)]}`]
+        : [run.storm.title, ' · ', PHASE_LABELS[stormPhase(run.waveIndex)]]
     );
     text(
       "next-core",
@@ -801,7 +801,7 @@ class ShieldScene extends Phaser.Scene {
 }
 
 new Phaser.Game({
-  type: Phaser.AUTO,
+  type: Phaser.CANVAS,
   parent: "canvas-host",
   backgroundColor: "#070f20",
   scale: {
