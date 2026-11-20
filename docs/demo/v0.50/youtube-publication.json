@@ -1,0 +1,33 @@
+{
+  "videoId": "DLHAouzPwTI",
+  "url": "https://www.youtube.com/watch?v=DLHAouzPwTI",
+  "channelId": "UCK_TQy_y3e-Q0fdOUBArRpQ",
+  "channelHandle": "@neobabylon-mk",
+  "status": "published-public",
+  "dateVancouver": "2026-11-19",
+  "sourceSha256": "497360127d5440a0dd69df99d629177d18fbd7e5d884705154fb1b8eaaf7d768",
+  "authorizedLane": "codex-mk-personal",
+  "title": "Last Shield v0.50 \u2014 Overdrive & Community Rankings | Reddit Gameplay",
+  "language": "en",
+  "category": "Gaming",
+  "durationSeconds": 29.834,
+  "visibility": "public",
+  "checks": "YouTube copyright checks completed with no issues found",
+  "readback": {
+    "publishedDialog": true,
+    "anonymousOEmbedHTTP": 200,
+    "authorUrl": "https://www.youtube.com/@neobabylon-mk",
+    "studioListVisibility": "public",
+    "studioListDuration": "0:30",
+    "watchPlayerReadyState": 4,
+    "watchPlayerCurrentTime": 12.897657,
+    "watchPlayerDuration": 29.861,
+    "watchPlayerVideoSize": [
+      1152,
+      720
+    ],
+    "watchPlayerError": null,
+    "watchPlayerMuted": false
+  },
+  "aiDisclosureBasis": "Actual fantasy video-game footage; official YouTube Help lists gameplay footage among content that does not require altered-content disclosure: https://support.google.com/youtube/answer/14328491"
+}
