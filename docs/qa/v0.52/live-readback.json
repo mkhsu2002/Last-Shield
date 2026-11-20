@@ -1,0 +1,86 @@
+{
+  "checkedAt": "2026-11-20T07:28:20.722209+00:00",
+  "version": "0.52.0.2",
+  "subreddit": "last_shield_stage",
+  "identity": "OwnDifference7782",
+  "browser": {
+    "lane": "codex-mk-personal",
+    "reconnected": true,
+    "authReadbackHTTP": 200
+  },
+  "shareImage": {
+    "existingStagePostUpdated": true,
+    "serverStylesReadbackConfirmed": true,
+    "successMessage": "Sharing image updated. Private community links remain private.",
+    "formalPostUpdated": false,
+    "externalUnfurlVerified": false
+  },
+  "hall": {
+    "HTTP": 200,
+    "contract": "community-3",
+    "rules": "survival-8",
+    "initialEnrolled": false,
+    "initialChampions": 0,
+    "initialTopScores": 0,
+    "initialTopCombos": 0
+  },
+  "ui": {
+    "width": 375,
+    "height": 596,
+    "languages": [
+      "en",
+      "zh-Hant"
+    ],
+    "horizontalOverflow": false,
+    "callsignSpaceEntry": "K Test",
+    "spaceTogglesConsent": true,
+    "consentResetAfterTest": true,
+    "enrollDisabledWithoutProof": true,
+    "englishAlt": "Neo Babylon Citizen certificate preview",
+    "chineseAlt": "新巴比倫公民證書預覽"
+  },
+  "nativeRun": {
+    "HTTP": 200,
+    "result": {
+      "version": "survival-8",
+      "day": 20261120,
+      "storm": "heavy",
+      "score": 533990,
+      "perfect": 77,
+      "cleared": 107,
+      "bestCombo": 107,
+      "waveReached": 42,
+      "elapsedMs": 81581.78999999972,
+      "username": "OwnDifference7782",
+      "acceptedAt": 1795159234476,
+      "demo": true
+    },
+    "millionQualified": false,
+    "certificateIssued": false,
+    "input": "Native Space and Overdrive inputs reacting to visible HUD, no score/time/health changes",
+    "continuousRecordingMs": 94555,
+    "recordedFrames": 1835,
+    "audioChannels": 2,
+    "audioCodec": "opus",
+    "audioSampleRate": 48000
+  },
+  "privacy": {
+    "explicitOptInSucceeded": true,
+    "enrolledDemo": true,
+    "competitiveScores": 0,
+    "competitiveCombos": 0,
+    "millionCertificates": 0,
+    "withdrawSucceeded": true,
+    "oldProofEnrollmentStatus": 400,
+    "oldProofEnrollmentError": "revoked-run",
+    "sameRunResubmitStatus": 200,
+    "sameRunAcceptedAtUnchanged": true,
+    "enrollmentAfterResubmit": false,
+    "dayCompetitorsAfterResubmit": 0
+  },
+  "interruption": {
+    "secondCaptureCompleted": false,
+    "reason": "Game window became hidden; normal game pause triggered. Waiting for foreground window before retry."
+  },
+  "formalReleasePerformed": false
+}

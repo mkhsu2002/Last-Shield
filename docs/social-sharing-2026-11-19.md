@@ -32,3 +32,9 @@
 MK要求再試後，canonical codex-mk-personal的start與MCP tabs／navigate一度恢復。官方同源 `/api/me.json` 回200並只讀回 username=OwnDifference7782；既有stage splash載入0.52.0.2。沒有讀取或輸出憑證。
 
 一般點擊多次因可見性／穩定性逾時，讀回 `document.visibilityState=hidden`，指定視窗bounds為fullscreen。嘗試恢復同一canonical視窗時控制請求卡住，後續MCP tabs亦無回應；已請MK將該視窗切至前景並退出全螢幕。未改其他lane、未執行正式setter，不能把這次重試記為OG設定成功。
+
+## 最新線上檢查點：已恢復連線與stage setter
+
+指定MCP重新出現後，canonical啟動正常且同源Reddit API讀回 u/OwnDifference7782。原stage貼文的mod action已執行成功，伺服器setPostStyles後再getPostStyles比對通過，顯示「Sharing image updated. Private community links remain private.」。這取代先前「未執行stage setter」狀態；正式原貼文尚未套用，私人社群不能驗外部unfurl。
+
+[線上證據](qa/v0.52/live-readback.json)同步記錄新契約、英雄館雙語畫面、加入／撤回與舊proof重送。第二次原生錄影因視窗進入背景而自然暫停，待指定視窗保持前景後重試；不是MCP工具再度缺失。
