@@ -4,7 +4,7 @@ Last Shield is a daily timing-and-survival game inside a Reddit post. One city, 
 
 ## Inspiration
 
-We wanted a daily game that gives people something specific to compare: not just a score, but a decision. Which meteor did you clear first? Did you spend Overdrive too early? Could one more perfect relay have saved the shield?
+I wanted a daily game that gives people something specific to compare: not just a score, but a decision. Which meteor did you clear first? Did you spend Overdrive too early? Could one more perfect relay have saved the shield?
 
 Neo Babylon gives that compact challenge a city worth defending. A shared daily meteor sequence gives its defenders a common experience to discuss on Reddit.
 
@@ -20,30 +20,30 @@ Neo Babylon gives that compact challenge a city worth defending. A shared daily 
 
 Open the post and select **Start defending**. Timing practice slows the action, shows whether you caught the gold or released too soon, and lets you choose when to continue before the daily challenge. Touch and keyboard controls, English and Traditional Chinese, a sound control, pause, and reduced-motion support make the experience approachable. A compact control dock keeps the fire button near the bottom and leaves the battlefield clear on smaller screens. Playing does not require a login; submitting to the community board does.
 
-## How we built it
+## How I built it
 
-We used Devvit Web, TypeScript, Phaser, Vite, Hono, Web Audio, and Reddit's built-in Redis storage. The game opens directly from a Reddit interactive post. Moderators can create a playable post from their community menu.
+I used Devvit Web, TypeScript, Phaser, Vite, Hono, Web Audio, and Reddit's built-in Redis storage. The game opens directly from a Reddit interactive post. Moderators can create a playable post from their community menu.
 
 The same gameplay rules run in the client and on the server. When a player submits, the server replays the recorded gameplay inputs and calculates the result before updating the board. Rankings belong to the subreddit where people play. Retrying a submission does not count it twice, and players can remove their visible daily entry.
 
-## Challenges we ran into
+## Challenges I ran into
 
-Timing had to remain readable when several meteors arrived together. We made the initial press distinct from the holding phase: once the beam locks, the timing cue becomes a destruction-progress bar. A recurring gold window preserves a recovery path after a missed press, while a short relay rewards releasing and choosing the next target.
+Timing had to remain readable when several meteors arrived together. I made the initial press distinct from the holding phase: once the beam locks, the timing cue becomes a destruction-progress bar. A recurring gold window preserves a recovery path after a missed press, while a short relay rewards releasing and choosing the next target.
 
-We refined the painted skyline, textured meteors, blue-white Overdrive beams, and stereo impact effects so that a clear, an impact, and an emergency blast each feel distinct.
+I refined the painted skyline, textured meteors, blue-white Overdrive beams, and stereo impact effects so that a clear, an impact, and an emergency blast each feel distinct.
 
 The community board also needed to survive real interruptions. Runs retain their starting date across midnight, lower scores cannot overwrite a personal best, and submission retries do not create extra entries. A temporary ranking outage leaves the local game playable.
 
-## Accomplishments we're proud of
+## Accomplishments I'm proud of
 
 The daily loop now connects a tactical solo run to a shared community challenge. The Reddit game supports optional account-based ranking, nearby rivals, and player-led strategy sharing while preserving anonymous play.
 
-We verified a submitted score in the live Reddit game and read the same entry from a separate logged-out view. The project has 59 automated tests covering gameplay, replay validation, ranking, retries, date boundaries, localization, and recoverable failures.
+I verified a submitted score in the live Reddit game and read the same entry from a separate logged-out view. The project has 59 automated tests covering gameplay, replay validation, ranking, retries, date boundaries, localization, and recoverable failures.
 
-## What we learned
+## What I learned
 
 A high score becomes more interesting when players share the same challenge and can explain how they approached it. Clear feedback makes the individual run satisfying; a nearby rival and a useful strategy conversation give that run a life beyond the result screen.
 
 ## What's next for Last Shield
 
-We want to explore collective defense goals and rotating storm modifiers, guided by player feedback. These are future additions. Today's game already includes the shared daily sequence, community rankings, and score-and-strategy sharing.
+I want to explore collective defense goals and rotating storm modifiers, guided by player feedback. These are future additions. Today's game already includes the shared daily sequence, community rankings, and score-and-strategy sharing.
