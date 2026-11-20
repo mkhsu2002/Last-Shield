@@ -1,6 +1,6 @@
 # v1.03 手機戰鬥視野改善
 
-2026-11-20。狀態：本機驗證完成，待本輪發布讀回；目前正式仍為 v1.02。依使用者提供的 Android Reddit App 實際畫面改善嵌入遊戲，不新增貼文或更換影音。
+2026-11-20。狀態：v1.03 已正式發布並完成原貼文讀回。依使用者提供的 Android Reddit App 實際畫面改善嵌入遊戲，不新增貼文或更換影音。
 
 ## 改善
 
@@ -24,4 +24,11 @@
 
 ## 發布讀回
 
-待實際完成後填入 main／tag、兩社群安裝、原貼文 CDN／API、Vercel 與 App Directory 的證據。YouTube／Devpost 維持既有 v1.0 展示，本輪不替換影音。
+- PR #16 合併 main `18ea0745fc73aed70318a7fde20c96868efdac32`，tag `v1.03`；合併版本183 tests通過。
+- Devvit version `ad0d55bd-7a88-4ed3-906d-5f4bddf36e33` PUBLIC／READY；review `4104646c-6189-438a-9f56-9f3e84b82f3d` APPROVED。CLI identity為u/OwnDifference7782，兩既有社群完整安裝1.0.3。
+- 原stage與正式貼文皆可從splash原生點擊開啟1.0.3並完成完美長按課。正式iframe390×612：action106.25px，完整城市底至操作區間距8.05px，護罩頂至HUD底間距194.89px。Stage由手機切桌機後恢復／暫停正常，1420×612畫布比例0.5，控制區在畫布右側。
+- 兩社群versioned CDN的default.js／default.css／client.js／game.js／game.css均匿名HTTP200並與本機dist/client逐位元相同。game.css SHA-256 `9f24a2a0e1ce561413389f0561386c9786b3d5ac3c5e3f4121f111082483852f`。
+- 正式board（帶UTC day=20261120）、hall及既有certificate GET皆HTTP200，community-3／survival-8。日榜total0，Score／Combo競爭榜空；K示範證書 `ac29c259-b90f-4519-b17a-03b109a2876c`／1,272,630保留，未新增正式測試分數。省略day的手動探測正確回傳400 invalid-day，補上必填參數後200。
+- Vercel production `dpl_4W594T7bdaFvNDb1H25JnB7eiRem` READY，同一main merge來源；公開首頁v1.03、JS／CSS與本機standalone逐位元一致，privacy／terms同源相符。
+- App Directory 1.0.3 about與README相同，validInstallTypes=[1]保留。YouTube／Devpost維持既有v1.0展示，本輪未操作。
+- 最後讀回紀錄走docs-only PR，沿用既有ignore-build不額外觸發完整部署。
