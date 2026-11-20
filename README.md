@@ -9,6 +9,7 @@ Catch the gold, hold your beam, and defend Neo Babylon against an escalating met
 Open the [playable Reddit post](https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/) and choose **Start defending**. The game runs inside Reddit; no external game website is required.
 
 - [Watch v0.50 Reddit gameplay](https://www.youtube.com/watch?v=DLHAouzPwTI)
+- [View the Last Shield hackathon project](https://devpost.com/software/last-shield)
 - [Devvit app listing](https://developers.reddit.com/apps/last-shield)
 - [Public test community](https://www.reddit.com/r/last_shield_dev/)
 - [Source repository](https://github.com/mkhsu2002/Last-Shield)
@@ -52,7 +53,7 @@ Your shield starts at 100%. Smaller, partly destroyed meteors deal less damage. 
 - Use the sound control to mute or enable audio. The game respects reduced-motion preferences.
 - English is the default. Switch to **繁中** in the header for Traditional Chinese; the game remembers your choice when device storage is available.
 
-Try **Practice perfect timing** before starting the daily challenge.
+Try **Practice perfect timing** before starting the daily challenge. Practice slows the action and shows whether you caught the gold or released too soon. Review the result, release your controls, then choose **Continue** when you are ready.
 
 ## Scores and privacy
 
@@ -85,6 +86,5 @@ Last Shield is set in the original Neo Babylon world. Rights to the original wor
 ## Current release
 
 Game version **v0.50**, Devvit package **0.50.0**. The public test post is free to play, with no app purchase, invite list, or game usage limit. It will remain available for hackathon judging through **December 16, 2026 at 6:00 p.m. PST**. Reddit may apply its own security checks.
-
 
 For development and release information, see the [development notes](docs/development.md).
