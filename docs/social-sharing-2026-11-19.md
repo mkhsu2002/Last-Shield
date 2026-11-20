@@ -26,3 +26,9 @@
 - 待候選部署後，從現有貼文執行menu action，確認上傳所得 `i.redd.it` 可公開讀取、`getPostStyles()`的shareImageUrl一致；私人stage本身不當作對外OG驗證。
 - 正式完整發布後，在原公開貼文套用並讀回styles與匿名OG HTML／預覽；外部平台可能保留先前分享快取，不能承諾所有服務立即刷新。
 - canonical個人瀏覽器目前仍有先前beforeunload阻塞，故未宣稱這輪已完成既有正式貼文setter、匿名OG讀回或社群快取刷新。
+
+## 瀏覽器重試檢查點
+
+MK要求再試後，canonical codex-mk-personal的start與MCP tabs／navigate一度恢復。官方同源 `/api/me.json` 回200並只讀回 username=OwnDifference7782；既有stage splash載入0.52.0.2。沒有讀取或輸出憑證。
+
+一般點擊多次因可見性／穩定性逾時，讀回 `document.visibilityState=hidden`，指定視窗bounds為fullscreen。嘗試恢復同一canonical視窗時控制請求卡住，後續MCP tabs亦無回應；已請MK將該視窗切至前景並退出全螢幕。未改其他lane、未執行正式setter，不能把這次重試記為OG設定成功。
