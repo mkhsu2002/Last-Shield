@@ -58,3 +58,11 @@ test('mobile HUD inset lowers distant spawns without moving contact points',()=>
     assert.ok(Math.abs(Math.hypot(contact.x,contact.y)-contact.radius-SHIELD_RADIUS)<1e-7);
   }
 });
+
+test('large HUD insets never project a fresh meteor inside the shield',()=>{
+  for(let sector=0;sector<6;sector++){
+    const spec={...meteorSpec(20261120,0),kind:'heavy' as const,sector};
+    const p=displayedMeteorGeometry(spec,0,100,false,10000);
+    assert.ok(Math.hypot(p.x,p.y)-p.radius-SHIELD_RADIUS>=48);
+  }
+});

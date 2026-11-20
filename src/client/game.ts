@@ -1,5 +1,5 @@
 import { context } from "@devvit/web/client";
-import { localizedAttribute } from "./i18n";
+import { localizedAttribute, localizedText } from "./i18n";
 import * as Phaser from "phaser";
 import {
   DefenseRun,
@@ -42,6 +42,8 @@ import { focusUnit, focusResultCopy, focusRecordCopy, focusRunRecordCopy } from 
 
 import { CLASSIC_VIEW, SKY_TOP, refreshBattlefieldViewport } from "./view-mode";
 import "./adaptive-view.css";
+import "./mobile-combat.css";
+import { compactHudScore } from "./combat-layout";
 import { projectBattlePoint } from "./battlefield-view";
 
 type Phase =
@@ -290,6 +292,7 @@ class ShieldScene extends Phaser.Scene {
     document.querySelector<HTMLElement>(".interface")!.dataset.state = phase;
     const live =
       phase === "playing" || phase === "paused" || phase === "breaking" || phase === "practice-review";
+    document.querySelector<HTMLElement>(".interface")!.dataset.combat = String(live);
     for (const [id, visible] of [
       ["intro", phase === "intro"],
       ["results", phase === "results"],
@@ -390,6 +393,16 @@ class ShieldScene extends Phaser.Scene {
     if (this.phase !== "playing") return;
     this.releaseAll();
     this.audio.stopAll();
+    const run=this.run, growth=comboProgress(run.combo,this.practiceMode);
+    text("pause-score",run.score.toLocaleString("zh-TW"));
+    text("pause-wave",this.practiceMode?practiceLessonInfo(this.practiceLesson).title:`第 ${run.waveIndex+1} 波`);
+    text("pause-combo",`連擊 ${run.combo} · ${comboMultiplier(run.combo,this.practiceMode)} 倍`);
+    text("pause-perfect",`完美擊破 ${run.perfect}`);
+    text("pause-growth",growth.nextCombo===null?"維持連擊 · 最高 50 倍":`再接 ${growth.remaining} 顆 → ${growth.nextMultiplier} 倍`);
+    text("pause-focus",focusResultCopy(run.daySeed,run));
+    text("pause-storm",[run.storm.title,' · ',PHASE_LABELS[stormPhase(run.waveIndex)]]);
+    text("pause-rival",this.practiceMode?"":this.community.rivalCopy(run.score));
+    localizedText(element("pause-leader"),this.community.leaderCopy());
     this.setPhase("paused");
   }
   private resumeRun(): void {
@@ -600,7 +613,7 @@ class ShieldScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number): void {
-    refreshBattlefieldViewport();
+    refreshBattlefieldViewport(()=>this.scale.refresh());
     const dt = Math.max(0, Math.min(100, delta));
     if (this.phase === "intro") {
       const now = new Date(), minute = Math.floor(now.getTime()/60000);
@@ -686,6 +699,8 @@ class ShieldScene extends Phaser.Scene {
       )
     );
     text("score", run.score.toLocaleString("zh-TW"));
+    element("score-short").textContent=compactHudScore(run.score);
+    element("overdrive-charge").textContent=`${run.energy}/3`;
     text("rival-goal", this.practiceMode ? "" : this.community.rivalCopy(run.score));
     text("clock", `${run.integrity}%`);
     element("clock").style.color =
@@ -771,6 +786,7 @@ class ShieldScene extends Phaser.Scene {
           ).toFixed(1)} 秒撞擊`
         : "暫時安全"
     );
+    element("approach-compact").textContent=run.meteors.length?`${Math.max(0,nearest/1000).toFixed(1)}s`:"—";
     const goal = milestone(run.cleared);
     text("milestone", `擊碎 ${run.cleared}／${goal.target} 顆`);
     element("milestone-fill").style.width = `${goal.progress * 10}%`;

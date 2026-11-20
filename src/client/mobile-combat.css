@@ -1,0 +1,102 @@
+.score-short, .approach-compact, .overdrive-charge { display: none; }
+.pause-run-details { margin: 12px 0; padding: 12px; border: 1px solid var(--line); border-radius: 12px; }
+.pause-run-details h3 { margin: 0 0 8px; font-size: 15px; color: var(--cyan); }
+.pause-run-details p { margin: 5px 0; }
+.pause-run-details p:empty { display: none; }
+
+/* Match the layout condition in view-mode.ts: controls overlay the portrait field. */
+@media (max-width: 639px), (max-aspect-ratio: 1/1) {
+  .adaptive-view #game-container[data-compact-battle="true"] { width: min(100vw, 620px); }
+  .adaptive-view #game-container[data-compact-battle="true"] #canvas-host {
+    left: 50%;
+    top: 0;
+    height: var(--combat-canvas-height);
+    width: calc(var(--combat-canvas-height) / 2);
+    transform: translateX(-50%);
+  }
+  .adaptive-view .interface[data-combat="true"] { padding: max(8px, env(safe-area-inset-top)) 10px max(8px, env(safe-area-inset-bottom)); }
+  .adaptive-view .interface[data-combat="true"] .topbar { gap: 8px; position: static; inset: auto; }
+  .adaptive-view .interface[data-combat="true"] .brand { min-width: 28px; }
+  .adaptive-view .interface[data-combat="true"] .brand > svg { display: block; width: 24px; height: 28px; }
+  .adaptive-view .interface[data-combat="true"] .brand h1,
+  .adaptive-view .interface[data-combat="true"] #score,
+  .adaptive-view .interface[data-combat="true"] .energy-heading,
+  .adaptive-view .interface[data-combat="true"] #energy {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  .adaptive-view .interface[data-combat="true"] .tools { gap: 6px; }
+  .adaptive-view .interface[data-combat="true"] .language-select { min-width: 52px; padding: 5px; font-size: 12px; }
+  .adaptive-view .interface[data-combat="true"] #sound,
+  .adaptive-view .interface[data-combat="true"] #pause { width: 44px; height: 44px; padding: 10px; font-size: 0; }
+  .adaptive-view .interface[data-combat="true"] #sound::before,
+  .adaptive-view .interface[data-combat="true"] #pause::before { content: ""; display: block; width: 22px; height: 22px; background: center / contain no-repeat; }
+  .adaptive-view .interface[data-combat="true"] #sound::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e0f3ff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11 5 6 9H3v6h3l5 4V5Z'/%3E%3Cpath d='M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14'/%3E%3C/svg%3E"); }
+  .adaptive-view .interface[data-combat="true"] #sound[aria-pressed="false"]::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e0f3ff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11 5 6 9H3v6h3l5 4V5Z'/%3E%3Cpath d='m16 9 6 6m0-6-6 6'/%3E%3C/svg%3E"); }
+  .adaptive-view .interface[data-combat="true"] #pause::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e0f3ff' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M8 5v14M16 5v14'/%3E%3C/svg%3E"); }
+  .adaptive-view .interface[data-combat="true"] .run-hud { position: static; inset: auto; width: auto; margin-top: 6px; padding: 0; border: 0; background: none; }
+  .adaptive-view .interface[data-combat="true"] .score-row { align-items: baseline; gap: 8px; }
+  .adaptive-view .interface[data-combat="true"] .health-block,
+  .adaptive-view .interface[data-combat="true"] .score-block { display: flex; align-items: baseline; gap: 5px; }
+  .adaptive-view .interface[data-combat="true"] .score-row .label { display: inline; margin: 0; font-size: 10px; white-space: nowrap; }
+  .adaptive-view .interface[data-combat="true"] .health-block strong,
+  .adaptive-view .interface[data-combat="true"] #score-short { display: block; font-size: 22px; line-height: 1.1; }
+  .adaptive-view .interface[data-combat="true"] .run-progress { height: 3px; margin-top: 4px; }
+  .adaptive-view .interface[data-combat="true"] .stats-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: start; gap: 6px; margin-top: 5px; font-size: 10px; line-height: 1.2; }
+  .adaptive-view .interface[data-combat="true"] #combo { white-space: nowrap; }
+  .adaptive-view .interface[data-combat="true"] .approach-compact { display: block; color: var(--gold); white-space: nowrap; }
+  .adaptive-view .interface[data-combat="true"] #perfect-count,
+  .adaptive-view .interface[data-combat="true"] .growth-strip,
+  .adaptive-view .interface[data-combat="true"] .storm-strip,
+  .adaptive-view .interface[data-combat="true"] .target,
+  .adaptive-view .interface[data-combat="true"] .rival-goal { display: none; }
+  .adaptive-view .interface[data-combat="true"] .daily-leader { display: block; margin: 3px 0 0; font-size: 10px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+
+@media (max-width: 639px), (max-aspect-ratio: 1/1), (max-height: 500px) {
+  .adaptive-view .interface[data-combat="true"] .action {
+    display: grid; grid-template-columns: minmax(0, 1fr) 108px;
+    grid-template-areas: "status status" "timing timing" "fire energy";
+    width: auto; left: 10px; right: 10px; bottom: max(8px, env(safe-area-inset-bottom));
+    gap: 5px 8px; padding: 8px; border-radius: 12px;
+    max-height: none; overflow: visible;
+  }
+  .adaptive-view .interface[data-combat="true"] #feedback,
+  .adaptive-view .interface[data-combat="true"] #cue { grid-area: status; min-height: 0; margin: 0; font-size: 13px; line-height: 1.25; }
+  .adaptive-view .interface[data-combat="true"] #feedback:empty { display: none; }
+  .adaptive-view .interface[data-combat="true"] .action:has(#feedback:not(:empty)) #cue { display: none; }
+  .adaptive-view .interface[data-combat="true"] .timing-display { grid-area: timing; margin: 0; }
+  .adaptive-view .interface[data-combat="true"] .timing-track { height: 6px; }
+  .adaptive-view .interface[data-combat="true"] .timing-labels,
+  .adaptive-view .interface[data-combat="true"] .cue-help,
+  .adaptive-view .interface[data-combat="true"] .city-line,
+  .adaptive-view .interface[data-combat="true"] .meter { display: none; }
+  .adaptive-view .interface[data-combat="true"] .action .fire-button { grid-area: fire; height: auto; min-height: 56px; padding: 8px; justify-content: center; }
+  .adaptive-view .interface[data-combat="true"] .fire-button strong { font-size: 16px; line-height: 1.2; letter-spacing: 0; white-space: normal; }
+  .adaptive-view .interface[data-combat="true"] .fire-button > span { display: none; }
+  .adaptive-view .interface[data-combat="true"] .energy-card { grid-area: energy; padding: 0; margin: 0; border: 0; background: transparent; box-shadow: none; }
+  .adaptive-view .interface[data-combat="true"] .energy-controls { display: block; min-height: 0; }
+  .adaptive-view .interface[data-combat="true"] .overdrive-button { width: 100%; min-width: 0; min-height: 56px; height: 100%; padding: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 12px; line-height: 1.15; white-space: normal; }
+  .adaptive-view .interface[data-combat="true"] .overdrive-button > span { max-width: 100%; overflow-wrap: anywhere; }
+  .adaptive-view .interface[data-combat="true"] .overdrive-charge { display: block; font-size: 11px; }
+  .adaptive-view .interface[data-combat="true"] .overdrive-button kbd { display: none; }
+  .adaptive-view .interface[data-state="practice-review"] .action { display: block; max-height: calc(100% - 160px); overflow-y: auto; touch-action: pan-y; }
+  .adaptive-view .interface[data-state="practice-review"] .action #fire { height: 0; min-height: 0; padding: 0; margin: 0; border: 0; opacity: 0; overflow: hidden; }
+  .adaptive-view .interface[data-state="paused"] #action { visibility: hidden; }
+}
+
+@media (max-width: 639px), (max-aspect-ratio: 1/1) {
+  .adaptive-view .interface[data-combat="true"] .overdrive-button:disabled { opacity: 1; color: #a8bdcc; border-color: #526b80; background: #152b3d; }
+}
+.pause-run-details p { overflow-wrap: anywhere; }
+
+.adaptive-view #game-container[data-tight-battle="true"] .interface[data-combat="true"] #daily-leader { display: none; }
+@media (max-height: 500px) and (min-width: 640px) and (min-aspect-ratio: 1/1) {
+  .adaptive-view .interface[data-combat="true"] .action { left: auto; right: 14px; width: var(--side); }
+  .adaptive-view .interface[data-combat="true"] .run-hud { padding: 6px 10px; }
+  .adaptive-view .interface[data-combat="true"] #perfect-count { display: none; }
+  .adaptive-view .interface[data-combat="true"] .score-row .label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .adaptive-view .interface[data-combat="true"] #feedback { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .adaptive-view .interface[data-combat="true"] .action:has(#feedback:not(:empty)) #cue { display: block; }
+  .adaptive-view .interface[data-combat="true"] #cue { font-size: 12px; }
+}
+.adaptive-view #game-container[data-tight-battle="true"] .interface[data-combat="true"] .stats-row { display: none; }

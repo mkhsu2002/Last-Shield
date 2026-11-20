@@ -1,5 +1,8 @@
 // Source-language keys keep gameplay copy in one bilingual catalog.
 export const MESSAGES: Record<string, string> = {
+  "護盾": "Shield",
+  "本局資訊": "This run",
+  "暫停與本局資訊": "Pause and run details",
   "金色時按住，擊碎隕石，守住新巴比倫。": "Catch gold. Hold to shatter. Defend Neo Babylon.",
   "每日新風暴 ·": "A new daily storm ·",
   "最後防線 {0}｜Reddit 每日守城": "Last Shield {0} | Daily Defense on Reddit",
