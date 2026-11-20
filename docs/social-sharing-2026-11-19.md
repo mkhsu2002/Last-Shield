@@ -1,5 +1,7 @@
 # 社群分享預覽圖
 
+> 歷史紀錄：本文件保留當時的候選／預告狀態。2026-11-20 後續已依 MK 授權完成 v1.0 正式發布及參賽媒體更新；即時狀態以 [v1.0 發布紀錄](v1-0-release-2026-11-20.md) 為準，下文「暫緩／正式仍 0.50／coming next」不代表目前狀態。
+
 查核日期：2026-11-19（America/Vancouver）。本輪為 v0.52 候選新增；不是正式貼文分享設定已生效的證明。
 
 ## 平台限制與範圍
@@ -38,3 +40,7 @@ MK要求再試後，canonical codex-mk-personal的start與MCP tabs／navigate一
 指定MCP重新出現後，canonical啟動正常且同源Reddit API讀回 u/OwnDifference7782。原stage貼文的mod action已執行成功，伺服器setPostStyles後再getPostStyles比對通過，顯示「Sharing image updated. Private community links remain private.」。這取代先前「未執行stage setter」狀態；正式原貼文尚未套用，私人社群不能驗外部unfurl。
 
 [線上證據](qa/v0.52/live-readback.json)同步記錄新契約、英雄館雙語畫面、加入／撤回與舊proof重送。第二次原生錄影因視窗進入背景而自然暫停，待指定視窗保持前景後重試；不是MCP工具再度缺失。
+
+## 2026-11-20 v1.0 正式讀回
+
+原公開貼文已透過受保護管理選單更新，沒有新建貼文。匿名 Twitterbot 抓取 HTTP200，og:image 為 https://i.redd.it/d9li7zb9bt2i1.png ，1734×907；Reddit 重新編碼 PNG，解碼後 RGBA 像素與來源完全一致。正式與 staging 的 v1.0 game.js／game.css 皆與本機發布輸出一致。私人社群的外部 OG 限制維持。

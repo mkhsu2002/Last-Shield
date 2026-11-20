@@ -1,4 +1,4 @@
-Last Shield is a daily survival game inside a Reddit post. Defend Neo Babylon, build a combo, and give your community a score to chase. A new shared storm arrives each UTC day; the Hall remembers the defenders who held the line.
+Last Shield v1.0 is a daily survival game inside a Reddit post. Defend Neo Babylon, build a combo, and give your community a score to chase. A new shared storm arrives each UTC day; the Hall remembers the defenders who held the line.
 
 [Play today’s defense](https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/).
 
@@ -50,6 +50,6 @@ I’ll use player feedback to tune the basic and stretch targets and watch how s
 
 ## Credits and demonstration notes
 
-Last Shield is set in my original Neo Babylon world. The million-point K video is an AI-controlled demonstration at 3× speed with stereo game audio. Demonstration runs are labeled and kept out of competitive rankings and personal daily achievements; simulated playtests are not presented as human retention research.
+Last Shield is set in my original Neo Babylon world. The million-point K video is an AI-controlled demonstration at 3× speed with stereo game audio. Demonstration runs are labeled and kept out of competitive rankings and personal daily achievements. I used AI assistance during implementation and testing.
 
 Submitting a score publishes the Reddit name and score on that community’s board. Joining the Hall is optional and separate. Players can remove their display and revoke a Citizen card; exported image copies may remain after sharing. The card is an in-game achievement.

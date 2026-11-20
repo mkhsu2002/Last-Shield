@@ -4,7 +4,7 @@
 
 Defend Neo Babylon inside a Reddit post. Catch the gold, hold until the meteor shatters, then release and choose the next threat. Build a long combo, bank Overdrive for a crowded sky, and challenge your community to do better.
 
-[**Play today’s defense**](https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/) · [Watch gameplay](https://www.youtube.com/watch?v=7jT7e-c_XqU) · [Devpost project](https://devpost.com/software/last-shield)
+[**Play today’s defense**](https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/) · [Watch gameplay](https://www.youtube.com/watch?v=mBaIPLJZBs8) · [Devpost project](https://devpost.com/software/last-shield)
 
 ## Why come back tomorrow?
 
@@ -52,6 +52,12 @@ An impact resets the combo. Partly melting a meteor reduces its impact damage. H
 
 **Practice defense** offers three optional lessons: perfect timing, release-and-press relay, and saving Overdrive for danger. Each ends with feedback you can read before continuing.
 
+## Inside v1.0
+
+| Overdrive clears the sky | A place in the Hall |
+| --- | --- |
+| ![Blue-white Overdrive beams in the public v1.0 Reddit game](https://raw.githubusercontent.com/mkhsu2002/Last-Shield/main/docs/media/v1.0/overdrive.png) | ![Neo Babylon Citizen card displayed in the Hall of Heroes](https://raw.githubusercontent.com/mkhsu2002/Last-Shield/main/docs/media/v1.0/citizen.png) |
+
 ## Controls and access
 
 - **Touch:** hold the fire button or a meteor; tap Overdrive when charged.
@@ -75,7 +81,7 @@ Built with Devvit Web, TypeScript, Phaser, Vite, Hono, Web Audio and Reddit Redi
 
 Last Shield takes place in the original Neo Babylon world. Rights to its world, characters, artwork and audiovisual assets remain with their creators.
 
-The million-point video features K, an AI-controlled demonstration, shown at 3× speed with stereo game audio. Demonstration runs are labeled and excluded from competitive boards and personal daily achievements.
+The million-point video features K, an AI-controlled demonstration, shown at 3× speed with stereo game audio. Demonstration runs are labeled and excluded from competitive boards and personal daily achievements. AI tools assisted implementation and testing.
 
 Submitting a score makes your Reddit name and score visible on that community’s daily board. Hall membership requires a separate choice; you can remove your display and revoke your Citizen card. Public image export also requires agreement because shared copies may remain after withdrawal. The card is an in-game achievement, not legal citizenship or a financial asset.
 
