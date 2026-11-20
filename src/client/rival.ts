@@ -1,5 +1,9 @@
 import type { Board, BoardEntry } from '../shared/community.ts';
 export type RivalTarget = Readonly<{username:string;score:number;day:number;rules:string;kind:'rival'|'personal'}>;
+export function nearbyEntries(board:Board):BoardEntry[] {
+  const visible=new Set(board.top.map(row=>row.username));
+  return board.nearby.filter(row=>!visible.has(row.username));
+}
 function snapshot(board:Board,row:BoardEntry):RivalTarget {
   return Object.freeze({username:row.username,score:row.score,day:board.day,rules:board.rules,kind:row.isYou?'personal':'rival'});
 }

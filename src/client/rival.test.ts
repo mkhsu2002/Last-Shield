@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import type { Board } from '../shared/community.ts';
 import { COMMUNITY_CONTRACT } from '../shared/community.ts';
 import { RULES_VERSION } from '../shared/game-logic.ts';
-import { chooseRival, defaultRival, refreshRival, rivalStatus } from './rival.ts';
+import { chooseRival, defaultRival, refreshRival, rivalStatus, nearbyEntries } from './rival.ts';
 
 const board:Board={contract:COMMUNITY_CONTRACT,rules:RULES_VERSION,storm:'relay',day:20261119,total:3,
   top:[{username:'Leader',score:900,rank:1,isYou:false},{username:'Near',score:500,rank:2,isYou:false},{username:'Me',score:300,rank:3,isYou:true}],
@@ -32,4 +32,9 @@ test('default target is the next higher score or an existing personal best',()=>
   assert.equal(defaultRival(first)?.kind,'personal');
   assert.equal(defaultRival({...board,me:null}),null);
   assert.equal(defaultRival({...board,total:0,top:[],nearby:[],me:null}),null);
+});
+test('nearby section does not duplicate entries already visible in the top ten',()=>{
+  assert.deepEqual(nearbyEntries({...board,nearby:board.top}),[]);
+  const distant={username:'OutsideTop',score:100,rank:11,isYou:false};
+  assert.deepEqual(nearbyEntries({...board,nearby:[board.top[2]!,distant]}),[distant]);
 });

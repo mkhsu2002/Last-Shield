@@ -63,7 +63,7 @@ export function mountGameUI(): void {
         <p id="board-day" class="eyebrow"></p><p id="board-total"></p><p id="board-me" class="record-note"></p>
         <p id="board-status" class="fineprint" role="status" aria-live="polite"></p>
         <h3>今日前十</h3><ol id="board-top" class="leaderboard" aria-label="今日前十"></ol>
-        <h3>你的鄰近排名</h3><ol id="board-nearby" class="leaderboard" aria-label="你的鄰近排名"></ol>
+        <section id="board-nearby-section" hidden><h3>你的鄰近排名</h3><ol id="board-nearby" class="leaderboard" aria-label="你的鄰近排名"></ol></section>
         <p class="fineprint">提交後，Reddit 名稱與當日最高分將公開在本社群榜，最多保留 30 天。你可以移除自己的排名。</p>
         <button id="board-submit" class="primary" disabled>提交本局戰績</button><button id="board-refresh" class="secondary">重新整理排名</button>
         <button id="board-remove" class="secondary">移除這一天的排名</button>

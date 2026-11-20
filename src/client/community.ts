@@ -2,9 +2,9 @@ import { context, navigateTo } from '@devvit/web/client';
 import { utcDaySeed, RULES_VERSION } from '../shared/game-logic';
 import { COMMUNITY_CONTRACT, MAX_TRACE_STEPS, type Board, type RunResult, type TraceStep } from '../shared/community';
 import { element, text } from './game-ui';
-import { localizedText, localizedValue, translate } from './i18n';
+import { localizedText, localizedValue, localizedAttribute, translate } from './i18n';
 import { dailyStorm, type StormId } from '../shared/daily-storm';
-import { chooseRival, defaultRival, refreshRival, rivalStatus, type RivalTarget } from './rival';
+import { chooseRival, defaultRival, refreshRival, rivalStatus, nearbyEntries, type RivalTarget } from './rival';
 
 type Start = {contract:string;rules:string;day:number;storm:StormId;runId:string|null};
 async function request<T>(path:string, method='GET', body?:unknown):Promise<T> {
@@ -123,7 +123,9 @@ export class Community {
       text('board-me',board.me?[`你的排名：第 ${board.me.rank} 名 · ${board.me.score} 分`,board.gap?` · 再多 ${board.gap} 分超越上一名`:'']:context?.userId?
         (this.removed?'再玩一局，即可重新參加這一天的社群榜。':this.finished&&!this.runId?'本局未連上社群榜，仍可繼續本機遊玩。再玩一局即可重試連線。':'完成一局後，可選擇提交戰績。'):
         '登入 Reddit 後，可提交戰績；不登入也能繼續遊玩。');
-      for(const [id,rows] of [['board-top',board.top],['board-nearby',board.nearby]] as const) {
+      const nearby=nearbyEntries(board);
+      element('board-nearby-section').hidden=nearby.length===0;
+      for(const [id,rows] of [['board-top',board.top],['board-nearby',nearby]] as const) {
         for(const row of rows) {
           const item=document.createElement('li');
           item.classList.toggle('is-you',row.isYou);
@@ -135,6 +137,7 @@ export class Community {
           const challenge=document.createElement('button');
           challenge.type='button';challenge.className='rival-pick';
           localizedText(challenge,row.isYou?'挑戰自己的最佳':'挑戰此分數');
+          localizedAttribute(challenge,'aria-label',`挑戰 u/${row.username} 的 ${row.score} 分`);
           challenge.addEventListener('click',()=>{
             this.nextTarget=chooseRival(board,row);
             if(!this.nextTarget)return;
