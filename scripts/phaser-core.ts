@@ -14,9 +14,15 @@ export function phaserCoreFlags():Plugin {
       if(!id.replaceAll('\\','/').includes('/node_modules/phaser/src/')) return;
       // Match the compile-time expressions in Phaser's own webpack DefinePlugin.
       // Audio is supplied by Last Shield's stereo synth; Spector is debug-only.
-      const code=source.replace(/\btypeof (CANVAS_RENDERER|WEBGL_RENDERER|WEBGL_DEBUG|FEATURE_SOUND)\b/g,
+      let code=source.replace(/\btypeof (CANVAS_RENDERER|WEBGL_RENDERER|WEBGL_DEBUG|FEATURE_SOUND)\b/g,
         (match,flag:string)=>(flag==='WEBGL_DEBUG'||flag==='FEATURE_SOUND'?'false':'true').padEnd(match.length))
         .replace('global.Phaser = Phaser;', 'globalThis.Phaser = Phaser;');
+      if(id.replaceAll('\\','/').endsWith('/phaser/src/phaser-core.js')) {
+        // This game creates only Image and Graphics objects and loads only images.
+        // Core services (scene, camera, renderer, input and textures) remain intact.
+        code=code.replace(/^\s*\w+: require\('\.\/(?:gameobjects\/(?:text|sprite|layer)\/[^']+|loader\/filetypes\/(?!ImageFile')[^']+)'\),?\r?$/gm,
+          match=>match.replace(/[^\r\n]/g,' '));
+      }
       if(code===source)return;
       return {code,map:{version:3,sources:[id],sourcesContent:[source],names:[],
         mappings:source.split('\n').map((_,line)=>line===0?'AAAA':'AACA').join(';')}};
