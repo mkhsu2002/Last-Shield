@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-11-20T06:13:10.723Z",
+  "installations": [
+    {
+      "subreddit": "last_shield_stage",
+      "version": "0.52.0.2",
+      "visibility": "PRIVATE"
+    },
+    {
+      "subreddit": "last_shield_dev",
+      "version": "0.50.0",
+      "visibility": "PUBLIC"
+    }
+  ],
+  "image": {
+    "url": "https://last-shield-kxouki-0-52-0-2-webview.devvit.net/share/last-shield-og-v052.png",
+    "status": 200,
+    "contentType": "image/png",
+    "matchesLocal": true,
+    "sha256": "13fadf37844d31b25faa0669baead35cdf4faac92b9e03d47584a45d32ba023e"
+  },
+  "existingPostStylesVerified": false,
+  "externalUnfurlVerified": false
+}

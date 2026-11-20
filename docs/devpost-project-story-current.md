@@ -1,49 +1,55 @@
-Last Shield is a daily timing-and-survival game inside a Reddit post. One city, one shared storm, and a community score to beat. Catch gold, hold until a meteor shatters, then release and choose your next threat. A perfect beam stops one target while the others keep falling. Bank Overdrive for the moment the sky becomes too crowded.
+Last Shield is a daily survival game inside a Reddit post. Defend Neo Babylon, build a combo, and give your community a score to chase. A new shared storm arrives each UTC day; the Hall remembers the defenders who held the line.
 
-[Play today's defense on Reddit](https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/).
+[Play today’s defense](https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/).
 
 ## Inspiration
 
-I wanted a daily game that gives people something specific to compare: not just a score, but a decision. Which meteor did you clear first? Did you spend Overdrive too early? Could one more perfect relay have saved the shield?
-
-Neo Babylon gives that compact challenge a city worth defending. A shared daily meteor sequence gives its defenders a common experience to discuss on Reddit.
+I wanted the score screen to be the start of a conversation: which core did you attack first, where did your combo break, and when should you have used Overdrive? A shared daily storm gives Reddit players the same problem to solve. Neo Babylon gives them a city to defend.
 
 ## What it does
 
-- **Catch gold and hold.** A perfect start creates a 3x beam and stops the selected meteor until you release. Other threats keep approaching.
-- **Release, choose, relay.** A perfect clear opens a short gold window for the next target. Prioritizing the right meteor matters as volleys grow to six simultaneous threats.
-- **Recover and adapt.** Gold returns every second. Missed timing can be retried, and damage already dealt stays. Partly destroyed meteors cause less shield damage.
-- **Bank your emergency move.** Three perfect clears charge Overdrive. You decide when to spend it to clear the sky.
-- **Learn today's storm.** Everyone receives the same sequence for the UTC day. Replay to improve; tomorrow brings a new pattern. A run keeps its starting day across midnight.
-- **Climb your community's daily board.** After a run, choose to submit your score. See the top ten, your nearby rivals, and the points needed to pass the next defender. Only your highest accepted score counts; ties share a rank.
-- **Share the decision behind the score.** Preview your result, add an optional strategy note, then copy it and open the Reddit post to write your comment. Sharing is always your choice.
+Catch the gold and hold until the meteor shatters. Release, choose the next threat, and keep the relay alive. A perfect beam stops one target while the others fall. Three perfect clears charge Overdrive; you decide when to spend it.
 
-Open the post and select **Start defending**. Timing practice slows the action, shows whether you caught the gold or released too soon, and lets you choose when to continue before the daily challenge. Touch and keyboard controls, English and Traditional Chinese, a sound control, pause, and reduced-motion support make the experience approachable. A compact control dock keeps the fire button near the bottom and leaves the battlefield clear on smaller screens. Playing does not require a login; submitting to the community board does.
+**Return for a new defense.** Three rotating storm profiles change the pressure. Daily basic and stretch goals give beginners a reachable target and experienced players another reason to replay. The opening screen shows tomorrow’s storm and the reset countdown, while daily focus progress survives a weaker attempt on the same device.
+
+**Build a record worth keeping.** Clears earn rising score multipliers as combos reach 10, 25, 50, 75 and 100. The daily community board shows nearby rivals and the points needed to pass them. Daily champions, separate score and combo Top 100 collections, and the Million-Point Heroes gallery give different skills a place in the Hall.
+
+**Bring a friend into the challenge.** Submit a score, copy a challenge code and the Reddit link, and invite someone to beat it. The receiving player checks the current public best and takes that target into their next run. A shared result can carry a strategy question based on the actual storm and run, making it easier to discuss more than a number.
+
+**Earn Neo Babylon citizenship.** A verified finished run above 1,000,000 points qualifies for a Citizen card. Players can choose to leave their Reddit name and callsign in the Hall, share the card, and let others check its verification ID.
+
+Three optional practice lessons teach timing, relay and emergency Overdrive. Touch and keyboard controls, English and Traditional Chinese, stereo effects, pause and reduced-motion support keep the short-session game accessible. Playing does not require a login.
 
 ## How I built it
 
-I used Devvit Web, TypeScript, Phaser, Vite, Hono, Web Audio, and Reddit's built-in Redis storage. The game opens directly from a Reddit interactive post. Moderators can create a playable post from their community menu.
+I used Devvit Web, TypeScript, Phaser, Vite, Hono, Web Audio and Reddit Redis. The game opens from an interactive Reddit post, and moderators can create a playable post from their community menu.
 
-The same gameplay rules run in the client and on the server. When a player submits, the server replays the recorded gameplay inputs and calculates the result before updating the board. Rankings belong to the subreddit where people play. Retrying a submission does not count it twice, and players can remove their visible daily entry.
+The client and server run the same deterministic rules. On submission, the server replays the inputs and calculates the result before updating community records. Friend codes resolve an accepted run to its current public daily best; the code itself is not proof of a score. Retries do not duplicate entries, and removed records cannot be challenged while unavailable.
 
 ## Challenges I ran into
 
-Timing had to remain readable when several meteors arrived together. I made the initial press distinct from the holding phase: once the beam locks, the timing cue becomes a destruction-progress bar. A recurring gold window preserves a recovery path after a missed press, while a short relay rewards releasing and choosing the next target.
+The first press and the holding phase needed distinct feedback. A gold timing cue becomes a destruction-progress bar once a perfect beam locks. Releasing after the clear opens the next tactical decision; recurring gold windows give a missed press a recovery path.
 
-I refined the painted skyline, textured meteors, blue-white Overdrive beams, and stereo impact effects so that a clear, an impact, and an emergency blast each feel distinct.
+Daily play also needed continuity. A weaker retry should not erase a completed goal. I separated local and server-confirmed progress, preserved each day’s best single-run value, and kept a run tied to its starting UTC date.
 
-The community board also needed to survive real interruptions. Runs retain their starting date across midnight, lower scores cannot overwrite a personal best, and submission retries do not create extra entries. A temporary ranking outage leaves the local game playable.
+Longer-lived records raised a different question: what happens when someone withdraws? Hall enrollment is separate from the daily board, and withdrawal removes the display and invalidates its certificate. Public sharing remains a player action.
 
-## Accomplishments I'm proud of
+## Accomplishments I’m proud of
 
-The daily loop now connects a tactical solo run to a shared community challenge. The Reddit game supports optional account-based ranking, nearby rivals, and player-led strategy sharing while preserving anonymous play.
+A short solo defense now leads into a community loop: learn today’s pattern, set a record, invite a rival, and return for a new storm. The scoring system makes long clean runs rewarding, while separate combo records and daily goals give players more than one way to improve.
 
-I verified a submitted score in the live Reddit game and read the same entry from a separate logged-out view. The project has 59 automated tests covering gameplay, replay validation, ranking, retries, date boundaries, localization, and recoverable failures.
+I tested the game inside Reddit, including completed runs, server score verification, friend challenge acceptance and removal, retained daily goals, and Citizen card sharing. The automated suite covers gameplay, replay validation, ranking, privacy, date boundaries, localization and recoverable failures.
 
 ## What I learned
 
-A high score becomes more interesting when players share the same challenge and can explain how they approached it. Clear feedback makes the individual run satisfying; a nearby rival and a useful strategy conversation give that run a life beyond the result screen.
+A useful rivalry needs a clear next step. Showing a nearby score is a start; letting a friend accept that target completes the loop. Daily content also needs memory: reaching a goal should still matter after the next attempt ends early.
 
-## What's next for Last Shield
+## What’s next
 
-I want to explore collective defense goals and rotating storm modifiers, guided by player feedback. These are future additions. Today's game already includes the shared daily sequence, community rankings, and score-and-strategy sharing.
+I’ll use player feedback to tune the basic and stretch targets and watch how strategies change across the storm cycle. Further variations should add a tactical choice before adding more interface.
+
+## Credits and demonstration notes
+
+Last Shield is set in my original Neo Babylon world. The million-point K video is an AI-controlled demonstration at 3× speed with stereo game audio. Demonstration runs are labeled and kept out of competitive rankings and personal daily achievements; simulated playtests are not presented as human retention research.
+
+Submitting a score publishes the Reddit name and score on that community’s board. Joining the Hall is optional and separate. Players can remove their display and revoke a Citizen card; exported image copies may remain after sharing. The card is an in-game achievement.

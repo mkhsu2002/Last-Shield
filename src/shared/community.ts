@@ -1,16 +1,17 @@
 import { DefenseRun, RULES_VERSION } from './game-logic.ts';
+import { dailyStorm, type StormId } from './daily-storm.ts';
 
-export const COMMUNITY_CONTRACT = 'community-1';
+export const COMMUNITY_CONTRACT = 'community-3';
 export const MAX_TRACE_STEPS = 180000;
 export const RUN_LIFETIME_MS = 2 * 60 * 60 * 1000;
 export type TraceStep = [delta: number, holding: boolean, target?: number];
 export type RunResult = {
-  version: string; day: number; score: number; perfect: number;
+  version: string; day: number; storm: StormId; score: number; perfect: number;
   cleared: number; bestCombo: number; waveReached: number; elapsedMs: number;
 };
 export type BoardEntry = { username: string; score: number; rank: number; isYou: boolean };
 export type Board = {
-  contract: string; rules: string; day: number; total: number;
+  contract: string; rules: string; day: number; storm: StormId; total: number; leaderTies:number;
   top: BoardEntry[]; nearby: BoardEntry[]; me: BoardEntry | null; gap: number | null;
 };
 export function replayRun(day: number, input: unknown, wallMs: number): RunResult {
@@ -37,7 +38,7 @@ export function replayRun(day: number, input: unknown, wallMs: number): RunResul
     }
   }
   if (!run.finished) throw new Error('unfinished-run');
-  return { version: RULES_VERSION, day, score: run.score, perfect: run.perfect,
+  return { version: RULES_VERSION, day, storm: dailyStorm(day).id, score: run.score, perfect: run.perfect,
     cleared: run.cleared, bestCombo: run.bestCombo, waveReached: run.waveIndex + 1,
     elapsedMs: run.elapsedMs };
 }

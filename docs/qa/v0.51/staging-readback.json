@@ -1,0 +1,134 @@
+{
+  "dateVancouver": "2026-11-19",
+  "candidate": "0.51.0.5",
+  "gitCommit": "ad59f12",
+  "stagingPost": "https://www.reddit.com/r/last_shield_stage/comments/1xximge/last_shield_daily_meteor_defense/",
+  "lane": "codex-mk-personal",
+  "cliAndVisibleRedditUser": "OwnDifference7782",
+  "contract": "community-2",
+  "rules": "survival-7",
+  "nativeAudit": {
+    "version": "0.51.0.5",
+    "contract": "community-2",
+    "rules": "survival-7",
+    "storm": "heavy",
+    "score": 5525,
+    "submitHttp": 200,
+    "duplicateHttp": 200,
+    "sameAcceptedAt": true,
+    "sameRun": true,
+    "board": {
+      "rank": "Your rank: #1 · 5525 points",
+      "nearbyHidden": "",
+      "challengeCount": 1
+    },
+    "goal": "5526 more points to pass your best",
+    "latency": {
+      "samples": 20,
+      "p95Ms": 17.80000001192093,
+      "maxMs": 65
+    },
+    "removeHttp": 200,
+    "removedRetryHttp": 200,
+    "removedRetrySameAcceptedAt": true,
+    "finalTotal": 0
+  },
+  "performance": {
+    "conditions": {
+      "cacheDisabled": true,
+      "latencyMs": 150,
+      "downloadBytesPerSecond": 200000,
+      "uploadBytesPerSecond": 93750,
+      "cpuSlowdown": 4
+    },
+    "coldLoad": [
+      {
+        "readyMs": 2523.2000000178814,
+        "viewport": [
+          390,
+          796
+        ],
+        "script": [
+          {
+            "duration": 2271.0999999940395,
+            "encoded": 393987,
+            "decoded": 876385
+          }
+        ]
+      },
+      {
+        "readyMs": 2518.899999976158,
+        "viewport": [
+          390,
+          796
+        ],
+        "script": [
+          {
+            "duration": 2261.600000023842,
+            "encoded": 393987,
+            "decoded": 876385
+          }
+        ]
+      },
+      {
+        "readyMs": 2525.7000000178814,
+        "viewport": [
+          390,
+          796
+        ],
+        "script": [
+          {
+            "duration": 2266.300000011921,
+            "encoded": 393987,
+            "decoded": 876385
+          }
+        ]
+      }
+    ],
+    "readiness": "first animation frame after canvas and daily title exist and start control is enabled",
+    "inputMetric": "native keydown to next requestAnimationFrame; desktop emulation, not physical touchscreen latency",
+    "inputRuns": 2,
+    "inputSamples": 20,
+    "inputP95Ms": 17.80000001192093,
+    "inputMaxMs": 65,
+    "canvasResolution": [
+      1080,
+      2160
+    ],
+    "baselineCandidate": "0.51.0.1",
+    "baselineReadyMs": 3970.7,
+    "intermediateCandidate04Ms": [
+      3305.8,
+      2937.3,
+      2950.8
+    ],
+    "intermediate04Passed": false,
+    "baselineViewport": [
+      1440,
+      644
+    ],
+    "comparisonCaveat": "Baseline and final viewport differ; timings are individual measurements, not a controlled speedup percentage."
+  },
+  "assets": {
+    "gameJS": {
+      "sha256": "7e95bf9a09a28b3deb6cf5f23e6674522075ccf29d1f16c73013b07d03ba42e6",
+      "http": 200,
+      "matchesLocalDist": true
+    },
+    "gameCSS": {
+      "sha256": "68a111cb2ac5b573acb3d5c4442ec2acdb312c61835872a54ecbbbd3153c20c5",
+      "http": 200,
+      "matchesLocalDist": true
+    },
+    "defaultJS": {
+      "sha256": "2aa4a4aac9bbff08a59fe3644a381ed9913ddeec2dadb77cfaeb39e1cace3838",
+      "http": 200,
+      "matchesLocalDist": true
+    },
+    "approvedArtAudioBattlefieldSourceUnchanged": true
+  },
+  "humanFirstPlayEvidence": false,
+  "humanCrossDayEvidence": false,
+  "allFourScoresAtLeast9": false,
+  "productionAndSubmission": "v0.50; candidate has not replaced the published submission"
+}

@@ -1,0 +1,31 @@
+{
+  "dateVancouver": "2026-11-19",
+  "status": "design-analysis-only",
+  "sourceRules": "survival-7",
+  "strategy": "bank",
+  "maxSimulationMs": 7200000,
+  "maxWaves": 10000,
+  "modifiedLiveScore": false,
+  "platformWrites": false,
+  "actualMillionRunCompleted": false,
+  "certificateIssued": false,
+  "candidateComboMultipliers": [
+    {"minimumCombo": 1, "multiplier": 1},
+    {"minimumCombo": 10, "multiplier": 2},
+    {"minimumCombo": 25, "multiplier": 5},
+    {"minimumCombo": 50, "multiplier": 10},
+    {"minimumCombo": 75, "multiplier": 25},
+    {"minimumCombo": 100, "multiplier": 50}
+  ],
+  "method": "Consume clear/impact events in order, accumulate a separate projected total, assert the original run.score equals the existing simulateDefense bank result. No gameplay rule or live score was changed.",
+  "rows": [
+    {"day": 20261118, "existingScore": 55070, "experimentalProjectedScore": 1341310, "peakCombo": 158, "waves": 59, "elapsedMs": 112040, "finished": true},
+    {"day": 20261119, "existingScore": 53360, "experimentalProjectedScore": 1146340, "peakCombo": 147, "waves": 58, "elapsedMs": 110860, "finished": true},
+    {"day": 20261120, "existingScore": 52780, "experimentalProjectedScore": 1166020, "peakCombo": 142, "waves": 53, "elapsedMs": 101530, "finished": true}
+  ],
+  "limitations": [
+    "These policies do not establish a mathematical maximum.",
+    "Projected scores are not real scores, replay attestations, certificates, or human performance.",
+    "The candidate multiplier model needs approval, broader balancing, and a real native-input run."
+  ]
+}

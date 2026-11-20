@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-11-20T06:01:20.190Z",
+  "source": "Devvit official installation API",
+  "result": [
+    {
+      "subreddit": "last_shield_stage",
+      "app": "last-shield",
+      "version": "0.52.0.1",
+      "visibility": 1,
+      "visibilityLabel": "PRIVATE"
+    },
+    {
+      "subreddit": "last_shield_dev",
+      "app": "last-shield",
+      "version": "0.50.0",
+      "visibility": 0,
+      "visibilityLabel": "PUBLIC"
+    }
+  ]
+}

@@ -1127,3 +1127,71 @@ button:disabled { opacity: .5; cursor: default; }
   .fire-button strong { font-size: 16px; }
   .energy-heading > strong { font-size: 12px; }
 }
+
+/* Daily identity is readable before play; the battlefield keeps a compact target. */
+.daily-card { border-left: 2px solid var(--cyan); padding: 2px 0 2px 12px; margin-bottom: 12px; }
+.daily-card strong { display: block; color: #edf5ff; font-size: 21px; margin: 4px 0; }
+.daily-card p, .launch-guide { font-size: 13px; line-height: 1.45; color: #c4d6e5; margin: 5px 0; }
+.daily-card .fineprint { display: block; margin-top: 6px; }
+.launch-guide { margin-bottom: 12px; }
+.rival-goal { font-size: 12px; color: #f0d584; margin: 2px 0 0; min-height: 0; }
+.storm-strip #storm { display: inline-block; max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.storm-strip { justify-content: space-between; gap: 8px; }
+.rival-goal:empty, .result-storm:empty, #result-rival:empty { display: none; }
+.result-storm { color: var(--cyan); margin: 6px 0; font-size: 14px; }
+.rival-pick { grid-column: 2 / -1; justify-self: start; border: 1px solid #78e5f250; border-radius: 6px; color: #bbf4fa; background: #78e5f210; padding: 7px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+.rival-pick:hover, .rival-pick:focus-visible { background: #78e5f230; outline: 2px solid #78e5f2; outline-offset: 2px; }
+@media (max-height: 700px) {
+  .daily-card { margin-bottom: 7px; padding-left: 10px; }
+  .daily-card strong { font-size: 18px; margin: 2px 0; }
+  .daily-card p, .launch-guide { font-size: 12px; margin: 3px 0; }
+  .launch-guide { margin-bottom: 8px; }
+  .daily-card .fineprint { font-size: 11px; margin-top: 3px; }
+}
+
+/* Hero records remain readable at narrow mobile widths. */
+.daily-leader { color: #acd7e0; font-size: 11px; margin: 3px 0; overflow-wrap: anywhere; }
+.score-block strong { font-variant-numeric: tabular-nums; font-size: clamp(25px, 6vw, 42px); }
+.demo-options { margin: 8px 0; font-size: 12px; color: #b2c7ce; }
+.demo-options summary { cursor: pointer; padding: 8px 0; }
+.demo-options label, .hall-consent-label { display: flex; align-items: flex-start; gap: 10px; line-height: 1.6; }
+.demo-options input, .hall-consent-label input { flex: 0 0 auto; width: 20px; height: 20px; margin-top: 3px; }
+.hall-tabs { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px; }
+.hall-tabs button { min-height: 44px; padding: 10px 4px; color: #b5d3dc; background: #142b3b; border: 1px solid #45616c; border-radius: 8px; cursor: pointer; }
+.hall-tabs [aria-selected="true"] { color: #101e2c; background: #edce84; border-color: #edce84; }
+.hall-tabs button:focus-visible { outline: 2px solid #8be5ed; outline-offset: 2px; }
+.hall-membership, .hall-certificate, #hall-records section { border-top: 1px solid #3d535e; margin-top: 20px; padding-top: 12px; }
+.hall-dialog input[type="text"] { box-sizing: border-box; width: 100%; padding: 12px; margin: 6px 0 12px; color: #e3edf2; background: #0e202e; border: 1px solid #647c87; border-radius: 8px; font: inherit; }
+.hall-dialog .leaderboard li { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; overflow-wrap: anywhere; }
+.hall-dialog .leaderboard li small { color: #edce84; }
+.hall-certificate-preview { width: 100%; height: auto; border-radius: 8px; margin: 12px 0; }
+.hall-dialog a.secondary { display: block; text-decoration: none; text-align: center; }
+.hall-dialog [hidden] { display: none !important; }
+/* Keep progress readable without taking a second instruction slot. */
+.growth-strip { display:flex; justify-content:space-between; gap:8px; margin-top:5px; font-size:11px; color:#edce84; }
+.growth-strip span { min-width:0; }
+#daily-focus { margin:6px 0 0; font-size:12px; color:#edce84; line-height:1.4; }
+#daily-return, #daily-reset { margin:4px 0 0; font-size:11px; color:#c4d6e5; }
+.feedback:not(:empty) { background:#081525d9; border-radius:8px; padding:2px 8px; }
+.hall-empty { border:1px solid #edce8450; border-radius:14px; padding:18px; margin:16px 0; background:linear-gradient(135deg,#18313d,#101d31); }
+.hall-empty h3 { color:#edce84; font-size:19px; line-height:1.35; }
+.hall-empty p { color:#c4d6e5; line-height:1.6; }
+.hall-membership > summary, .certificate-lookup > summary { cursor:pointer; color:#edce84; padding:12px 0; font-weight:650; }
+.hall-membership > summary:focus-visible, .certificate-lookup > summary:focus-visible { outline:2px solid #8be5ed; outline-offset:2px; }
+.panel .goal-status { font-size:10px; color:#a9c1d2; margin:4px 0; }
+.result-next { margin-top:12px; }
+.community-dialog .dialog-heading { position:sticky; top:-20px; z-index:2; background:#12243a; margin:-20px -20px 12px; padding:12px 18px; border-bottom:1px solid #45616c; }
+.community-dialog .dialog-heading h2 { font-size:20px; }
+.interface[data-state="practice-review"] #fire { opacity:0; height:0; min-height:0; padding:0; margin:0; border:0; overflow:hidden; }
+.results .result-caption { display:none; }
+.results #result-storm { font-size:11px; margin:4px 0 0; }
+.results .result-score { font-size:52px; margin:12px 0 4px; }
+.results .record-note { margin-bottom:10px; }
+.results .result-stats { padding:9px 0; }
+.results .retry-hint { border-left:2px solid var(--gold); padding-left:10px; line-height:1.5; font-size:12px; margin:12px 0; }
+#challenge-entry { margin:12px 0; padding:10px 0; border-block:1px solid #45616c; }
+#challenge-entry summary { cursor:pointer; min-height:44px; display:flex; align-items:center; color:var(--gold); }
+#challenge-code { box-sizing:border-box; width:100%; padding:12px; border:1px solid #647c87; border-radius:8px; color:#edf5ff; background:#0e202e; font:inherit; font-size:16px; margin:8px 0; }
+#challenge-entry summary:focus-visible { outline:2px solid #8be5ed; outline-offset:2px; }
+
+.community-dialog [hidden] { display:none !important; }

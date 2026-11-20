@@ -1,0 +1,38 @@
+{
+  "checkedAt": "2026-11-20T06:01:32.671Z",
+  "base": "https://last-shield-kxouki-0-52-0-1-webview.devvit.net",
+  "rows": [
+    {
+      "path": "game.js",
+      "status": 200,
+      "bytes": 899064,
+      "sha256": "6664a57813dc6a1f680fc56a529b5e91f099c78fd0b065f9879853b99e133b6f",
+      "matchesLocal": true
+    },
+    {
+      "path": "game.css",
+      "status": 200,
+      "bytes": 21649,
+      "sha256": "9d0019c3edb465bfabd407c286bc9312e1fe7d3c7d9f27865e8c3d31050ceedd",
+      "matchesLocal": true
+    },
+    {
+      "path": "privacy/index.html",
+      "status": 200,
+      "bytes": 6891,
+      "sha256": "04061d6d3518c239627d18b00cc48203a06648b4b7cc3c14d90fcbe1ef13aa15",
+      "matchesLocal": false,
+      "policyContentMatches": true,
+      "platformHTMLShim": true
+    },
+    {
+      "path": "terms/index.html",
+      "status": 200,
+      "bytes": 4888,
+      "sha256": "f61fbf93faf87ff58b0329a959114516a07784a0e92bb7bf9eba5ee031d3271d",
+      "matchesLocal": false,
+      "policyContentMatches": true,
+      "platformHTMLShim": true
+    }
+  ]
+}

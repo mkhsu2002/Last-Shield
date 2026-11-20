@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { DefenseRun } from './game-logic.ts';
+import { DefenseRun, RULES_VERSION } from './game-logic.ts';
 import { replayRun, type TraceStep } from './community.ts';
 
 function finishedTrace(): TraceStep[] {
@@ -19,7 +19,7 @@ test('replay derives score from gameplay rather than a supplied score', () => {
   assert.ok(result.score > 0);
   assert.ok(result.cleared > 0);
   assert.equal(result.day, 20261115);
-  assert.equal(result.version, 'survival-6');
+  assert.equal(result.version, RULES_VERSION);
   assert.deepEqual(result, replayRun(20261115, JSON.parse(JSON.stringify(trace)), 120000));
 });
 test('reject unfinished, malformed, expensive, or faster-than-wall-clock runs', () => {

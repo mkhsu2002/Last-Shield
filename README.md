@@ -1,90 +1,82 @@
-# Last Shield
+# Last Shield v1.0
 
-**One daily storm. A city to defend. A community score to beat.**
+**A daily meteor defense game built around Reddit rivals and lasting records.**
 
-Catch the gold, hold your beam, and defend Neo Babylon against an escalating meteor storm. Everyone faces the same daily sequence. Learn when to switch targets, save Overdrive for the right moment, then see how your best run ranks in your Reddit community.
+Defend Neo Babylon inside a Reddit post. Catch the gold, hold until the meteor shatters, then release and choose the next threat. Build a long combo, bank Overdrive for a crowded sky, and challenge your community to do better.
 
-## Play on Reddit
+[**Play today’s defense**](https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/) · [Watch gameplay](https://www.youtube.com/watch?v=7jT7e-c_XqU) · [Devpost project](https://devpost.com/software/last-shield)
 
-Open the [playable Reddit post](https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/) and choose **Start defending**. The game runs inside Reddit; no external game website is required.
+## Why come back tomorrow?
 
-- [Watch v0.50 Reddit gameplay](https://www.youtube.com/watch?v=DLHAouzPwTI)
-- [View the Last Shield hackathon project](https://devpost.com/software/last-shield)
-- [Devvit app listing](https://developers.reddit.com/apps/last-shield)
-- [Public test community](https://www.reddit.com/r/last_shield_dev/)
-- [Source repository](https://github.com/mkhsu2002/Last-Shield)
+Every UTC day brings a shared meteor sequence and a rotating storm: a longer gold relay, faster crossing cores, or a heavier sky. Today’s basic and stretch goals give you a clear target beyond the score. Learn the pattern, change your approach, and try again while everyone faces the same challenge.
 
-## The daily defense
+The opening screen shows the reset countdown and tomorrow’s storm. On the same device, daily focus progress remembers your best single run across weaker replays. The daily board gives each defender a fresh chance; the Hall preserves daily champions and longer-term records within the current scoring season.
 
-- **A fresh storm each day.** A new UTC day brings a new meteor sequence. Same-day replays give you a chance to learn the pattern and improve your decisions.
-- **Timing with consequences.** A perfect beam stops its selected meteor while the others keep falling. Release after the clear, choose the next threat, and chain the gold relay.
-- **An emergency move you control.** Bank three perfect clears, then spend Overdrive when the sky becomes too crowded.
-- **Your community's daily board.** Submit your best run to see the top ten, the players near you, and the score needed to pass the next defender. Tied scores share a rank.
-- **Strategies worth discussing.** Preview your result, add an optional note about your run, and bring the conversation back to the Reddit post.
+## Turn a good run into a record
 
-New in **v0.50**: a painted Neo Babylon skyline, textured meteors, blue-white Overdrive beams, and stereo impact effects bring the defense to life. Timing practice gives you room to see your result and choose when to continue.
-
-New in **v0.49**: a clearer battlefield and a bottom fire control keep the defense within reach on smaller screens. Overdrive stays compact as your charge changes.
-
-New in **v0.48**: community rankings, scores recalculated from gameplay before ranking, and score-and-strategy sharing. You can play without logging in; joining the board is your choice.
-
-## Inside the Reddit game
-
-| Defend the city | Compare your daily best |
+| Record | What counts |
 | --- | --- |
-| ![Blue-white Overdrive beams defend the painted Neo Babylon city](https://raw.githubusercontent.com/mkhsu2002/Last-Shield/main/docs/media/last-shield-v0.50-overdrive.png) | ![Daily community board showing a submitted score, personal rank and nearby players](https://raw.githubusercontent.com/mkhsu2002/Last-Shield/main/docs/media/last-shield-v0.50-community-board.png) |
+| Daily community board | Your highest submitted score for the UTC day; top ten, nearby rivals and the gap to the next defender |
+| Daily champions | The leading score for each day, with ties; results settle after the late-submission window |
+| Score Top 100 | Each enrolled defender’s highest score in the current season |
+| Combo Top 100 | Each enrolled defender’s longest combo, ranked separately from score |
+| Million-Point Heroes | A verified finished run strictly above **1,000,000** points unlocks a **Neo Babylon Citizen card** |
 
-Both images show v0.50 running inside the Reddit game. The video linked above shows v0.50 timing practice, blue-white Overdrive beams, a completed run, and the community board.
+The battlefield shows today’s leading defender and score. After a run, see where your longest chain broke and get a concrete target for the next attempt. Scores are recalculated from gameplay on the server before entering a board. Tied scores share a rank.
+
+Joining the daily board and leaving a longer-term Hall record are separate choices. Hall enrollment lets you add a callsign alongside your Reddit name and share a checkable Citizen card.
+
+## Give a friend a score to chase
+
+1. **Finish and submit.** Choose **Invite a friend** in Rankings to copy your challenge code and the game link.
+2. **Accept a real target.** Your friend pastes the code into **Accept a friend’s challenge**. The game checks your current public best and brings that score into their next run.
+3. **Bring back a better run.** Share the score and a strategy: the relay you kept alive, the core you chose first, or the wave where Overdrive saved you.
+
+A shared daily storm makes these comparisons meaningful. Older invitations offer today’s challenge, and unavailable records cannot be accepted. Reddit sharing is supported where the client allows it, with a copyable code and link as the dependable path. A dedicated social preview helps the game stand out when the public post is shared.
+
+Million-point defenders can share their Citizen card and verification ID. Images can be exported separately, while the in-game lookup lets recipients check the achievement. Nothing posts a message or comment on your behalf.
 
 ## How to play
 
-1. **Press on gold.** When the ring turns gold, press and hold to catch the meteor with a perfect 3× beam. Keep holding until it shatters.
-2. **Release, then press for the next.** A perfect clear opens a short gold relay for the next meteor. The progress bar shows when to keep holding; release only after the clear.
-3. **Save your Overdrive.** Three perfect clears fill your charge. Press **Overdrive** or **E** to clear all incoming meteors. A full charge stays banked until you choose to use it.
+- **Press on gold and keep holding.** A perfect start creates a 3× beam and stops its selected meteor. Other threats keep falling.
+- **Release after the shatter.** Press again for the next target. Perfect clears open a short gold relay; gold also returns each second if you miss the timing.
+- **Save your emergency move.** Three perfect clears fill Overdrive. Press **E** or tap **Overdrive** when you want to clear the sky.
 
-Missed the timing? Gold returns every second. Release and retry; damage already dealt stays. A perfect beam stops its target while you hold it, while other meteors keep moving. You can hold a specific meteor to choose a different target.
+Long combos multiply the points awarded for each clear:
 
-Your shield starts at 100%. Smaller, partly destroyed meteors deal less damage. Survive increasingly crowded waves until the shield falls, then try to beat your daily best.
+| Combo | 1–9 | 10–24 | 25–49 | 50–74 | 75–99 | 100+ |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Points multiplier | 1× | 2× | 5× | 10× | 25× | 50× |
 
-## Controls and languages
+An impact resets the combo. Partly melting a meteor reduces its impact damage. Hold a specific meteor to choose your target; a held beam does not automatically jump to another core.
 
-- **Phone or tablet:** hold the fire button or a meteor; tap Overdrive when charged.
-- **Keyboard:** hold **Space** to fire, **E** for Overdrive, and **Esc** to pause or resume.
-- Use the sound control to mute or enable audio. The game respects reduced-motion preferences.
-- English is the default. Switch to **繁中** in the header for Traditional Chinese; the game remembers your choice when device storage is available.
+**Practice defense** offers three optional lessons: perfect timing, release-and-press relay, and saving Overdrive for danger. Each ends with feedback you can read before continuing.
 
-Try **Practice perfect timing** before starting the daily challenge. Practice slows the action and shows whether you caught the gold or released too soon. Review the result, release your controls, then choose **Continue** when you are ready.
+## Controls and access
 
-## Scores and privacy
+- **Touch:** hold the fire button or a meteor; tap Overdrive when charged.
+- **Keyboard:** **Space** to fire, **E** for Overdrive, **Esc** to pause or resume.
+- English and Traditional Chinese, sound control, and reduced-motion support are available.
+- Play without signing in. Sign in to Reddit when you want to submit a score or join the Hall.
 
-Your daily best and language choice are saved on your device when storage is available. The game remains playable without storage or a Reddit login.
-
-In the Reddit game, choose **Rankings & submit score** after a run to enter the daily board for the current subreddit. The board shows the top ten, players near you, and the points needed to pass the next defender. Each account keeps its highest accepted score per UTC day and rules version; ties share a rank. Starting a run does not publish your score. Submitting makes your Reddit username and score public on that community's board. You can remove your entry for a day. Records expire within 30 days of the challenge day's start. Submit within two hours of starting a run. Practice and the standalone web preview keep local scores only.
-
-Use **Share score & strategy** to preview your result and optionally add a strategy note. Copy the text, then open the Reddit post to paste, edit, and send your own comment. Nothing is posted automatically.
-
-## Daily challenge and replay
-
-The meteor sequence is seeded by the UTC day. Replays on the same day use the same sequence, so players can learn routes and compare strategies. A run keeps the day it started with, even across midnight. A new UTC day brings a new sequence.
-
-Pressure grows from individual meteors to volleys of up to six simultaneous targets. A perfect beam stops only its selected target; the others keep approaching. Partly melting a meteor reduces its eventual impact damage. Choosing your next target and deciding when to spend Overdrive matter as the sky fills.
-
-After a run, share the choices that helped you survive: when did you use Overdrive, and which target did you clear first? The same daily sequence gives players a common challenge to discuss. You can also copy just your result and game-post link to invite a friend.
+A run keeps the UTC day it started with, even across midnight. Submit within two hours of starting. Device storage keeps up to seven played days of local bests and daily focus progress when available; this is not synced account history. Daily records expire within 30 days, while opted-in Hall records remain during the current season while enrolled.
 
 ## For community moderators
 
-After installing Last Shield, open your community menu and choose **Create a Last Shield game post** to create a playable post. Players open the post and select **Start defending** to play.
+Install [Last Shield](https://developers.reddit.com/apps/last-shield), then choose **Create a Last Shield game post** from your community menu. Players select **Start defending** in that post. Rankings belong to that subreddit.
 
-## Terms and privacy
+## Development
 
-Read the [Terms and Conditions](https://last-shield.vercel.app/terms/) and [Privacy Policy](https://last-shield.vercel.app/privacy/) for Last Shield.
+Built with Devvit Web, TypeScript, Phaser, Vite, Hono, Web Audio and Reddit Redis. The client and server share deterministic game rules; submission retries are idempotent. See [development notes](docs/development.md) and the [v1.0 release record](docs/v1-0-release-2026-11-20.md).
 
-## Credits
+[Source](https://github.com/mkhsu2002/Last-Shield) · [App listing](https://developers.reddit.com/apps/last-shield) · [Community](https://www.reddit.com/r/last_shield_dev/)
 
-Last Shield is set in the original Neo Babylon world. Rights to the original world, characters, artwork and audiovisual assets remain with their creators.
+## Credits and sharing choices
 
-## Current release
+Last Shield takes place in the original Neo Babylon world. Rights to its world, characters, artwork and audiovisual assets remain with their creators.
 
-Game version **v0.50**, Devvit package **0.50.0**. The public test post is free to play, with no app purchase, invite list, or game usage limit. It will remain available for hackathon judging through **December 16, 2026 at 6:00 p.m. PST**. Reddit may apply its own security checks.
+The million-point video features K, an AI-controlled demonstration, shown at 3× speed with stereo game audio. Demonstration runs are labeled and excluded from competitive boards and personal daily achievements.
 
-For development and release information, see the [development notes](docs/development.md).
+Submitting a score makes your Reddit name and score visible on that community’s daily board. Hall membership requires a separate choice; you can remove your display and revoke your Citizen card. Public image export also requires agreement because shared copies may remain after withdrawal. The card is an in-game achievement, not legal citizenship or a financial asset.
+
+[Privacy Policy](https://last-shield.vercel.app/privacy/) · [Terms and Conditions](https://last-shield.vercel.app/terms/)

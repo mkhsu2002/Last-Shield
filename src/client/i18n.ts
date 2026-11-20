@@ -1,3 +1,4 @@
+import { GAME_VERSION } from "./version.ts";
 import { MESSAGES } from "./messages.ts";
 import type { RecordStorage } from "./records.ts";
 
@@ -33,7 +34,10 @@ export function translate(source: string, locale: Language = language): string {
       const match = pattern.expression.exec(key);
       if (!match) continue;
       const values = new Map(pattern.slots.map((slot, i) => [slot, translate(match[i + 1]!, locale)]));
-      result = pattern.target.replace(/\{(\d+)\}/g, (_, slot: string) => values.get(Number(slot)) ?? "");
+      const candidate = pattern.target.replace(/\{(\d+)\}/g, (_, slot: string) => values.get(Number(slot)) ?? "");
+      // A generic numeric pattern must not swallow a more specific localized cue.
+      if (/[\p{Script=Han}]/u.test(candidate)) continue;
+      result = candidate;
       break;
     }
   }
@@ -41,15 +45,17 @@ export function translate(source: string, locale: Language = language): string {
   return (source.match(/^\s*/)?.[0] ?? "") + result + (source.match(/\s*$/)?.[0] ?? "");
 }
 
-type Copy = string | string[];
+type Copy = string | readonly (string | {literal:string})[];
 const staticText = new Map<Text, string>();
 const dynamicText = new Map<HTMLElement, Copy>();
 const attributes = new Map<Element, Map<string, string>>();
 const values = new Map<HTMLTextAreaElement, Copy>();
-const render = (copy: Copy) => Array.isArray(copy) ? copy.map(s => translate(s)).join("") : translate(copy);
+export function renderCopy(copy:Copy, locale:Language=language):string {
+  return typeof copy==='string'?translate(copy,locale):copy.map(part=>typeof part==='string'?translate(part,locale):part.literal).join('');
+}
 export function localizedText(el: HTMLElement, copy: Copy): void {
   dynamicText.set(el, copy);
-  const next = render(copy);
+  const next = renderCopy(copy);
   if (el.textContent !== next) el.textContent = next;
 }
 export function localizedAttribute(el: Element, name: string, source: string): void {
@@ -60,7 +66,7 @@ export function localizedAttribute(el: Element, name: string, source: string): v
 }
 export function localizedValue(el: HTMLTextAreaElement, copy: Copy): void {
   values.set(el, copy);
-  el.value = render(copy);
+  el.value = renderCopy(copy);
 }
 export function localizeTree(root: HTMLElement): void {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -83,8 +89,8 @@ export function localizeTree(root: HTMLElement): void {
 function refreshLanguage(): void {
   if (typeof document === "undefined") return;
   document.documentElement.lang = language;
-  document.title = translate("最後防線｜新巴比倫守城挑戰");
-  document.querySelector('meta[name="description"]')?.setAttribute("content", translate("金色時機完美起手，迎戰同步逼近的碎星潮。保留超載能量，在危急時手動震爆全場，守護新巴比倫。"));
+  document.title = translate(`最後防線 ${GAME_VERSION}｜Reddit 每日守城`);
+  document.querySelector('meta[name="description"]')?.setAttribute("content", translate("迎戰每日新風暴，累積連擊，挑戰好友，在 Reddit 社群英雄館留下紀錄。"));
   for (const [node, source] of staticText) if (node.isConnected) node.textContent = translate(source);
   for (const [el, source] of dynamicText) if (el.isConnected) localizedText(el, source);
   for (const [el, entries] of attributes) if (el.isConnected)

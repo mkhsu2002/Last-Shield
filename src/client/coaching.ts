@@ -1,4 +1,4 @@
-import type { Mistakes, StormPhase } from "../shared/game-logic.ts";
+import { comboMultiplier, type Mistakes, type StormPhase } from "../shared/game-logic.ts";
 
 export const PHASE_LABELS: Record<StormPhase, string> = {
   approach: "前線推進",
@@ -65,4 +65,59 @@ export function retryAdvice(run: {
     : run.late > 0
     ? "提早一點跟上圓環，讓完美光束替你多爭取時間。"
     : "超載可以保留。多顆快要撞上時，再按「超載震爆」清場。";
+}
+
+const COMBO_STEPS = [10, 25, 50, 75, 100] as const;
+const count = (value: number): number => Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+
+export function comboProgress(combo: number, practice = false): {
+  multiplier: number;
+  nextCombo: number | null;
+  nextMultiplier: number | null;
+  remaining: number;
+} {
+  const current = count(combo);
+  const nextCombo = practice ? null : COMBO_STEPS.find(step => step > current) ?? null;
+  return {
+    multiplier: comboMultiplier(current, practice),
+    nextCombo,
+    nextMultiplier: nextCombo === null ? null : comboMultiplier(nextCombo),
+    remaining: nextCombo === null ? 0 : nextCombo - current,
+  };
+}
+
+export function runLearningGoal(run: {
+  bestCombo: number;
+  brokenCombo: number;
+  breakWave: number;
+  energy: number;
+  mistakes: Mistakes;
+  early: number;
+  late: number;
+}): { summary: string; action: string } {
+  const best = count(run.bestCombo);
+  const broken = count(run.brokenCombo);
+  const wave = count(run.breakWave);
+  if (best === 0) return { summary: "這次還沒擊碎核心。", action: "下一局先擊碎第一顆：圓環變金色時按住，直到核心爆裂才放開。" };
+  const summary = broken > 0
+    ? wave > 0
+      ? `這局最高 ${best} 連擊；最長斷鏈為 ${broken} 連擊，發生在第 ${wave} 波。`
+      : `這局最高 ${best} 連擊；最長斷鏈為 ${broken} 連擊。`
+    : `這局最高 ${best} 連擊，沒有連擊中斷紀錄。`;
+  const progress = comboProgress(best);
+  const goal = progress.nextCombo === null
+    ? '下一局以維持 100 連擊以上、50 倍得分為目標。'
+    : `下一局先以 ${progress.nextCombo} 連擊、${progress.nextMultiplier} 倍得分為目標，比這局最佳再多 ${progress.remaining} 連擊。`;
+  const hasImpact = Object.values(run.mistakes).some(value => value > 0);
+  // Keep one instruction after the numeric goal; timing grades never override observed impacts.
+  const instruction = run.energy === 3
+    ? '結束時超載仍是滿的；多顆快要撞上時，按「超載震爆」清場。'
+    : hasImpact
+      ? retryAdvice(run).split('。')[0] + '。'
+      : broken > 0 && wave > 0
+        ? `下次在第 ${wave} 波前保留超載，多顆快要撞上時再清場。`
+        : run.early > 0 || run.late > 0
+          ? retryAdvice(run).split('。')[0] + '。'
+          : '圓環變金色時按住發射，擊碎後先放開，再攻擊下一顆。';
+  return { summary, action: goal + instruction };
 }

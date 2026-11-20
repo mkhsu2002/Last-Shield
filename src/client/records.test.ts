@@ -106,3 +106,29 @@ test("multi-core volleys allow more clears than waves, but never over six per wa
     false
   );
 });
+
+test('recent daily history survives a new UTC day and upgrades the legacy single result',()=>{
+ const storage=memory();storage.setItem('',JSON.stringify(record));
+ records.storeBest(storage,{...record,day:20261115,score:1800});
+ assert.deepEqual(records.readBest(storage,20261114),record);
+ assert.equal(records.readPreviousBest(storage,20261115)?.score,1400);
+ assert.equal(records.readPreviousBest(storage,20261114),null);
+});
+test('only seven valid distinct challenge days are retained without losing per-day maxima',()=>{
+ const storage=memory();for(let day=14;day<=23;day++)records.storeBest(storage,{...record,day:20261100+day,score:day*100});
+ records.storeBest(storage,{...record,day:20261123,score:1});
+ assert.equal(records.readBest(storage,20261123)?.score,2300);assert.equal(records.readPreviousBest(storage,20261123)?.day,20261122);
+ assert.equal(records.readBest(storage,20261116),null);assert.equal(JSON.parse(storage.getItem()!).length,7);
+});
+test('a failed history write leaves the previous result intact',()=>{
+ const storage=memory();records.storeBest(storage,record);
+ const failing={getItem:storage.getItem,setItem(){throw new Error('quota');}};
+ assert.equal(records.storeBest(failing,{...record,day:20261115}),false);assert.deepEqual(records.readBest(storage,record.day),record);
+});
+
+test('an already saved higher best does not need a write when storage becomes read-only',()=>{
+ const existing=JSON.stringify([{...record,score:1000}]);
+ const storage={getItem:()=>existing,setItem(){throw new Error('quota');}};
+ assert.equal(records.storeBest(storage,{...record,score:100}),true);
+ assert.equal(records.readBest(storage,record.day)?.score,1000);
+});
