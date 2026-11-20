@@ -84,7 +84,7 @@ export class HallController {
   accepted(runId: string, score: number, _demo: boolean): void {
     if (!this.enabled || !runId || this.revokedProofs.has(runId)) return;
     this.acceptedProofs.add(runId);
-    this.pendingRun = runId; this.removed = false; this.controls();
+    this.pendingRun = runId; this.removed = false; get<HTMLDetailsElement>('hall-membership').open = true; this.controls();
     if (Number.isFinite(score) && score > 1_000_000) void this.open();
     else if (this.hall?.me.enrolled || get<HTMLDialogElement>('hall-dialog').open) void this.refresh();
   }
@@ -184,7 +184,14 @@ export class HallController {
       }
       container.append(list);
     }
-    if (!container.textContent?.trim()) { const empty = document.createElement('p'); localizedText(empty, '這個展區尚無公開紀錄。'); container.append(empty); }
+    if (!container.textContent?.trim()) {
+      const empty = document.createElement('div'); empty.className = 'hall-empty';
+      const heading = document.createElement('h3'); localizedText(heading, this.tab === 'million' ? '下一位百萬英雄，會是你嗎？' : this.tab === 'combos' ? '每一段長連擊，都值得記住。' : this.tab === 'champions' ? '今天的防線，等你寫下。' : '從你的第一場守城開始。');
+      const explanation = document.createElement('p'); localizedText(explanation, this.tab === 'million' ? '單局突破 1,000,000 分，領取自己的新巴比倫公民證書。' : '完成守城、提交戰績，再選擇留下名字。每日榜不必加入英雄館也能參加。');
+      const play = document.createElement('button'); play.type = 'button'; play.className = 'primary'; localizedText(play, '回到守城');
+      play.addEventListener('click', () => get<HTMLDialogElement>('hall-dialog').close());
+      empty.append(heading, explanation, play); container.append(empty);
+    }
   }
   private async moreChampions(day: number): Promise<void> {
     const current = this.hall?.champions.find(row => row.day === day);

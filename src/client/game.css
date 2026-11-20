@@ -1167,3 +1167,16 @@ button:disabled { opacity: .5; cursor: default; }
 .hall-certificate-preview { width: 100%; height: auto; border-radius: 8px; margin: 12px 0; }
 .hall-dialog a.secondary { display: block; text-decoration: none; text-align: center; }
 .hall-dialog [hidden] { display: none !important; }
+/* Keep progress readable without taking a second instruction slot. */
+.growth-strip { display:flex; justify-content:space-between; gap:8px; margin-top:5px; font-size:11px; color:#edce84; }
+.growth-strip span { min-width:0; }
+#daily-focus { margin:6px 0 0; font-size:12px; color:#edce84; line-height:1.4; }
+#daily-return, #daily-reset { margin:4px 0 0; font-size:11px; color:#c4d6e5; }
+.feedback:not(:empty) { background:#081525d9; border-radius:8px; padding:2px 8px; }
+.hall-empty { border:1px solid #edce8450; border-radius:14px; padding:18px; margin:16px 0; background:linear-gradient(135deg,#18313d,#101d31); }
+.hall-empty h3 { color:#edce84; font-size:19px; line-height:1.35; }
+.hall-empty p { color:#c4d6e5; line-height:1.6; }
+.hall-membership > summary, .certificate-lookup > summary { cursor:pointer; color:#edce84; padding:12px 0; font-weight:650; }
+.hall-membership > summary:focus-visible, .certificate-lookup > summary:focus-visible { outline:2px solid #8be5ed; outline-offset:2px; }
+.panel .goal-status { font-size:10px; color:#a9c1d2; margin:4px 0; }
+.result-next { margin-top:12px; }

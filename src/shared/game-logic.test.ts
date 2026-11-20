@@ -537,3 +537,48 @@ test("balance results label ideal bots and reaction-delay simulations without cl
   assert.equal(ideal.releaseDelayMs, null);
   assert.equal(ideal.interpretation, "Simulation only; not evidence of human performance or native-UI play.");
 });
+
+test('postmortem keeps the largest observed chain break and its actual wave',()=>{
+ const run=new rules.DefenseRun(20261114);clearTarget(run);clearTarget(run);
+ const before=run.score;while(!run.finished&&run.longestBrokenCombo===0)run.step(10,false);
+ assert.equal(run.longestBrokenCombo,2);assert.equal(run.brokenComboWave,3);assert.equal(run.score,before);
+ const wave=run.brokenComboWave;while(!run.finished)run.step(50,false);
+ assert.equal(run.longestBrokenCombo,2);assert.equal(run.brokenComboWave,wave);
+});
+
+test('practice lesson scenarios use real multi-core volleys and only overdrive starts charged', () => {
+  const timing = new rules.DefenseRun(20261114, { practice: true, lesson: 'timing' });
+  const relay = new rules.DefenseRun(20261114, { practice: true, lesson: 'relay' });
+  const overdrive = new rules.DefenseRun(20261114, { practice: true, lesson: 'overdrive' });
+  assert.equal(timing.meteors.length, 1); assert.equal(timing.energy, 0);
+  assert.equal(relay.meteors.length, 2); assert.equal(relay.energy, 0);
+  assert.equal(new Set(relay.meteors.map(m => m.id)).size, 2);
+  assert.equal(overdrive.meteors.length, 3); assert.equal(overdrive.energy, 3);
+  const first = relay.meteor!; relay.step(first.chargeStartMs, false); relay.step(350, true);
+  assert.equal(relay.cleared, 1); assert.equal(relay.meteors.length, 1);
+  relay.step(100, true); assert.equal(relay.cleared, 1, 'held beam cannot jump to second core');
+  relay.step(0, false); relay.step(350, true);
+  assert.equal(relay.cleared, 2); assert.equal(relay.perfect, 2);
+});
+test('ranked runs completely ignore every practice lesson option', () => {
+  const normal = new rules.DefenseRun(20261114);
+  for (const lesson of ['timing','relay','overdrive'] as const) {
+    const ranked = new rules.DefenseRun(20261114, { lesson });
+    assert.equal(ranked.practiceLesson, null);
+    assert.deepEqual(ranked.meteors, normal.meteors); assert.equal(ranked.energy, 0);
+    const trace: [number, boolean][] = [[1000,false],[350,true],[0,false],[2500,false]];
+    const baseline = new rules.DefenseRun(20261114);
+    for (const [dt, held] of trace) assert.deepEqual(ranked.step(dt,held), baseline.step(dt,held));
+    assert.equal(ranked.score, baseline.score); assert.equal(ranked.integrity, baseline.integrity);
+  }
+});
+test('each impact carries the actual chain value before reset without replacing longest-break observations', () => {
+  const run = new rules.DefenseRun(20261114);
+  run.combo = 12; run.bestCombo = 12;
+  const first = run.step(5000, false).find(event => event.type === 'impact');
+  assert.ok(first && first.type === 'impact'); assert.equal(first.brokenCombo, 12);
+  assert.equal(run.combo, 0); assert.equal(run.longestBrokenCombo,12);
+  const later = run.step(5000, false).find(event => event.type === 'impact');
+  assert.ok(later && later.type === 'impact'); assert.equal(later.brokenCombo, 0);
+  assert.equal(run.longestBrokenCombo, 12);
+});

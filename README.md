@@ -57,7 +57,11 @@ Try **Practice perfect timing** before starting the daily challenge. Practice sl
 
 ## Candidate development
 
+Formal delivery is on hold while the candidate undergoes another product quality review. [Current quality work and unverified items](docs/v0-52-quality-round-2-2026-11-20.md).
+
 The active v0.52 candidate combines rotating daily storms and rival challenges with combo score multipliers, a daily leader HUD, daily champion history, score and combo Top 100 collections, and optional long-term Neo Babylon Citizen certificates. This is development status; the public release below remains v0.50 until full deployment is verified. [Implementation and release checklist](docs/superpowers/plans/2026-11-19-v0-52-heroes.md).
+
+The current quality round adds optional timing, relay and emergency Overdrive lessons, a common daily focus with a stretch goal, visible combo milestones and a run-specific learning summary. These changes are under review and are not yet the public release.
 
 In the candidate, consecutive clears earn 1× / 2× / 5× / 10× / 25× / 50× points at combos 1 / 10 / 25 / 50 / 75 / 100. Impacts reset the chain; practice stays at 1×. Scores use a new season so earlier scoring rules do not compete with these totals.
 
@@ -67,9 +71,9 @@ The candidate also adds a branded social preview card for the public Reddit post
 
 ## Scores and privacy
 
-Your daily best and language choice are saved on your device when storage is available. The game remains playable without storage or a Reddit login.
+Your daily best for up to seven recent played UTC days and your language choice are saved on your device when storage is available. Earlier records are local to this device, not a synced account history. The game remains playable without storage or a Reddit login.
 
-In the Reddit game, choose **Rankings & submit score** after a run to enter the daily board for the current subreddit. The board shows the top ten, players near you, and the points needed to pass the next defender. Each account keeps its highest accepted score per UTC day and rules version; ties share a rank. Starting a run does not publish your score. Submitting makes your Reddit username and score public on that community's board. You can remove your entry for a day. Daily records expire within 30 days of the challenge day's start. Separately opted-in Hall records have longer retention as described above and in the Privacy Policy. Submit within two hours of starting a run. Practice and the standalone web preview keep local scores only.
+In the Reddit game, choose **Rankings & submit score** after a run to enter the daily board for the current subreddit. The board shows the top ten, players near you, and the points needed to pass the next defender. Each account keeps its highest accepted score per UTC day and rules version; ties share a rank. Starting a run does not publish your score. Submitting makes your Reddit username and score public on that community's board. You can remove your entry for a day. Daily records expire within 30 days of the challenge day's start. Separately opted-in Hall records have longer retention as described above and in the Privacy Policy. Submit within two hours of starting a run. Practice does not save or submit a score. The standalone web preview keeps local records only.
 
 Use **Share score & strategy** to preview your result and optionally add a strategy note. Copy the text, then open the Reddit post to paste, edit, and send your own comment. Nothing is posted automatically.
 

@@ -20,6 +20,7 @@ export function mountGameUI(): void {
         <div class="score-row"><div class="health-block"><span class="label">護盾完整度</span><strong id="clock">100<span>%</span></strong></div><div class="score-block"><span class="label">守城得分</span><strong id="score">0</strong></div></div>
         <div class="run-progress" aria-hidden="true"><i id="run-progress"></i></div>
         <div class="stats-row"><span id="wave">第 1 波</span><span id="combo">連擊 0</span><span id="perfect-count">完美 0</span></div>
+        <div id="growth-strip" class="growth-strip"><span id="combo-next"></span><span id="focus-progress"></span></div>
         <div class="storm-strip"><span id="storm"></span><span id="next-core"></span></div>
         <p id="daily-leader" class="daily-leader"></p><p id="target" class="target"></p><p id="rival-goal" class="rival-goal"></p>
       </section>
@@ -27,9 +28,10 @@ export function mountGameUI(): void {
         <div class="intro-copy"><span class="chapter">每日生存挑戰 <span id="day"></span></span><h2 id="intro-title">守住這座城。<br><em>直到最後一刻。</em></h2><p>天際正在崩落。你，是城市最後的光。</p></div>
         <div class="launch-card">
           <div class="daily-card"><span class="eyebrow">今日風暴</span><strong id="daily-title"></strong><p id="daily-description"></p><span id="daily-tomorrow" class="fineprint"></span></div>
+          <p id="daily-focus"></p><p id="daily-reset"></p><p id="daily-return" hidden></p>
           <p class="launch-guide">金色時按住，擊碎再放開。三次完美蓄滿超載。</p>
           <div id="launch-controls"><button id="start" class="primary">開始守城 <span aria-hidden="true">↗</span></button>
-          <button id="practice" class="secondary practice-button">練習完美起手</button>
+          <button id="practice" class="secondary practice-button">守城練習</button>
           <button id="intro-board" class="secondary">查看社群每日榜</button><button id="intro-hall" class="secondary">英雄館</button>
           <details class="demo-options"><summary>示範模式</summary><label><input id="demo-mode" type="checkbox">AI 示範（不列入競爭榜）</label></details></div>
           <p id="intro-best" class="fineprint"></p>
@@ -55,11 +57,12 @@ export function mountGameUI(): void {
         <p id="result-storm" class="result-storm"></p><p id="result-rival" class="record-note"></p>
         <div id="result-score" class="result-score">0</div><p id="record-note" class="record-note"></p>
         <div class="result-stats"><div><strong id="result-perfect">0</strong><span>完美擊破</span></div><div><strong id="result-combo">0</strong><span>最高連擊</span></div><div><strong id="result-cleared">0</strong><span>擊碎隕石</span></div></div>
-        <p id="result-milestone" class="result-milestone"></p><p id="result-overdrive" class="result-milestone"></p><p id="retry-hint" class="retry-hint"></p>
-        <button id="retry" class="primary">再守一次 <span aria-hidden="true">↗</span></button><button id="result-board" class="secondary">排名與戰績提交</button><button id="result-hall" class="secondary">英雄館與公民證書</button><button id="discussion" class="secondary">分享戰績與心得</button>
+        <div class="result-next"><button id="retry" class="primary">再守一次 <span aria-hidden="true">↗</span></button><button id="result-board" class="secondary">排名與戰績提交</button></div>
+        <p id="result-milestone" class="result-milestone"></p><p id="result-goal-status" class="goal-status"></p><p id="result-overdrive" class="result-milestone"></p><p id="retry-hint" class="retry-hint"></p>
+        <button id="result-hall" class="secondary">英雄館與公民證書</button><button id="discussion" class="secondary">分享戰績與心得</button>
       </section>
       <section id="paused" class="panel pause-panel" hidden aria-labelledby="pause-title"><span class="eyebrow">喘口氣，再繼續</span><h2 id="pause-title">城市，暫時安靜。</h2><p>遊戲已暫停，護盾與隕石都不會前進。<br>先放開手指，再繼續防守。</p><p class="pause-tip">金色重合時「按下」＝完美起手，光束 3 倍。保持按住直到擊碎，超載 +1。<br><br>超載滿氣後可以保留；按「超載震爆」或 E 才會清場。普通攻擊與撞擊不會消耗能量。<br><br>完美鎖定後，時機尺會變成擊破進度：持續按住，不用重按。該顆會被光束定住，放開後繼續逼近。<br><br>完美擊碎後有短暫金色接力：先放開，再按下一顆。失手仍可等下一輪金色重按補救，進度保留。<br><br>想改打別顆？先放開，再按住指定隕石。</p><button id="resume" class="primary">繼續防守 <span aria-hidden="true">↗</span></button></section>
-      <section id="trained" class="panel practice-panel" hidden aria-labelledby="practice-title"><span class="eyebrow">完美起手練習</span><h2 id="practice-title">掌握金色時機。</h2><p id="practice-explanation"></p><button id="practice-again" class="secondary">再練一次</button><button id="practice-start" class="primary">開始正式守城 <span aria-hidden="true">↗</span></button></section>
+      <section id="trained" class="panel practice-panel" hidden aria-labelledby="practice-title"><span class="eyebrow">守城練習回顧</span><h2 id="practice-title">練習回饋</h2><p id="practice-explanation"></p><p class="fineprint">練習可慢慢看清時機；正式守城節奏更快。</p><button id="practice-next" class="primary" hidden>下一課</button><button id="practice-again" class="secondary">再練一次</button><button id="practice-start" class="primary">開始正式守城 <span aria-hidden="true">↗</span></button></section>
       <dialog id="community-dialog" class="community-dialog" aria-labelledby="board-title">
         <div class="dialog-heading"><h2 id="board-title">社群每日榜</h2><button id="board-close" class="secondary">關閉</button></div>
         <p id="board-day" class="eyebrow"></p><p id="board-total"></p><p id="board-me" class="record-note"></p>

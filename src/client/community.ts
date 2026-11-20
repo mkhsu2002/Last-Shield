@@ -37,7 +37,7 @@ export class Community {
   private nextTarget:RivalTarget|null=null;
   private activeTarget:RivalTarget|null=null;
   private postedUrl=context?.postId?`https://www.reddit.com/comments/${context.postId.replace(/^t3_/,'')}`:'';
-  constructor(private readonly onChallenge:()=>void, private readonly hall:{begin():void;accepted(runId:string,score:number,demo:boolean):void}) {
+  constructor(private readonly onChallenge:()=>void, private readonly hall:{begin():void;accepted(runId:string,score:number,demo:boolean):void}, private readonly onVerified:(result:RunResult)=>void = () => {}) {
     element('intro-board').addEventListener('click',()=>void this.openBoard());
     element('result-board').addEventListener('click',()=>void this.openBoard());
     element('board-close').addEventListener('click',()=>element<HTMLDialogElement>('community-dialog').close());
@@ -60,6 +60,7 @@ export class Community {
     this.controls();
     if(this.enabled) void this.refresh();
   }
+  get hasSession():boolean { return this.runId !== null; }
   async begin(practice:boolean):Promise<number> {
     ++this.runGeneration; this.busy=false;
     this.hall.begin();
@@ -167,6 +168,7 @@ export class Community {
       if(generation!==this.runGeneration)return;
       if(response.result.day!==day || response.result.version!==RULES_VERSION || response.result.storm!==dailyStorm(this.day).id) throw new Error('version-mismatch');
       this.saved=true;
+      this.onVerified(response.result);
       this.hall.accepted(runId,response.result.score,demo);
       await this.refresh();
       if(generation!==this.runGeneration)return;

@@ -83,8 +83,8 @@ export function hallMarkup(): string {
     <p id="hall-status" class="fineprint" role="status" aria-live="polite"></p>
     <section id="hall-records" role="tabpanel" aria-labelledby="hall-champions" tabindex="0"></section>
     <button id="hall-older" class="secondary" hidden>更早的每日冠軍</button>
-    <section class="hall-membership" aria-labelledby="hall-membership-title">
-      <h3 id="hall-membership-title">留下守城之名</h3>
+    <details id="hall-membership" class="hall-membership">
+      <summary id="hall-membership-title">留下守城之名</summary>
       <p id="hall-member-status" class="record-note"></p>
       <label for="hall-callsign">呼號（選填，不取代 Reddit 名稱）</label>
       <input id="hall-callsign" type="text" maxlength="24" autocomplete="off">
@@ -92,12 +92,12 @@ export function hallMarkup(): string {
       <button id="hall-enroll" class="primary" disabled>加入英雄館</button>
       <button id="hall-remove" class="secondary" disabled>移除我的英雄館展示與證書</button>
       <p class="fineprint">完成並提交戰績後，可自願加入。單局分數超過 1,000,000 分的英雄，可領取新巴比倫公民證書。</p>
-    </section>
+    </details>
     <section class="hall-certificate" aria-labelledby="hall-certificate-title">
       <h3 id="hall-certificate-title">新巴比倫公民證書</h3>
-      <label for="hall-certificate-id">公開證書編號</label>
+      <details class="certificate-lookup"><summary>以編號查驗證書</summary><label for="hall-certificate-id">公開證書編號</label>
       <input id="hall-certificate-id" type="text" maxlength="36" autocomplete="off" spellcheck="false">
-      <button id="hall-verify" class="secondary">查驗證書</button>
+      <button id="hall-verify" class="secondary">查驗證書</button></details>
       <p id="hall-certificate-status" class="fineprint" role="status" aria-live="polite"></p>
       <img id="hall-preview" class="hall-certificate-preview" alt="新巴比倫公民證書預覽" hidden>
       <div id="hall-image-options" hidden>

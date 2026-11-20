@@ -10,18 +10,20 @@ import {
   meteorGeometry,
   contactInMs,
   PERFECT_WINDOW_MS,
+  RETRY_INTERVAL_MS,
   SHIELD_RADIUS,
 } from "../shared/game-logic";
 import type { RunEvent } from "../shared/game-logic";
 import { SynthAudio } from "./audio";
 import { element, mountGameUI, show, text } from "./game-ui";
-import { readBest, storeBest } from "./records";
+import { readBest, readPreviousBest, storeBest } from "./records";
 import type { BestRecord, RecordStorage } from "./records";
 import {
   CITY_MESSAGES,
   milestone,
   PHASE_LABELS,
-  retryAdvice,
+  comboProgress,
+  runLearningGoal,
   energyCopy,
 } from "./coaching";
 import { GAME_VERSION } from "./version";
@@ -30,8 +32,11 @@ import { Community } from "./community";
 import { drawBattlefield, FIELD } from "./battlefield";
 import { SceneArt, preloadSceneArt } from "./scene-art";
 import type { BattleEffect } from "./battlefield";
-import { PracticeReview, practiceDelta, hasPracticed, markPracticed } from "./practice";
+import { PracticeReview, practiceStepDelta, practiceLessonInfo, practiceLessonPassed, practiceDangerReady, hasPracticed, markPracticed, type PracticeLesson } from "./practice";
 import { dailyStorm, nextChallengeDay } from "../shared/daily-storm";
+
+import { dailyFocus, focusProgress, nextResetMinutes } from "../shared/daily-focus";
+import { focusUnit, focusTargetCopy, focusResultCopy } from "./daily-focus-copy";
 
 type Phase =
   | "intro"
@@ -62,6 +67,9 @@ class ShieldScene extends Phaser.Scene {
   private effects: BattleEffect[] = [];
   private overdriveFlash = 0;
   private practiceMode = false;
+  private practiceLesson: PracticeLesson = 'timing';
+  private practicePassed = false;
+  private practiceBlastNearDanger = false;
   private practiceReview: PracticeReview | null = null;
   private feedbackMs = 0;
   private breakMs = 0;
@@ -69,6 +77,7 @@ class ShieldScene extends Phaser.Scene {
   private previousReady = false;
   private passedBest = false;
   private cityMilestone = 0;
+  private introMinute = -1;
   private lastResolution: "clear" | "impact" = "clear";
 
   constructor() {
@@ -81,7 +90,10 @@ class ShieldScene extends Phaser.Scene {
     this.art = new SceneArt(this, RENDER_SCALE);
     this.graphics = this.add.graphics().setScale(RENDER_SCALE);
     const hall = new HallController();
-    this.community = new Community(() => { void this.startRun(); }, hall);
+    this.community = new Community(() => { void this.startRun(); }, hall, result => {
+      text("result-milestone", focusResultCopy(result.day, result));
+      text("result-goal-status", "本局目標進度已驗分。");
+    });
     try {
       this.storage = window.localStorage;
     } catch {
@@ -92,15 +104,19 @@ class ShieldScene extends Phaser.Scene {
     element("retry").addEventListener("click", () => this.startRun());
     element("practice").addEventListener("click", () => this.startRun(true));
     element("practice-again").addEventListener("click", () =>
-      this.startRun(true)
+      this.startRun(true, this.practiceLesson)
     );
+    element("practice-next").addEventListener('click', () => {
+      const next = practiceLessonInfo(this.practiceLesson).next;
+      if (this.practicePassed && next) void this.startRun(true, next);
+    });
     element("practice-start").addEventListener("click", () => this.startRun());
     element("practice-continue").addEventListener("click", () => {
       if (this.phase !== "practice-review" || !this.practiceReview?.canContinue(this.inputs.size > 0)) return;
       this.releaseAll();
       markPracticed(this.storage);
       this.setPhase("trained");
-      element("practice-again").focus({ preventScroll: true });
+      element(this.practicePassed && practiceLessonInfo(this.practiceLesson).next ? "practice-next" : "practice-again").focus({ preventScroll: true });
     });
     const special = element("overdrive");
     special.addEventListener("pointerdown", (event) => {
@@ -237,6 +253,12 @@ class ShieldScene extends Phaser.Scene {
     text("daily-title", profile.title);
     text("daily-description", profile.description);
     text("daily-tomorrow", ["明日風暴：", dailyStorm(nextChallengeDay(this.run.daySeed)).title]);
+    text("daily-focus", focusTargetCopy(this.run.daySeed));
+    const minutes = nextResetMinutes(new Date());
+    text("daily-reset", `換日倒數 ${Math.floor(minutes / 60)} 小時 ${minutes % 60} 分`);
+    const previous = readPreviousBest(this.storage, this.run.daySeed);
+    text("daily-return", previous ? `上次本機守城：${previous.day} · ${previous.score.toLocaleString("zh-TW")} 分` : "");
+    show("daily-return", !!previous);
     this.best = readBest(this.storage, this.run.daySeed);
     text(
       "intro-best",
@@ -268,15 +290,15 @@ class ShieldScene extends Phaser.Scene {
     element<HTMLButtonElement>("fire").disabled = phase !== "playing" && phase !== "practice-review";
     element<HTMLButtonElement>("overdrive").disabled =
       phase !== "playing" ||
-      this.practiceMode ||
+      (this.practiceMode && this.practiceLesson !== "overdrive") ||
       this.run.energy < 3 ||
       this.run.meteors.length === 0;
   }
 
-  private async startRun(practice = false): Promise<void> {
+  private async startRun(practice = false, lesson: PracticeLesson = "timing"): Promise<void> {
     if (this.starting) return;
     this.starting = true;
-    const launchButtons = ["start", "retry", "practice", "practice-again", "practice-start"].map(id => element<HTMLButtonElement>(id));
+    const launchButtons = ["start", "retry", "practice", "practice-again", "practice-start", "practice-next"].map(id => element<HTMLButtonElement>(id));
     launchButtons.forEach(button => { button.disabled = true; });
     const day = await this.community.begin(practice);
     this.starting = false;
@@ -284,7 +306,7 @@ class ShieldScene extends Phaser.Scene {
     this.releaseAll();
     this.audio.stopAll();
     this.audio.unlock();
-    this.run = new DefenseRun(day, {practice});
+    this.run = new DefenseRun(day, {practice, lesson});
     this.loadDay();
     this.breakMs = 0;
     this.previousTarget = -1;
@@ -292,6 +314,9 @@ class ShieldScene extends Phaser.Scene {
     this.effects = [];
     this.overdriveFlash = 0;
     this.practiceMode = practice;
+    this.practiceLesson = lesson;
+    this.practicePassed = false;
+    this.practiceBlastNearDanger = false;
     this.practiceReview = null;
     this.feedbackMs = 0;
     this.passedBest = false;
@@ -306,13 +331,15 @@ class ShieldScene extends Phaser.Scene {
   }
 
   private stepRun(delta: number, holding: boolean, target?: number): RunEvent[] {
-    this.community.record([delta, holding, target]);
+    if (!this.practiceMode) this.community.record([delta, holding, target]);
     return this.run.step(delta, holding, target);
   }
 
   private activateOverdrive(): void {
-    if (this.phase !== "playing" || this.practiceMode) return;
-    this.community.record([-1, this.inputs.size > 0]);
+    if (this.phase !== "playing" || (this.practiceMode && this.practiceLesson !== 'overdrive')) return;
+    if (this.practiceMode) this.practiceBlastNearDanger = practiceDangerReady(Math.min(
+      ...this.run.meteors.map(core => contactInMs(core, this.run.waveElapsedMs, core.mass))));
+    else this.community.record([-1, this.inputs.size > 0]);
     for (const event of this.run.activateOverdrive(this.inputs.size > 0))
       this.handleEvent(event);
     this.renderHUD();
@@ -331,8 +358,9 @@ class ShieldScene extends Phaser.Scene {
     if (!this.inputs.size) {
       this.audio.stop();
       if (this.phase === "playing") {
+        const unfinished = this.run.meteors.some(core => core.firing && core.mass > 0);
         this.stepRun(0, false);
-        if (released && this.practiceMode && this.run.meteor) {
+        if (released && unfinished && this.practiceMode && this.practiceLesson !== "overdrive" && this.run.meteor) {
           this.reviewPractice("放開得太早了。", "金色時按下只是起手。保持按住，直到核心爆裂，再放開迎擊下一顆。");
         }
       }
@@ -361,12 +389,16 @@ class ShieldScene extends Phaser.Scene {
     document.querySelector<HTMLElement>(".interface")!.dataset.tone = tone;
   }
 
-  private reviewPractice(title: string, explanation: string): void {
+  private reviewPractice(title: string, explanation: string, passed = false): void {
+    this.practicePassed = passed;
     this.audio.stop();
     this.stepRun(0, false);
     this.practiceReview = new PracticeReview();
     this.renderHUD();
     this.setPhase("practice-review");
+    const next = practiceLessonInfo(this.practiceLesson).next;
+    show('practice-next', passed && next !== null);
+    if (next) text('practice-next', `下一課：${practiceLessonInfo(next).title}`);
     text("practice-title", title);
     text("practice-explanation", explanation);
     text("practice-review-title", title);
@@ -378,6 +410,7 @@ class ShieldScene extends Phaser.Scene {
   }
 
   private handleEvent(event: RunEvent): void {
+    if (this.practiceMode && this.phase === "practice-review") return;
     if (event.type === "clear" || event.type === "impact") {
       const impact = event.type === "impact";
       this.effects.push({
@@ -399,13 +432,20 @@ class ShieldScene extends Phaser.Scene {
           : event.offsetMs < 0
           ? `早了 ${offset} 秒 · 等金色再按會更強`
           : `慢了 ${offset} 秒 · 可等下一輪金色，放開重按補救`;
-      this.feedback(label, event.grade === "perfect" ? "perfect" : "normal");
+      if (event.grade !== "perfect") this.feedback(label);
+      else { text("feedback", ""); this.feedbackMs = 0; }
       if (event.grade === "perfect") this.audio.tone(990, 1480, 0.12, 0.06);
     } else if (event.type === "overdrive") {
       this.audio.overdrive();
       this.overdriveFlash = 1;
       this.feedback(`超載震爆！清除 ${event.cleared} 顆隕石`, "perfect");
       if (!this.reducedMotion) this.cameras.main.shake(280, 0.008);
+      if (this.practiceMode && this.practiceLesson === 'overdrive') {
+        const passed = practiceLessonPassed('overdrive', this.run.cleared, this.run.perfect, this.run.overdriveCleared, this.practiceBlastNearDanger);
+        this.reviewPractice(passed ? '危機接近時，你清場了。' : '超載放得太早了。',
+          passed ? '你保留了滿氣，並在威脅接近時手動釋放。也可以直接開始正式守城。' :
+            '能量滿了不必立刻使用；等隕石接近，再按「超載震爆」。', passed);
+      }
     } else if (event.type === "clear") {
       this.lastResolution = "clear";
       const perfect = event.grade === "perfect";
@@ -431,24 +471,31 @@ class ShieldScene extends Phaser.Scene {
           CITY_MESSAGES[(chapter - 1) % CITY_MESSAGES.length]!
         );
       }
-      if (this.practiceMode) {
-        this.reviewPractice(
-          perfect ? "這就是完美起手。" : event.grade === "early" ? "起手太早了。" : "成功攔截，再試著抓住金色。",
-          perfect
-            ? "你抓住了金色，並持續按住直到擊碎。完美擊破會得到 1 格超載能量。放開後，再迎擊下一顆。"
-            : "這次擊碎了核心，但沒有抓住金色。下次等圓環變金色再按住，直到核心擊碎。"
-        );
+      if (this.practiceMode && !event.overdrive) {
+        const info = practiceLessonInfo(this.practiceLesson);
+        if (this.practiceLesson === 'overdrive') {
+          if (this.run.cleared >= info.requiredClears) this.reviewPractice('這課要練習手動超載。',
+            '先保留滿氣，等威脅接近後按「超載震爆」；只用光束擊碎，不會完成這課。');
+        } else if (this.run.cleared >= info.requiredClears) {
+          const passed = practiceLessonPassed(this.practiceLesson, this.run.cleared, this.run.perfect, 0, false);
+          this.reviewPractice(
+            passed ? this.practiceLesson === 'relay' ? '兩顆接力完成。' : '這就是完美起手。' : '再試著抓住金色。',
+            passed ? this.practiceLesson === 'relay' ? '你擊碎第一顆後放開，再按住第二顆完成接力。' :
+              '你抓住了金色，並持續按住直到擊碎。可以繼續練接力，或直接正式守城。' :
+              '等圓環變金色再按住，直到核心擊碎。', passed);
+        } else this.feedback('第一顆已擊碎；先放開，再按住第二顆。', 'perfect');
       }
     } else if (event.type === "impact") {
       this.lastResolution = "impact";
       this.audio.impact(event.damage, Math.max(-0.9, Math.min(0.9, event.point.x / SHIELD_RADIUS * 0.9)));
       if (this.practiceMode) {
         this.reviewPractice(
-          this.run.mistakes.released > 0 ? "放開得太早了。" : "這次沒有擋下核心。",
-          "金色時按下只是起手。保持按住，直到核心爆裂，再放開迎擊下一顆。"
+          this.practiceLesson === 'overdrive' ? '這次沒有及時清場。' : this.run.mistakes.released > 0 ? "放開得太早了。" : "這次沒有擋下核心。",
+          this.practiceLesson === 'overdrive' ? '先保留滿氣；威脅接近時，再按「超載震爆」。' :
+            "金色時按下只是起手。保持按住，直到核心爆裂，再放開迎擊下一顆。"
         );
       }
-      this.feedback(`護盾遭撞擊　−${event.damage}%`, "impact");
+      this.feedback(event.brokenCombo > 0 ? `護盾 −${event.damage}% · 中斷 ${event.brokenCombo} 連擊` : `護盾遭撞擊　−${event.damage}%`, "impact");
       if (!this.reducedMotion) {
         this.cameras.main.shake(320, 0.012);
         try {
@@ -507,21 +554,11 @@ class ShieldScene extends Phaser.Scene {
     text("result-perfect", String(this.run.perfect));
     text("result-combo", String(this.run.bestCombo));
     text("result-cleared", String(this.run.cleared));
-    const next =
-      this.best && this.run.score < this.best.score
-        ? `再多 ${this.best.score - this.run.score + 1} 分就能刷新紀錄。`
-        : "";
-    text(
-      "result-milestone",
-      `達成 ${Math.floor(this.run.cleared / 10)} 次守城里程碑 · 下個目標 ${
-        milestone(this.run.cleared).target
-      } 顆`
-    );
-    text(
-      "result-overdrive",
-      `手動超載 ${this.run.overdriveUses} 次 · 清除 ${this.run.overdriveCleared} 顆威脅`
-    );
-    text("retry-hint", [next, retryAdvice(this.run)]);
+    const learning = runLearningGoal({ ...this.run, brokenCombo: this.run.longestBrokenCombo, breakWave: this.run.brokenComboWave });
+    text("result-milestone", focusResultCopy(this.run.daySeed, this.run));
+    text("result-goal-status", this.community.hasSession ? "本局目標進度，尚未提交驗分。" : "本機目標進度。");
+    text("result-overdrive", learning.summary);
+    text("retry-hint", learning.action);
     text("result-storm", this.run.storm.title);
     text("result-rival", this.community.rivalCopy(this.run.score));
     this.community.finish(this.shareMessage());
@@ -542,11 +579,19 @@ class ShieldScene extends Phaser.Scene {
       this.run.bestCombo
     }。同一片天空，換你守守看！`;
     const rival = this.community.rivalCopy(this.run.score);
-    return [result, "\n", this.run.storm.title, ...(rival ? ["\n", rival] : [])];
+    return [result, "\n", this.run.storm.title, "\n", ...focusResultCopy(this.run.daySeed, this.run), "\n", "今天你會把超載留給哪一波？", ...(rival ? ["\n", rival] : [])];
   }
 
   update(time: number, delta: number): void {
     const dt = Math.max(0, Math.min(100, delta));
+    if (this.phase === "intro") {
+      const now = new Date(), minute = Math.floor(now.getTime()/60000);
+      if (minute !== this.introMinute) {
+        this.introMinute = minute;
+        if (this.run.daySeed !== utcDaySeed(now)) this.run = new DefenseRun(utcDaySeed(now));
+        this.loadDay();
+      }
+    }
     if (this.phase !== "paused") {
       for (const fx of this.effects)
         fx.life = Math.max(0, fx.life - dt / (fx.overdrive ? 1000 : fx.impact ? 1000 : 600));
@@ -571,8 +616,10 @@ class ShieldScene extends Phaser.Scene {
       this.feedbackMs = Math.max(0, this.feedbackMs - dt);
       if (!this.feedbackMs) text("feedback", "");
       const target = this.run.meteor;
+      const goldAt = target ? this.run.chainRemainingMs > 0 ? this.run.waveElapsedMs :
+        target.chargeStartMs + Math.max(0, Math.ceil((this.run.waveElapsedMs - target.chargeStartMs) / RETRY_INTERVAL_MS)) * RETRY_INTERVAL_MS : 0;
       const stepMs = this.practiceMode && target
-        ? practiceDelta(dt, this.run.waveElapsedMs, target.chargeStartMs, this.inputs.size > 0, target.grade !== null)
+        ? practiceStepDelta(this.practiceLesson, dt, this.run.waveElapsedMs, goldAt, this.inputs.size > 0, target.grade !== null)
         : dt;
       for (const event of this.stepRun(stepMs, this.inputs.size > 0))
         this.handleEvent(event);
@@ -630,9 +677,13 @@ class ShieldScene extends Phaser.Scene {
         : "#edf5ff";
     text("combo", `連擊 ${run.combo} · ${comboMultiplier(run.combo, this.practiceMode)} 倍`);
     text("perfect-count", `完美擊破 ${run.perfect}`);
+    const growth = comboProgress(run.combo, this.practiceMode), focus = dailyFocus(run.daySeed), progress = focusProgress(focus, run);
+    show("growth-strip", !this.practiceMode);
+    text("combo-next", growth.nextCombo === null ? "維持連擊 · 最高 50 倍" : `再接 ${growth.remaining} 顆 → ${growth.nextMultiplier} 倍`);
+    text("focus-progress", progress.stretchCompleted ? "進階目標達成" : progress.completed ? `基本已達成 · 進階 ${progress.current}／${focus.stretch}` : `本局 ${progress.current}／${focus.target} ${focusUnit(focus.metric)}`);
     text(
       "wave",
-      this.practiceMode ? "完美起手練習" : `第 ${run.waveIndex + 1} 波`
+      this.practiceMode ? practiceLessonInfo(this.practiceLesson).title : `第 ${run.waveIndex + 1} 波`
     );
     element("run-progress").style.width = `${run.integrity}%`;
     element("run-progress").style.background =
@@ -651,7 +702,7 @@ class ShieldScene extends Phaser.Scene {
     text(
       "energy-help",
       this.practiceMode
-        ? "練習只教起手；正式守城可把超載留給危機。"
+        ? practiceLessonInfo(this.practiceLesson).goal
         : energy.help
     );
     element("energy").setAttribute("aria-valuenow", String(run.energy));
@@ -664,7 +715,7 @@ class ShieldScene extends Phaser.Scene {
       .forEach((el, i) => el.classList.toggle("lit", i < run.energy));
     element<HTMLButtonElement>("overdrive").disabled =
       this.phase !== "playing" ||
-      this.practiceMode ||
+      (this.practiceMode && this.practiceLesson !== "overdrive") ||
       run.energy < 3 ||
       !run.meteors.length;
     if (
@@ -679,7 +730,9 @@ class ShieldScene extends Phaser.Scene {
     text(
       "target",
       this.practiceMode
-        ? "金色時機會停下等你。看見金色，再按住。"
+        ? this.practiceLesson === 'overdrive'
+          ? practiceDangerReady(nearest) ? '現在按「超載震爆」，清除接近的威脅。' : '先保留滿氣，等隕石接近。'
+          : practiceLessonInfo(this.practiceLesson).goal
         : `下波 ${volleySpecs(run.daySeed, run.waveIndex + 1).length} 顆 · 第 ${
             Math.floor((run.waveIndex + 1) / 6) * 6 + 6
           } 波碎星潮`

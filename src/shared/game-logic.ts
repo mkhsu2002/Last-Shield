@@ -80,6 +80,7 @@ export type RunEvent =
   | {
       type: "impact";
       damage: number;
+      brokenCombo: number;
       sector: number;
       point: { x: number; y: number };
     }
@@ -278,10 +279,13 @@ export function debrisDamage(mass: number): number {
     : Math.max(1, Math.ceil(34 * Math.pow(Math.min(100, mass) / 100, 1.2)));
 }
 
+export type PracticeLesson = 'timing' | 'relay' | 'overdrive';
+
 export class DefenseRun {
   readonly daySeed: number;
   readonly storm: DailyStorm;
   readonly practice: boolean;
+  readonly practiceLesson: PracticeLesson | null;
   elapsedMs = 0;
   waveIndex = 0;
   meteors: Meteor[];
@@ -290,6 +294,8 @@ export class DefenseRun {
   score = 0;
   combo = 0;
   bestCombo = 0;
+  longestBrokenCombo = 0;
+  brokenComboWave = 0;
   cleared = 0;
   perfect = 0;
   early = 0;
@@ -309,10 +315,12 @@ export class DefenseRun {
   private needsRelease = false;
   private recoveryMs = 0;
 
-  constructor(daySeed: number, options: {practice?: boolean} = {}) {
+  constructor(daySeed: number, options: {practice?: boolean; lesson?: PracticeLesson} = {}) {
     this.daySeed = daySeed;
     this.storm = dailyStorm(daySeed);
     this.practice = options.practice === true;
+    this.practiceLesson = this.practice ? options.lesson ?? 'timing' : null;
+    this.energy = this.practiceLesson === 'overdrive' ? 3 : 0;
     this.meteors = this.newVolley(false);
   }
 
@@ -348,7 +356,15 @@ export class DefenseRun {
 
   private newVolley(holding: boolean): Meteor[] {
     this.chainEndsAt = -Infinity;
-    const specs = volleySpecs(this.daySeed, this.waveIndex, !this.practice);
+    let specs = volleySpecs(this.daySeed, this.waveIndex, !this.practice);
+    if (this.waveIndex === 0 && (this.practiceLesson === 'relay' || this.practiceLesson === 'overdrive')) {
+      const first = specs[0]!;
+      const count = this.practiceLesson === 'relay' ? 2 : 3;
+      specs = Array.from({ length: count }, (_, index) => ({ ...first,
+        sector: (first.sector + index * 2) % 6,
+        durationMs: first.durationMs + (this.practiceLesson === 'relay' ? index * 450 : 0),
+      }));
+    }
     this.recoveryMs = Math.round(
       Math.max(...specs.map((m) => m.recoveryMs)) *
         difficultyScale(this.waveIndex)
@@ -532,6 +548,8 @@ export class DefenseRun {
     const damage = debrisDamage(m.mass);
     this.integrity = Math.max(0, this.integrity - damage);
     this.sectors[m.sector] += damage;
+    const brokenCombo = this.combo;
+    if(this.combo>this.longestBrokenCombo){this.longestBrokenCombo=this.combo;this.brokenComboWave=this.waveIndex+1;}
     this.combo = 0;
     // Earned energy is banked until the player explicitly spends it.
     this.firstMiss ??= this.waveIndex + 1;
@@ -546,7 +564,7 @@ export class DefenseRun {
     const point = meteorGeometry(m, this.waveElapsedMs, m.mass);
     this.recoveryMs = Math.max(700, this.recoveryMs);
     this.remove(m, holding);
-    events.push({ type: "impact", damage, sector: m.sector, point });
+    events.push({ type: "impact", damage, brokenCombo, sector: m.sector, point });
   }
 
   private finish(events: RunEvent[]): void {
