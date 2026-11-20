@@ -8,7 +8,7 @@ Catch the gold, hold your beam, and defend Neo Babylon against an escalating met
 
 Open the [playable Reddit post](https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/) and choose **Start defending**. The game runs inside Reddit; no external game website is required.
 
-- [Watch v0.50 Reddit gameplay](https://github.com/mkhsu2002/Last-Shield/blob/main/docs/demo/v0.50/last-shield-v0.50-reddit-gameplay.mp4)
+- [Watch v0.50 Reddit gameplay](https://www.youtube.com/watch?v=DLHAouzPwTI)
 - [Devvit app listing](https://developers.reddit.com/apps/last-shield)
 - [Public test community](https://www.reddit.com/r/last_shield_dev/)
 - [Source repository](https://github.com/mkhsu2002/Last-Shield)
