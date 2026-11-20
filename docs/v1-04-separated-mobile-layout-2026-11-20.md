@@ -1,6 +1,6 @@
 # v1.04 手機選單與戰場分區
 
-2026-11-20。狀態：本機驗證完成，待本輪發布；正式仍為v1.03。使用者補充沒有播放器工具列的 Android Reddit App 截圖後，確認需處理遊戲本身的配置，不能只歸因錄影播放器。
+2026-11-20。狀態：v1.04已正式發布，原貼文讀回完成。使用者補充沒有播放器工具列的 Android Reddit App 截圖後，確認需處理遊戲本身的配置，不能只歸因錄影播放器。
 
 ## 已確認原因
 
@@ -26,4 +26,12 @@ v1.03選單仍以固定top／bottom分開定位標題與風暴卡片。390×612�
 
 ## 發布讀回
 
-待完成後記錄main／tag、兩社群同版安裝、原貼文操作、CDN／API、Vercel及App Directory讀回。本輪不變更YouTube／Devpost。
+- PR #18合併main `2f4b4c51ee1e939500b24587678a2f4572b86742`，tag `v1.04`；合併後183 tests通過。
+- Devvit 1.0.4 version `7387b19a-e3c0-49f1-93c9-8a21b425017a` PUBLIC／READY，review `73003417-9db3-4989-9267-ac27a3275233` APPROVED。既有stage／正式完整安裝1.0.4。
+- 兩原貼文native點擊splash可開啟新版game.html，手機390×612長按練習成功。正式HUD底121.20、arena頂127.20／底491.75、action頂497.75，分區間隔各6px，沒有彼此相交。
+- Stage選單390×612：header底54、copy頂68／底147、card頂159；練習鈕底222、開始鈕底278，初始視窗即看得到操作。
+- Stage／正式default.js、default.css、client.js、game.js、game.css匿名HTTP200並與本機dist/client逐位元一致。
+- 正式board／hall HTTP200，community-3／survival-8；日榜total0、Score／Combo競爭榜空。K示範證書 `ac29c259-b90f-4519-b17a-03b109a2876c`／1,272,630保留，沒有加入正式測試分數。
+- Vercel production `dpl_J2ffHchMffZ7YtTyJY9uS8FussNo` READY，同一source merge；公開首頁v1.04、JS／CSS與本機standalone相同；privacy／terms同源相符。
+- App Directory 1.0.4 about讀回與README一致，validInstallTypes=[1]保留。YouTube／Devpost本輪未操作。
+- 最後記錄走docs-only PR，既有ignore-build判定skip，不額外觸發完整部署。
