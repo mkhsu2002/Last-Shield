@@ -1,0 +1,86 @@
+{
+  "gameVersion": "v0.50",
+  "devvitPackage": "0.50.0",
+  "sourceCommit": "73a7acc6e4b42cf6740bcba036f3a3dc917915d8",
+  "sourcePost": "https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/",
+  "captureDateVancouver": "2026-11-19",
+  "durationSeconds": 29.834,
+  "width": 1280,
+  "height": 800,
+  "fps": 30,
+  "audio": {
+    "codec": "AAC",
+    "sampleRate": 48000,
+    "channels": 2,
+    "layout": "stereo",
+    "source": "same-run Web Audio master output",
+    "synchronizationOffsetSeconds": 1.1031179428100586,
+    "decodedPeak": 0.6846892833709717,
+    "stereoDifferenceRMS": 0.010080797453974812
+  },
+  "result": {
+    "score": 2900,
+    "wave": 8,
+    "perfectClears": 6,
+    "meteorsCleared": 10,
+    "overdriveUses": 2,
+    "overdriveCleared": 4
+  },
+  "recording": "Continuous real-time Reddit gameplay; native inputs, no score/time edits, no added music or narration",
+  "rankingCleanup": "Entry removed after capture; replayed submission did not restore the ranking",
+  "sha256": "497360127d5440a0dd69df99d629177d18fbd7e5d884705154fb1b8eaaf7d768",
+  "bytes": 3093319,
+  "events": [
+    {
+      "name": "recording-start",
+      "offsetSeconds": -0.044
+    },
+    {
+      "name": "practice-result",
+      "offsetSeconds": 3.927
+    },
+    {
+      "name": "daily-run-start",
+      "offsetSeconds": 6.748
+    },
+    {
+      "name": "overdrive",
+      "offsetSeconds": 11.934
+    },
+    {
+      "name": "overdrive",
+      "offsetSeconds": 16.395
+    },
+    {
+      "name": "run-result",
+      "offsetSeconds": 26.052
+    },
+    {
+      "name": "board-submitted",
+      "offsetSeconds": 27.847
+    },
+    {
+      "name": "recording-stop",
+      "offsetSeconds": 29.834
+    }
+  ],
+  "framing": {
+    "sourceViewport": [
+      1280,
+      800
+    ],
+    "nativeGameWindowCrop": [
+      452,
+      78,
+      376,
+      646
+    ],
+    "output": [
+      1280,
+      800
+    ],
+    "preserved": "Native game window including Reddit toolbar; no game-time edits",
+    "excludedScreencastScreenshotArtifacts": 4,
+    "fullViewportFrames": 818
+  }
+}

@@ -8,7 +8,7 @@ Catch the gold, hold your beam, and defend Neo Babylon against an escalating met
 
 Open the [playable Reddit post](https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/) and choose **Start defending**. The game runs inside Reddit; no external game website is required.
 
-- [Watch the Reddit gameplay demo](https://www.youtube.com/watch?v=LVJTJTfkgRk)
+- [Watch v0.50 Reddit gameplay](https://github.com/mkhsu2002/Last-Shield/blob/main/docs/demo/v0.50/last-shield-v0.50-reddit-gameplay.mp4)
 - [Devvit app listing](https://developers.reddit.com/apps/last-shield)
 - [Public test community](https://www.reddit.com/r/last_shield_dev/)
 - [Source repository](https://github.com/mkhsu2002/Last-Shield)
@@ -31,9 +31,9 @@ New in **v0.48**: community rankings, scores recalculated from gameplay before r
 
 | Defend the city | Compare your daily best |
 | --- | --- |
-| ![Mobile gameplay with a clear battlefield, compact Overdrive charge and a bottom fire control](https://raw.githubusercontent.com/mkhsu2002/Last-Shield/main/docs/media/last-shield-v0.49-mobile-controls.png) | ![Daily community board showing a submitted score, personal rank and nearby players](https://raw.githubusercontent.com/mkhsu2002/Last-Shield/main/docs/media/last-shield-v0.49-community-board.png) |
+| ![Blue-white Overdrive beams defend the painted Neo Babylon city](https://raw.githubusercontent.com/mkhsu2002/Last-Shield/main/docs/media/last-shield-v0.50-overdrive.png) | ![Daily community board showing a submitted score, personal rank and nearby players](https://raw.githubusercontent.com/mkhsu2002/Last-Shield/main/docs/media/last-shield-v0.50-community-board.png) |
 
-Both images show v0.49 running inside the Reddit game. The video linked above demonstrates the core timing and Overdrive gameplay from v0.47; it predates the community board and compact controls.
+Both images show v0.50 running inside the Reddit game. The video linked above shows v0.50 timing practice, blue-white Overdrive beams, a completed run, and the community board.
 
 ## How to play
 
