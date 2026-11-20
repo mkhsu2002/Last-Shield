@@ -1,6 +1,6 @@
 # v1.05 手機寬戰場
 
-2026-11-20。狀態：本機驗證完成，待本輪發布；正式仍為v1.04。
+2026-11-20。狀態：v1.05已正式發布，原貼文讀回完成。
 
 ## 問題與修正
 
@@ -20,4 +20,11 @@ v1.05改為優先填滿可用寬度；畫布維持1:2比例，以城市底部為
 
 ## 發布讀回
 
-待記錄main／tag、Reddit兩社群、原貼文、CDN／API、Vercel及App Directory實際讀回。本輪不更換YouTube／Devpost影音。
+- PR #20合併main `23d0c56c6cd2fc46cb0735803e84cbb1bfd12a5f`，tag `v1.05`；合併後184 tests通過。
+- Devvit1.0.5 version `6af337f4-1b87-42f7-a3c0-9758ee65ea97` PUBLIC／READY；review `8decbdb4-4413-40df-97b5-f0e32bfd62be` APPROVED。兩既有社群完整安裝1.0.5。
+- 原stage／正式貼文皆從splash原生點擊進入新版，390×612的arena與canvas同寬370px，HUD／action各距arena6px，完美長按練習成功。stage首輪等待因遊戲失焦正常暫停，bringToFront並原生Resume後成功，未修改遊戲狀態繞過。
+- 兩社群default.js／default.css／client.js／game.js／game.css匿名HTTP200並與本機dist/client逐位元相同。
+- 正式board／hall HTTP200，community-3／survival-8；讀回日榜有一筆11,140分，完整保留，沒有新增／刪除正式測試分數。Score／Combo Hall競爭榜空，K既有示範證書 `ac29c259-b90f-4519-b17a-03b109a2876c`／1,272,630保留。本輪正式只跑practice，程式路徑不建立競賽run session。
+- Vercel production `dpl_2d9zJv65g4eWRsmTVQgSErgqUeaF` READY，同一source merge；公開首頁v1.05，JS／CSS與本機standalone逐位元一致，privacy／terms同源相符。
+- App Directory1.0.5 about與README一致，validInstallTypes=[1]保留。本輪不更換YouTube／Devpost影音。
+- 最後狀態紀錄採docs-only PR，既有ignore-build判定skip，不重新觸發完整部署。
