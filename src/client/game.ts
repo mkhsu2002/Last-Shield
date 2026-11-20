@@ -8,7 +8,6 @@ import {
   stormPhase,
   RULES_VERSION,
   utcDaySeed,
-  meteorGeometry,
   contactInMs,
   PERFECT_WINDOW_MS,
   RETRY_INTERVAL_MS,
@@ -30,7 +29,7 @@ import {
 import { GAME_VERSION } from "./version";
 import { HallController } from "./hall";
 import { Community } from "./community";
-import { drawBattlefield, FIELD } from "./battlefield";
+import { drawBattlefield, FIELD, viewMeteorGeometry } from "./battlefield";
 import { SceneArt, preloadSceneArt } from "./scene-art";
 import type { BattleEffect } from "./battlefield";
 import { PracticeReview, practiceStepDelta, practiceLessonInfo, practiceLessonPassed, practiceDangerReady, hasPracticed, markPracticed, type PracticeLesson } from "./practice";
@@ -40,6 +39,10 @@ import { scopedFocusStorage, readFocusRecord, storeFocusRecord } from "./focus-r
 import { dailyStrategyQuestion } from "./daily-strategy";
 import { dailyFocus, focusProgress, nextResetMinutes } from "../shared/daily-focus";
 import { focusUnit, focusResultCopy, focusRecordCopy, focusRunRecordCopy } from "./daily-focus-copy";
+
+import { CLASSIC_VIEW, SKY_TOP, refreshBattlefieldViewport } from "./view-mode";
+import "./adaptive-view.css";
+import { projectBattlePoint } from "./battlefield-view";
 
 type Phase =
   | "intro"
@@ -51,6 +54,9 @@ type Phase =
   | "trained";
 const KIND_NAMES = { normal: "普通核心", fast: "快速核心", heavy: "重型核心" };
 mountGameUI();
+if (!CLASSIC_VIEW) {
+  document.documentElement.classList.add('adaptive-view');
+}
 // Supersample rendering without changing the FIELD coordinate system used by input/physics.
 const RENDER_SCALE = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
 
@@ -159,7 +165,7 @@ class ShieldScene extends Phaser.Scene {
       let targetId: number | undefined,
         nearest = Infinity;
       for (const m of this.run.meteors) {
-        const point = meteorGeometry(m, this.run.waveElapsedMs, m.mass);
+        const point = viewMeteorGeometry(m, this.run.waveElapsedMs, m.mass);
         const distance = Math.hypot(x - point.x, y - point.y);
         if (distance <= Math.max(point.radius + 16, 32) && distance < nearest) {
           nearest = distance;
@@ -422,9 +428,10 @@ class ShieldScene extends Phaser.Scene {
     if (this.practiceMode && this.phase === "practice-review") return;
     if (event.type === "clear" || event.type === "impact") {
       const impact = event.type === "impact";
+      const point = CLASSIC_VIEW ? event.point : projectBattlePoint(event.point, SKY_TOP);
       this.effects.push({
-        x: FIELD.x + event.point.x,
-        y: FIELD.y + event.point.y,
+        x: FIELD.x + point.x,
+        y: FIELD.y + point.y,
         life: 1,
         impact,
         overdrive: event.type === "clear" && event.overdrive,
@@ -593,6 +600,7 @@ class ShieldScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number): void {
+    refreshBattlefieldViewport();
     const dt = Math.max(0, Math.min(100, delta));
     if (this.phase === "intro") {
       const now = new Date(), minute = Math.floor(now.getTime()/60000);

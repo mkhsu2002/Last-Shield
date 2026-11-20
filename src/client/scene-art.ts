@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import type * as Phaser from "phaser";
-import { meteorGeometry } from "../shared/game-logic";
-import { FIELD } from "./battlefield";
+
+import { FIELD, viewMeteorGeometry } from "./battlefield";
 import type { BattlefieldState } from "./battlefield";
 
 const assets = import.meta.glob<string>("./art/{city,meteor}.{webp,png}", {
@@ -22,7 +22,7 @@ export class SceneArt {
 
   constructor(private readonly scene: Phaser.Scene, private readonly scale: number) {
     if (scene.textures.exists("av-city")) {
-      this.city = scene.add.image(0, -96 * scale, "av-city").setOrigin(0).setDepth(-20)
+      this.city = scene.add.image(0, (FIELD.y - 560 - 96) * scale, "av-city").setOrigin(0).setDepth(-20)
         .setDisplaySize(FIELD.width * scale, (FIELD.height + 96) * scale);
     }
     this.texturedMeteors = scene.textures.exists("av-meteor");
@@ -34,7 +34,7 @@ export class SceneArt {
     if (!this.texturedMeteors) return;
     const visible = new Set<number>();
     if (state.live) for (const m of state.run.meteors) {
-      const pose = meteorGeometry(m, state.run.waveElapsedMs, m.mass);
+      const pose = viewMeteorGeometry(m, state.run.waveElapsedMs, m.mass);
       let image = this.rocks.get(m.id);
       if (!image) {
         image = this.scene.add.image(0, 0, "av-meteor").setDepth(-2);

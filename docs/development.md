@@ -1,3 +1,5 @@
+> 本地候選（2026-11-20）：v1.01 自適應天空僅在本機分支試玩，未更換下述正式 v1.0。見 [本地體驗記錄](v1-01-local-preview-2026-11-20.md)。
+
 > 最新正式狀態（2026-11-20）：**v1.0 已發布並完成原投稿同步**。main／tag v1.0、Reddit 正式與 staging 同為 1.0.0，Vercel production 同源；新版影片及四張截圖已更新至原 Devpost，SUBMITTED／5/5。以 [v1.0 發布紀錄](v1-0-release-2026-11-20.md) 與根目錄 README 為準。以下版本狀態皆為帶日期的歷史，先前的暫緩已由 MK 本輪正式發布授權取代。
 
 > 正式版歷史紀錄（2026-11-19，America/Vancouver）：MK 已通過 v0.50 人工驗收；PR #1 已合併 main、tag v0.50，Reddit 0.50.0 已核准公開並同版安裝到 staging／正式，Vercel production 同版讀回通過。新版英文立體聲實錄與截圖已完成；YouTube 新版已公開發布並通過播放驗證；原 Devpost 投稿已同步新版影片、四張截圖與第一人稱 story，讀回 SUBMITTED／5/5。見 [正式發布紀錄](v0-50-release-2026-11-19.md)。

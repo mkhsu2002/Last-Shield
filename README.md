@@ -1,3 +1,5 @@
+> **本地體驗分支 v1.01（package 1.0.1）**：新增較深天空與手機／桌機等比例版面，尚未發布或更換參賽版本。正式環境維持 v1.0。本機先 `npm run build:standalone`，再 `npm run preview:local`，開啟 http://localhost:4173/；同 Wi-Fi 手機可用本機區網位址。`?view=classic` 提供舊構圖對照，兩者使用相同計分與到達時間。本地榜不連接正式 Reddit。詳見 [本地體驗記錄](docs/v1-01-local-preview-2026-11-20.md)。
+
 # Last Shield v1.0
 
 **A daily meteor defense game built around Reddit rivals and lasting records.**
