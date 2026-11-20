@@ -1,5 +1,18 @@
 // Source-language keys keep gameplay copy in one bilingual catalog.
 export const MESSAGES: Record<string, string> = {
+  "新巴比倫 ·": "Neo Babylon ·",
+  "點一下試擋一顆": "Try one meteor",
+  "點擊練習 · 不計排名": "Tap practice · no ranking",
+  "開啟完整遊戲": "Open full game",
+  "圓環變金色時點擊。": "Tap when the ring turns gold.",
+  "隕石逼近，等圓環變金色。": "Meteor incoming. Wait for gold.",
+  "金色！現在點擊。": "Gold! Tap now.",
+  "發射光束": "Fire beam",
+  "隕石擊碎，護盾完好。": "Meteor shattered. Shield intact.",
+  "早了一點。等金色再點。": "Too early. Wait for gold.",
+  "慢了一點。金色時就點。": "Too late. Tap as the ring turns gold.",
+  "再試一次": "Try again",
+  "暫時無法開啟完整遊戲。你仍可在這裡練習。": "Couldn’t open the full game. You can still practice here.",
   "金色時按住，擊碎隕石，守住新巴比倫。": "Catch gold. Hold to shatter. Defend Neo Babylon.",
   "每日新風暴 ·": "A new daily storm ·",
   "最後防線 {0}｜Reddit 每日守城": "Last Shield {0} | Daily Defense on Reddit",
