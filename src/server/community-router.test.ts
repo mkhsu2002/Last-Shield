@@ -4,6 +4,7 @@ import {test} from 'node:test';
 import {createCommunityRouter} from './community-router.ts';
 import {CommunityService} from './community-service.ts';
 import {MemoryStore} from './community-test-store.ts';
+import { DefenseRun, RULES_VERSION } from '../shared/game-logic.ts';
 
 test('HTTP contract rejects malformed requests and anonymous writes with safe errors',async()=>{
   const service=new CommunityService(new MemoryStore(),()=>Date.UTC(2026,10,15,12));
@@ -30,4 +31,25 @@ test('HTTP contract fails closed on storage outages and limits payload size',asy
   assert.equal(response.status,503);assert.equal((await response.json()).error,'unavailable');
   const large=await app.request('/api/community/submit',{method:'POST',body:'x'.repeat(3*1024*1024+1)});
   assert.equal(large.status,413);
+});
+
+test('challenge HTTP is public read-only, returns only a verified target and uses safe errors',async()=>{
+  let now=Date.UTC(2026,10,15,12);
+  const store=new MemoryStore(),service=new CommunityService(store,()=>now);
+  const owner={postId:'t3_test',userId:'t2_alice',username:'Alice'};
+  const session=await service.start(owner);now+=120000;
+  const run=new DefenseRun(20261115),trace:[number,boolean][]=[];
+  while(!run.finished){trace.push([50,true]);run.step(50,true);}
+  const saved=await service.submit(owner,session.runId!,trace);
+  const app=createCommunityRouter(service,async()=>({postId:'t3_test'}));
+  const path=`/api/community/challenge?code=${encodeURIComponent(`LS8:${saved.day}:${saved.runId}`)}`;
+  const before=JSON.stringify([...store.values]);
+  const response=await app.request(path),body=await response.json();
+  assert.equal(response.status,200);assert.equal(response.headers.get('Cache-Control'),'no-store');
+  assert.deepEqual(body,{contract:COMMUNITY_CONTRACT,rules:RULES_VERSION,target:{username:'Alice',score:saved.score,day:saved.day,rules:RULES_VERSION,kind:'rival'}});
+  assert.doesNotMatch(JSON.stringify(body),/userId|runId|trace|t2_alice/);
+  assert.equal(JSON.stringify([...store.values]),before);
+  assert.equal((await app.request('/api/community/challenge?code=forged')).status,400);
+  await service.remove(saved.day,owner.userId);
+  const removed=await app.request(path);assert.equal(removed.status,404);assert.equal((await removed.json()).error,'challenge-unavailable');
 });

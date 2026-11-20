@@ -1,8 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { dailyFocus } from '../shared/daily-focus.ts';
-import { focusTargetCopy, focusResultCopy } from './daily-focus-copy.ts';
+import { focusTargetCopy, focusResultCopy, focusRecordCopy } from './daily-focus-copy.ts';
 import { renderCopy, translate } from './i18n.ts';
+import { RULES_VERSION } from '../shared/game-logic.ts';
 import { runLearningGoal } from './coaching.ts';
 test('daily goals and actual run results render completely in both languages across all profiles',()=>{
  for(let day=20261119;day<=20261127;day++){
@@ -30,4 +31,23 @@ test('a newly completed base goal retains its own denominator and names the stre
  const copy=renderCopy(focusResultCopy(day,stats),'en');
  assert.match(copy,new RegExp(`${goal.target}/${goal.target}`));
  assert.match(copy,new RegExp(`Stretch goal ${goal.stretch}`));
+});
+
+test('homepage carries the best stored single run while clearly separating confirmation sources',()=>{
+ const day=20261120,goal=dailyFocus(day);
+ const record={version:RULES_VERSION,day,metric:goal.metric,local:goal.stretch,verified:goal.target};
+ const copy=focusRecordCopy(day,record).join('');
+ assert.match(copy,/本機單局最佳：/);assert.match(copy,/已確認單局最佳：/);
+ assert.ok(copy.includes(`${goal.stretch}／${goal.stretch}`));assert.ok(copy.includes(`${goal.target}／${goal.target}`));
+ assert.match(copy,/進階目標達成/);assert.match(copy,/共同目標達成/);
+ const localOnly=focusRecordCopy(day,{...record,verified:null}).join('');
+ assert.doesNotMatch(localOnly,/已確認/);
+ const verifiedOnly=focusRecordCopy(day,{...record,local:null}).join('');
+ assert.doesNotMatch(verifiedOnly,/本機單局最佳/);assert.match(verifiedOnly,/已確認單局最佳/);
+});
+test('missing, wrong-day or old-rule progress leaves the current daily target intact',()=>{
+ const day=20261120,goal=dailyFocus(day),record={version:RULES_VERSION,day,metric:goal.metric,local:goal.stretch,verified:null};
+ for(const value of [null,{...record,day:20261119},{...record,version:'old-rules'}]) {
+  assert.deepEqual(focusRecordCopy(day,value),focusTargetCopy(day));
+ }
 });

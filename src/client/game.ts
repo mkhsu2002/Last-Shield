@@ -1,3 +1,4 @@
+import { context } from "@devvit/web/client";
 import { localizedAttribute } from "./i18n";
 import * as Phaser from "phaser";
 import {
@@ -35,8 +36,10 @@ import type { BattleEffect } from "./battlefield";
 import { PracticeReview, practiceStepDelta, practiceLessonInfo, practiceLessonPassed, practiceDangerReady, hasPracticed, markPracticed, type PracticeLesson } from "./practice";
 import { dailyStorm, nextChallengeDay } from "../shared/daily-storm";
 
+import { scopedFocusStorage, readFocusRecord, storeFocusRecord } from "./focus-records";
+import { dailyStrategyQuestion } from "./daily-strategy";
 import { dailyFocus, focusProgress, nextResetMinutes } from "../shared/daily-focus";
-import { focusUnit, focusTargetCopy, focusResultCopy } from "./daily-focus-copy";
+import { focusUnit, focusResultCopy, focusRecordCopy } from "./daily-focus-copy";
 
 type Phase =
   | "intro"
@@ -91,8 +94,9 @@ class ShieldScene extends Phaser.Scene {
     this.graphics = this.add.graphics().setScale(RENDER_SCALE);
     const hall = new HallController();
     this.community = new Community(() => { void this.startRun(); }, hall, result => {
-      text("result-milestone", focusResultCopy(result.day, result));
-      text("result-goal-status", "本局目標進度已驗分。");
+      if (!this.community.isDemonstration) storeFocusRecord(this.focusStorage, result, "verified");
+      text("result-milestone", this.community.isDemonstration ? focusResultCopy(result.day, result) : focusRecordCopy(result.day, readFocusRecord(this.focusStorage, result.day)));
+      text("result-goal-status", this.community.isDemonstration ? "示範目標進度，不記入個人每日成就。" : "本局目標進度已驗分。");
     });
     try {
       this.storage = window.localStorage;
@@ -237,6 +241,10 @@ class ShieldScene extends Phaser.Scene {
     this.renderHUD();
   }
 
+  private get focusStorage(): RecordStorage | null {
+    return scopedFocusStorage(this.storage, context?.postId, context?.userId);
+  }
+
   private loadDay(): void {
     const guideFirst=!hasPracticed(this.storage);
     element('practice').classList.toggle('primary',guideFirst);
@@ -253,11 +261,12 @@ class ShieldScene extends Phaser.Scene {
     text("daily-title", profile.title);
     text("daily-description", profile.description);
     text("daily-tomorrow", ["明日風暴：", dailyStorm(nextChallengeDay(this.run.daySeed)).title]);
-    text("daily-focus", focusTargetCopy(this.run.daySeed));
+    text("daily-focus", focusRecordCopy(this.run.daySeed, readFocusRecord(this.focusStorage, this.run.daySeed)));
+    text("daily-guidance", dailyFocus(this.run.daySeed).guidance);
     const minutes = nextResetMinutes(new Date());
     text("daily-reset", `換日倒數 ${Math.floor(minutes / 60)} 小時 ${minutes % 60} 分`);
     const previous = readPreviousBest(this.storage, this.run.daySeed);
-    text("daily-return", previous ? `上次本機守城：${previous.day} · ${previous.score.toLocaleString("zh-TW")} 分` : "");
+    text("daily-return", previous ? [`上次本機守城：${previous.day} · ${previous.score.toLocaleString("zh-TW")} 分`, " · 上次風暴：", dailyStorm(previous.day).title] : "");
     show("daily-return", !!previous);
     this.best = readBest(this.storage, this.run.daySeed);
     text(
@@ -523,7 +532,7 @@ class ShieldScene extends Phaser.Scene {
   private finishRun(): void {
     this.releaseAll();
     const newBest = this.run.score > (this.best?.score ?? 0);
-    const saved = storeBest(this.storage, {
+    const saved = !this.community.isDemonstration && storeBest(this.storage, {
       version: RULES_VERSION,
       day: this.run.daySeed,
       score: this.run.score,
@@ -542,7 +551,7 @@ class ShieldScene extends Phaser.Scene {
     text("result-score", this.run.score.toLocaleString("zh-TW"));
     text(
       "record-note",
-      saved
+      this.community.isDemonstration ? "AI 示範，不儲存個人紀錄" : saved
         ? newBest
           ? "刷新本機今日最佳"
           : `本機今日最佳 ${Math.max(
@@ -555,8 +564,9 @@ class ShieldScene extends Phaser.Scene {
     text("result-combo", String(this.run.bestCombo));
     text("result-cleared", String(this.run.cleared));
     const learning = runLearningGoal({ ...this.run, brokenCombo: this.run.longestBrokenCombo, breakWave: this.run.brokenComboWave });
-    text("result-milestone", focusResultCopy(this.run.daySeed, this.run));
-    text("result-goal-status", this.community.hasSession ? "本局目標進度，尚未提交驗分。" : "本機目標進度。");
+    if (!this.community.isDemonstration) storeFocusRecord(this.focusStorage, { ...this.run, version: RULES_VERSION, day: this.run.daySeed }, "local");
+    text("result-milestone", this.community.isDemonstration ? focusResultCopy(this.run.daySeed, this.run) : focusRecordCopy(this.run.daySeed, readFocusRecord(this.focusStorage, this.run.daySeed)));
+    text("result-goal-status", this.community.isDemonstration ? "示範目標進度，不記入個人每日成就。" : this.community.hasSession ? "本局目標進度，尚未提交驗分。" : "本機目標進度。");
     text("result-overdrive", learning.summary);
     text("retry-hint", learning.action);
     text("result-storm", this.run.storm.title);
@@ -579,7 +589,7 @@ class ShieldScene extends Phaser.Scene {
       this.run.bestCombo
     }。同一片天空，換你守守看！`;
     const rival = this.community.rivalCopy(this.run.score);
-    return [result, "\n", this.run.storm.title, "\n", ...focusResultCopy(this.run.daySeed, this.run), "\n", "今天你會把超載留給哪一波？", ...(rival ? ["\n", rival] : [])];
+    return [result, "\n", this.run.storm.title, "\n", ...focusResultCopy(this.run.daySeed, this.run), "\n", dailyStrategyQuestion(this.run.daySeed, this.run), ...(rival ? ["\n", rival] : [])];
   }
 
   update(time: number, delta: number): void {
@@ -721,6 +731,7 @@ class ShieldScene extends Phaser.Scene {
     if (
       this.best &&
       !this.practiceMode &&
+      !this.community.isDemonstration &&
       run.score > this.best.score &&
       !this.passedBest
     ) {

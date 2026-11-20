@@ -12,10 +12,10 @@ export function createCommunityRouter(community:CommunityService, actor:(include
     const code=error.message;
     const allowed=['login-required','invalid-context','rate-limited','invalid-session','expired-session',
       'invalid-trace','invalid-duration','unfinished-run','invalid-day','retry-submit','invalid-request',
-      'consent-required','invalid-callsign','invalid-certificate','certificate-unavailable','revoked-run','mode-mismatch','invalid-image','image-processing','image-unavailable'];
+      'consent-required','invalid-callsign','invalid-certificate','certificate-unavailable','revoked-run','mode-mismatch','invalid-image','image-processing','image-unavailable','invalid-challenge','challenge-unavailable'];
     if(!allowed.includes(code)) console.error('Community storage unavailable');
     return c.json({...envelope,error:allowed.includes(code)?code:'unavailable'},
-      code==='login-required'?401:code==='rate-limited'?429:code==='certificate-unavailable'?404:code==='image-unavailable'?503:code==='image-processing'?429:allowed.includes(code)?400:503);
+      code==='login-required'?401:code==='rate-limited'?429:code==='certificate-unavailable'||code==='challenge-unavailable'?404:code==='image-unavailable'?503:code==='image-processing'?429:allowed.includes(code)?400:503);
   });
   app.post('/api/community/start',async(c)=>{
     let body:Record<string,unknown>={};
@@ -26,6 +26,7 @@ export function createCommunityRouter(community:CommunityService, actor:(include
     return c.json(await community.start(await actor(true),{demo:body.demo===true}));
   });
   app.get('/api/community/board',async(c)=>c.json(await community.board(Number(c.req.query('day')),(await actor()).userId)));
+  app.get('/api/community/challenge',async(c)=>c.json({...envelope,target:await community.resolveChallenge(c.req.query('code'),(await actor()).userId)}));
   app.post('/api/community/submit',async(c)=>{
     let body:unknown;
     try{body=await c.req.json();}catch{throw new Error('invalid-request');}

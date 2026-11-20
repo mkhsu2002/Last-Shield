@@ -102,7 +102,6 @@ export function hallMarkup(): string {
       <img id="hall-preview" class="hall-certificate-preview" alt="新巴比倫公民證書預覽" hidden>
       <button id="hall-open-image" class="secondary" hidden>開啟證書圖片</button>
       <button id="hall-share" class="primary" disabled>複製並分享證書</button>
-      <button id="hall-copy" class="secondary" disabled>複製證書與貼文連結</button>
       <p id="hall-share-status" class="fineprint" role="status" aria-live="polite"></p>
       <div id="hall-image-options" hidden><details><summary>儲存證書圖片</summary>
         <label class="hall-consent-label"><input id="hall-image-consent" type="checkbox">我同意公開匯出這張證書圖片；已匯出或分享的圖片可能持續存在，移除英雄館不會刪除這些副本。</label>

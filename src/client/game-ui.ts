@@ -29,10 +29,10 @@ export function mountGameUI(): void {
         <div class="launch-card">
           <div class="daily-card"><span class="eyebrow">今日風暴</span><strong id="daily-title"></strong><p id="daily-description"></p><span id="daily-tomorrow" class="fineprint"></span></div>
           <p id="daily-focus"></p><p id="daily-reset"></p><p id="daily-return" hidden></p>
-          <p class="launch-guide">金色時按住，擊碎再放開。三次完美蓄滿超載。</p>
+          <p id="daily-guidance" class="launch-guide"></p>
           <div id="launch-controls"><button id="start" class="primary">開始守城 <span aria-hidden="true">↗</span></button>
           <button id="practice" class="secondary practice-button">守城練習</button>
-          <button id="intro-board" class="secondary">查看社群每日榜</button><button id="intro-hall" class="secondary">英雄館</button>
+          <button id="intro-board" class="secondary">排行榜與好友挑戰</button><button id="intro-hall" class="secondary">英雄館</button>
           <details class="demo-options"><summary>示範模式</summary><label><input id="demo-mode" type="checkbox">AI 示範（不列入競爭榜）</label></details></div>
           <p id="intro-best" class="fineprint"></p>
         </div>
@@ -57,8 +57,9 @@ export function mountGameUI(): void {
         <p id="result-storm" class="result-storm"></p><p id="result-rival" class="record-note"></p>
         <div id="result-score" class="result-score">0</div><p id="record-note" class="record-note"></p>
         <div class="result-stats"><div><strong id="result-perfect">0</strong><span>完美擊破</span></div><div><strong id="result-combo">0</strong><span>最高連擊</span></div><div><strong id="result-cleared">0</strong><span>擊碎隕石</span></div></div>
+        <p id="retry-hint" class="retry-hint"></p>
         <div class="result-next"><button id="retry" class="primary">再守一次 <span aria-hidden="true">↗</span></button><button id="result-board" class="secondary">排名與戰績提交</button></div>
-        <p id="result-milestone" class="result-milestone"></p><p id="result-goal-status" class="goal-status"></p><p id="result-overdrive" class="result-milestone"></p><p id="retry-hint" class="retry-hint"></p>
+        <p id="result-milestone" class="result-milestone"></p><p id="result-goal-status" class="goal-status"></p><p id="result-overdrive" class="result-milestone"></p>
         <button id="result-hall" class="secondary">英雄館與公民證書</button><button id="discussion" class="secondary">分享戰績與心得</button>
       </section>
       <section id="paused" class="panel pause-panel" hidden aria-labelledby="pause-title"><span class="eyebrow">喘口氣，再繼續</span><h2 id="pause-title">城市，暫時安靜。</h2><p>遊戲已暫停，護盾與隕石都不會前進。<br>先放開手指，再繼續防守。</p><p class="pause-tip">金色重合時「按下」＝完美起手，光束 3 倍。保持按住直到擊碎，超載 +1。<br><br>超載滿氣後可以保留；按「超載震爆」或 E 才會清場。普通攻擊與撞擊不會消耗能量。<br><br>完美鎖定後，時機尺會變成擊破進度：持續按住，不用重按。該顆會被光束定住，放開後繼續逼近。<br><br>完美擊碎後有短暫金色接力：先放開，再按下一顆。失手仍可等下一輪金色重按補救，進度保留。<br><br>想改打別顆？先放開，再按住指定隕石。</p><button id="resume" class="primary">繼續防守 <span aria-hidden="true">↗</span></button></section>
@@ -67,6 +68,14 @@ export function mountGameUI(): void {
         <div class="dialog-heading"><h2 id="board-title">社群每日榜</h2><button id="board-close" class="secondary">關閉</button></div>
         <p id="board-day" class="eyebrow"></p><p id="board-total"></p><p id="board-me" class="record-note"></p>
         <p id="board-status" class="fineprint" role="status" aria-live="polite"></p>
+        <button id="challenge-invite" class="secondary" disabled>邀請朋友挑戰</button>
+        <p id="challenge-invite-status" class="fineprint" role="status"></p><textarea id="challenge-invite-fallback" readonly rows="3" aria-label="挑戰碼與遊戲連結" hidden></textarea>
+        <details id="challenge-entry"><summary>接受好友挑戰</summary>
+          <label for="challenge-code">好友挑戰碼</label><input id="challenge-code" type="text" maxlength="64" autocomplete="off" spellcheck="false">
+          <button id="challenge-find" class="secondary">查找挑戰</button>
+          <p id="challenge-status" class="fineprint" role="status" aria-live="polite"></p>
+          <button id="challenge-accept" class="primary" hidden>接受挑戰</button><button id="challenge-today" class="secondary" hidden>開始今日守城</button>
+        </details>
         <h3>今日前十</h3><ol id="board-top" class="leaderboard" aria-label="今日前十"></ol>
         <section id="board-nearby-section" hidden><h3>你的鄰近排名</h3><ol id="board-nearby" class="leaderboard" aria-label="你的鄰近排名"></ol></section>
         <p class="fineprint">提交後，Reddit 名稱與當日最高分將公開在本社群榜，最多保留 30 天。你可以移除自己的排名。</p>

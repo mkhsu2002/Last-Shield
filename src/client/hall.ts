@@ -68,7 +68,6 @@ export class HallController {
     get('hall-remove').addEventListener('click', () => void this.remove());
     get('hall-verify').addEventListener('click', () => void this.verify());
     get('hall-share').addEventListener('click', () => void this.share());
-    get('hall-copy').addEventListener('click', () => void this.copy());
     get('hall-image-consent').addEventListener('change', () => this.controls());
     get('hall-export').addEventListener('click', () => void this.exportImage());
     get('hall-open-image').addEventListener('click', () => {
@@ -249,7 +248,7 @@ export class HallController {
     if (this.objectUrl) URL.revokeObjectURL(this.objectUrl);
     this.objectUrl = null;
     get<HTMLImageElement>('hall-preview').removeAttribute('src'); get('hall-preview').hidden = true;
-    get<HTMLButtonElement>('hall-share').disabled = true; get<HTMLButtonElement>('hall-copy').disabled = true;
+    get<HTMLButtonElement>('hall-share').disabled = true;
     get<HTMLTextAreaElement>('hall-copy-fallback').value = ''; get('hall-copy-fallback').hidden = true;
     say('hall-certificate-status', '');
   }
@@ -277,7 +276,7 @@ export class HallController {
       this.shareFile = new File([blob], presentation.filename, { type: 'image/png' });
       get<HTMLInputElement>('hall-certificate-id').value = cert.id;
       const preview = get<HTMLImageElement>('hall-preview'); preview.src = this.objectUrl; preview.hidden = false;
-      get<HTMLButtonElement>('hall-share').disabled = false; get<HTMLButtonElement>('hall-copy').disabled = false;
+      get<HTMLButtonElement>('hall-share').disabled = false;
       this.controls();
       say('hall-certificate-status', cert.demo ? '有效證書 · AI 示範' : '有效的新巴比倫公民證書');
     } catch { if (generation === this.imageGeneration) say('hall-certificate-status', '暫時無法產生證書圖片，請重新查驗。'); }

@@ -3,6 +3,7 @@ import { utcDaySeed, RULES_VERSION } from '../shared/game-logic.ts';
 import { COMMUNITY_CONTRACT, RUN_LIFETIME_MS, replayRun, type Board, type BoardEntry, type RunResult } from '../shared/community.ts';
 import { dailyStorm, type StormId } from '../shared/daily-storm.ts';
 import { HallService, type VerifiedHallRun } from './hall-service.ts';
+import { parseChallengeCode, type ChallengeTarget } from '../shared/challenge.ts';
 
 type SetOptions = { nx?: boolean; expiration?: Date };
 type Row = { member: string; score: number };
@@ -111,6 +112,24 @@ export class CommunityService {
   async enroll(actor:Actor,runId:string,callsign?:string):Promise<void>{
     const run=await this.acceptedRun(actor,runId);
     await this.hall.enroll(run,callsign,bestKey(run.day,run.userId));
+  }
+  async resolveChallenge(code:unknown,userId?:string):Promise<ChallengeTarget>{
+    const parsed=parseChallengeCode(code);
+    if(!parsed)throw new Error('invalid-challenge');
+    const {day,runId}=parsed;
+    try{this.checkDay(day);}catch{throw new Error('challenge-unavailable');}
+    const raw=await this.store.get(`${prefix}:run-index:${runId}`);
+    const index=raw?JSON.parse(raw) as {day:number;userId:string}:null;
+    if(!index||index.day!==day||typeof index.userId!=='string')throw new Error('challenge-unavailable');
+    const [auditRaw,bestRaw,rank]=await Promise.all([
+      this.store.get(`${prefix}:audit:${day}:${runId}`),this.store.get(bestKey(day,index.userId)),this.store.zRank(boardKey(day),index.userId),
+    ]);
+    const audit=auditRaw?JSON.parse(auditRaw) as Saved|null:null;
+    const best=bestRaw?JSON.parse(bestRaw) as Saved|null:null;
+    if(!audit||audit.userId!==index.userId||audit.runId!==runId||audit.day!==day||audit.version!==RULES_VERSION||audit.demo||
+      !best||best.userId!==index.userId||best.day!==day||best.version!==RULES_VERSION||best.demo||rank===undefined||
+      !Number.isSafeInteger(best.score)||best.score<0||typeof best.username!=='string')throw new Error('challenge-unavailable');
+    return {username:best.username,score:best.score,day,rules:RULES_VERSION,kind:userId===index.userId?'personal':'rival'};
   }
   async board(day:number,userId?:string):Promise<Board> {
     this.checkDay(day);

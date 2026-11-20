@@ -33,7 +33,10 @@ export function translate(source: string, locale: Language = language): string {
       const match = pattern.expression.exec(key);
       if (!match) continue;
       const values = new Map(pattern.slots.map((slot, i) => [slot, translate(match[i + 1]!, locale)]));
-      result = pattern.target.replace(/\{(\d+)\}/g, (_, slot: string) => values.get(Number(slot)) ?? "");
+      const candidate = pattern.target.replace(/\{(\d+)\}/g, (_, slot: string) => values.get(Number(slot)) ?? "");
+      // A generic numeric pattern must not swallow a more specific localized cue.
+      if (/[\p{Script=Han}]/u.test(candidate)) continue;
+      result = candidate;
       break;
     }
   }

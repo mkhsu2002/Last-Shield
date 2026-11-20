@@ -4,7 +4,7 @@ import { hallMarkup, hallCanEnroll, mergeChampionHistory, mergeChampionPage, hal
 
 test('museum includes explicit consent and four separate collections', () => {
   const markup = hallMarkup();
-  for (const id of ['hall-dialog','hall-champions','hall-scores','hall-combos','hall-million','hall-consent','hall-enroll','hall-remove','hall-certificate-id','hall-verify','hall-preview','hall-image-consent','hall-export','hall-open-image','hall-share','hall-copy']) assert.ok(markup.includes(`id="${id}"`), id);
+  for (const id of ['hall-dialog','hall-champions','hall-scores','hall-combos','hall-million','hall-consent','hall-enroll','hall-remove','hall-certificate-id','hall-verify','hall-preview','hall-image-consent','hall-export','hall-open-image','hall-share','hall-share-status']) assert.ok(markup.includes(`id="${id}"`), id);
   assert.match(markup, /maxlength="24"/);
   assert.match(markup, /長期公開/);
   assert.doesNotMatch(markup, /type="checkbox"[^>]*checked/);

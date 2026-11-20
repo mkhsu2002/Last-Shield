@@ -1180,3 +1180,18 @@ button:disabled { opacity: .5; cursor: default; }
 .hall-membership > summary:focus-visible, .certificate-lookup > summary:focus-visible { outline:2px solid #8be5ed; outline-offset:2px; }
 .panel .goal-status { font-size:10px; color:#a9c1d2; margin:4px 0; }
 .result-next { margin-top:12px; }
+.community-dialog .dialog-heading { position:sticky; top:-20px; z-index:2; background:#12243a; margin:-20px -20px 12px; padding:12px 18px; border-bottom:1px solid #45616c; }
+.community-dialog .dialog-heading h2 { font-size:20px; }
+.interface[data-state="practice-review"] #fire { opacity:0; height:0; min-height:0; padding:0; margin:0; border:0; overflow:hidden; }
+.results .result-caption { display:none; }
+.results #result-storm { font-size:11px; margin:4px 0 0; }
+.results .result-score { font-size:52px; margin:12px 0 4px; }
+.results .record-note { margin-bottom:10px; }
+.results .result-stats { padding:9px 0; }
+.results .retry-hint { border-left:2px solid var(--gold); padding-left:10px; line-height:1.5; font-size:12px; margin:12px 0; }
+#challenge-entry { margin:12px 0; padding:10px 0; border-block:1px solid #45616c; }
+#challenge-entry summary { cursor:pointer; min-height:44px; display:flex; align-items:center; color:var(--gold); }
+#challenge-code { box-sizing:border-box; width:100%; padding:12px; border:1px solid #647c87; border-radius:8px; color:#edf5ff; background:#0e202e; font:inherit; font-size:16px; margin:8px 0; }
+#challenge-entry summary:focus-visible { outline:2px solid #8be5ed; outline-offset:2px; }
+
+.community-dialog [hidden] { display:none !important; }

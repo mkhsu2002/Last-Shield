@@ -1,10 +1,12 @@
-import { context, navigateTo } from '@devvit/web/client';
+import { context, navigateTo, showShareSheet, getShareData } from '@devvit/web/client';
 import { utcDaySeed, RULES_VERSION } from '../shared/game-logic';
 import { COMMUNITY_CONTRACT, MAX_TRACE_STEPS, type Board, type RunResult, type TraceStep } from '../shared/community';
 import { element, text } from './game-ui';
-import { localizedText, localizedValue, localizedAttribute } from './i18n';
+import { localizedText, localizedValue, localizedAttribute, renderCopy } from './i18n';
 import { dailyStorm, type StormId } from '../shared/daily-storm';
 import { chooseRival, defaultRival, refreshRival, rivalStatus, nearbyEntries, type RivalTarget } from './rival';
+
+import { buildChallengeCode, parseChallengeCode, parseRivalShareData, type ChallengeTarget } from '../shared/challenge';
 
 type Start = {contract:string;rules:string;day:number;storm:StormId;runId:string|null;demo:boolean};
 async function request<T>(path:string, method='GET', body?:unknown):Promise<T> {
@@ -29,6 +31,7 @@ export class Community {
   private finished=false;
   private busy=false;
   private saved=false;
+  private verifiedScore=0;
   private removed=false;
   private boardGeneration=0;
   private preview:string[]=[];
@@ -36,12 +39,21 @@ export class Community {
   private boardUnavailable=false;
   private nextTarget:RivalTarget|null=null;
   private activeTarget:RivalTarget|null=null;
+  private nextChallengeCode:string|null=null;
+  private receivedChallenge:{code:string;target:ChallengeTarget}|null=null;
+  private challengeGeneration=0;
   private postedUrl=context?.postId?`https://www.reddit.com/comments/${context.postId.replace(/^t3_/,'')}`:'';
   constructor(private readonly onChallenge:()=>void, private readonly hall:{begin():void;accepted(runId:string,score:number,demo:boolean):void}, private readonly onVerified:(result:RunResult)=>void = () => {}) {
     element('intro-board').addEventListener('click',()=>void this.openBoard());
     element('result-board').addEventListener('click',()=>void this.openBoard());
     element('board-close').addEventListener('click',()=>element<HTMLDialogElement>('community-dialog').close());
     element('board-refresh').addEventListener('click',()=>void this.refresh());
+    element('challenge-invite').addEventListener('click',()=>void this.invite());
+    element('challenge-find').addEventListener('click',()=>void this.findChallenge());
+    element<HTMLInputElement>('challenge-code').addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.isComposing){event.preventDefault();void this.findChallenge();}});
+    element('challenge-code').addEventListener('input',()=>{++this.challengeGeneration;this.receivedChallenge=null;element('challenge-accept').hidden=true;element('challenge-today').hidden=true;text('challenge-status','');});
+    element('challenge-today').addEventListener('click',()=>{this.nextTarget=null;this.nextChallengeCode=null;element<HTMLDialogElement>('community-dialog').close();this.onChallenge();});
+    element('challenge-accept').addEventListener('click',()=>this.acceptChallenge());
     element('board-submit').addEventListener('click',()=>void this.submit());
     element('board-remove').addEventListener('click',()=>void this.remove());
     element('discussion').addEventListener('click',()=>{
@@ -58,15 +70,23 @@ export class Community {
     });
     element<HTMLButtonElement>('discussion-open').disabled=!this.enabled;
     this.controls();
-    if(this.enabled) void this.refresh();
+    if(this.enabled) {
+      void this.refresh();
+      let code:string|null=null;
+      try { code=parseRivalShareData(getShareData()); } catch { /* A normal post needs no share data. */ }
+      if(code) { element<HTMLInputElement>('challenge-code').value=code; element<HTMLDetailsElement>('challenge-entry').open=true; void this.findChallenge(); }
+    }
   }
+  get isDemonstration():boolean { return this.demo; }
   get hasSession():boolean { return this.runId !== null; }
   async begin(practice:boolean):Promise<number> {
     ++this.runGeneration; this.busy=false;
+    text('challenge-invite-status','');element('challenge-invite-fallback').hidden=true;
+    element<HTMLTextAreaElement>('challenge-invite-fallback').value='';
     this.hall.begin();
     this.demo=!practice && element<HTMLInputElement>('demo-mode').checked;
     ++this.boardGeneration;
-    this.runId=null; this.trace=[]; this.finished=false; this.saved=false; this.removed=false;
+    this.runId=null; this.trace=[]; this.finished=false; this.saved=false; this.verifiedScore=0; this.removed=false;
     this.day=utcDaySeed(new Date());
     if(!practice && !this.nextTarget && this.latestBoard?.day===this.day) this.nextTarget=defaultRival(this.latestBoard);
     if(this.enabled && !practice) {
@@ -77,7 +97,12 @@ export class Community {
       {
         try {
           const board=await request<Board>(`board?day=${this.day}`);
-          if(this.nextTarget) this.nextTarget=refreshRival(this.nextTarget,board);
+          if(this.nextChallengeCode) {
+            try {
+              const response=await request<{target:ChallengeTarget}>(`challenge?code=${encodeURIComponent(this.nextChallengeCode)}`);
+              this.nextTarget=response.target.day===this.day && response.target.rules===RULES_VERSION ? response.target : null;
+            } catch { this.nextTarget=null; }
+          } else if(this.nextTarget) this.nextTarget=refreshRival(this.nextTarget,board);
           this.latestBoard=board; this.boardUnavailable=false; this.renderLeader();
         } catch { this.nextTarget=null; this.latestBoard=null; this.boardUnavailable=true; }
       }
@@ -85,7 +110,7 @@ export class Community {
     if(practice || this.demo) this.activeTarget=null;
     else this.activeTarget=this.nextTarget??(this.latestBoard?.day===this.day?defaultRival(this.latestBoard):null);
     if(this.activeTarget?.day!==this.day || this.activeTarget.rules!==RULES_VERSION) this.activeTarget=null;
-    this.nextTarget=null; this.renderLeader();
+    this.nextTarget=null; this.nextChallengeCode=null; this.renderLeader();
     this.controls(); return this.day;
   }
   record(step:TraceStep):void {
@@ -103,6 +128,8 @@ export class Community {
     element<HTMLButtonElement>('board-submit').disabled=this.busy||!eligible;
     element<HTMLButtonElement>('board-remove').disabled=this.busy||!this.enabled||!context?.userId;
     element<HTMLButtonElement>('board-refresh').disabled=this.busy;
+    if(this.removed){text('challenge-invite-status','');element('challenge-invite-fallback').hidden=true;}
+    element<HTMLButtonElement>('challenge-invite').disabled=!this.enabled||!this.saved||this.demo||this.removed||!this.runId;
     text('board-submit',this.removed?'本日排名已移除':this.saved?'本局戰績已提交':'提交本局戰績');
     element('result-board').classList.toggle('primary',eligible);
     element('result-board').classList.toggle('secondary',!eligible);
@@ -148,6 +175,7 @@ export class Community {
           localizedText(challenge,row.isYou?'挑戰自己的最佳':'挑戰此分數');
           localizedAttribute(challenge,'aria-label',`挑戰 u/${row.username} 的 ${row.score} 分`);
           challenge.addEventListener('click',()=>{
+            this.nextChallengeCode=null;
             this.nextTarget=chooseRival(board,row);
             if(!this.nextTarget)return;
             element<HTMLDialogElement>('community-dialog').close();
@@ -167,7 +195,7 @@ export class Community {
       const response=await request<{result:RunResult}>('submit','POST',{runId,trace:this.trace});
       if(generation!==this.runGeneration)return;
       if(response.result.day!==day || response.result.version!==RULES_VERSION || response.result.storm!==dailyStorm(this.day).id) throw new Error('version-mismatch');
-      this.saved=true;
+      this.saved=true; this.verifiedScore=response.result.score;
       this.onVerified(response.result);
       this.hall.accepted(runId,response.result.score,demo);
       await this.refresh();
@@ -195,6 +223,49 @@ export class Community {
       if(generation===this.runGeneration)text('board-status','暫時無法移除排名，請稍後重試。');
     } finally {if(generation===this.runGeneration){this.busy=false;this.controls();}}
   }
+  private async invite():Promise<void> {
+    if(!this.enabled||!this.saved||this.demo||this.removed||!this.runId)return;
+    const code=buildChallengeCode(this.day,this.runId);if(!code)return;
+    const generation=this.runGeneration;
+    const score=Math.max(this.verifiedScore,this.latestBoard?.day===this.day?this.latestBoard.me?.score??0:0);
+    const message=renderCopy([`你能超過我在 ${this.day} UTC 的 ${score.toLocaleString('en-US')} 分嗎？`, '\n', '好友挑戰碼：', {literal:code}, '\n', {literal:this.postedUrl}]);
+    try {
+      await navigator.clipboard.writeText(message);
+      if(generation!==this.runGeneration)return;
+      text('challenge-invite-status','已複製挑戰碼與遊戲連結。朋友可在排行榜貼上挑戰碼，接受挑戰。');
+    } catch {
+      if(generation!==this.runGeneration)return;
+      const fallback=element<HTMLTextAreaElement>('challenge-invite-fallback');fallback.value=message;fallback.hidden=false;fallback.focus();fallback.select();
+      text('challenge-invite-status','請複製下方挑戰碼與遊戲連結，再傳給朋友。');
+    }
+    try {await showShareSheet({title:'Last Shield',text:message,data:JSON.stringify({kind:'rival',code})});}catch{/* The visible copy result remains usable. */}
+  }
+  private async findChallenge():Promise<void> {
+    const generation=++this.challengeGeneration;
+    this.receivedChallenge=null;element('challenge-accept').hidden=true;element('challenge-today').hidden=true;
+    const code=element<HTMLInputElement>('challenge-code').value.trim();
+    if(!parseChallengeCode(code)){text('challenge-status','請貼上完整的好友挑戰碼。');return;}
+    if(!this.enabled){text('challenge-status','接受好友挑戰請到 Reddit 遊戲貼文。');return;}
+    const dialog=element<HTMLDialogElement>('community-dialog');if(!dialog.open)dialog.showModal();
+    element<HTMLDetailsElement>('challenge-entry').open=true;
+    text('challenge-status','正在確認好友的公開戰績…');
+    try {
+      const response=await request<{target:ChallengeTarget}>(`challenge?code=${encodeURIComponent(code)}`);
+      if(generation!==this.challengeGeneration)return;
+      const target=response.target;
+      if(target.day!==parseChallengeCode(code)!.day||!['rival','personal'].includes(target.kind)||target.rules!==RULES_VERSION||!Number.isSafeInteger(target.score)||target.score<0||!/^[A-Za-z0-9_-]{1,32}$/.test(target.username))throw new Error('invalid-challenge');
+      this.receivedChallenge={code,target};
+      const today=utcDaySeed(new Date());
+      localizedText(element('challenge-status'),target.day===today?['好友目標：',{literal:`u/${target.username} · ${target.score.toLocaleString('en-US')}`},' · ',String(target.day),' UTC']:['這是過去的挑戰；可改玩今日風暴。', ' ',{literal:`u/${target.username} · ${target.score.toLocaleString('en-US')} · ${target.day} UTC`}]);
+      text('challenge-accept',target.day===today?'接受挑戰':'開始今日守城');element('challenge-accept').hidden=false;
+    } catch {if(generation===this.challengeGeneration){text('challenge-status','找不到公開的挑戰戰績，可能已移除或過期。仍可挑戰今日風暴。');element('challenge-today').hidden=false;}}
+  }
+  private acceptChallenge():void {
+    const received=this.receivedChallenge;if(!received)return;
+    this.nextTarget=received.target.day===utcDaySeed(new Date())?received.target:null;
+    this.nextChallengeCode=this.nextTarget?received.code:null;
+    element<HTMLDialogElement>('community-dialog').close();this.onChallenge();
+  }
   private async copyDiscussion():Promise<void> {
     const copy=this.renderDiscussionPreview();
     try {await navigator.clipboard.writeText(copy);text('discussion-status','已複製。前往貼文後貼上，你可以再編輯並自行送出留言。');}
@@ -206,7 +277,8 @@ export class Community {
   private renderDiscussionPreview():string {
     const note=element<HTMLTextAreaElement>('discussion-note').value.trim();
     const preview=element<HTMLTextAreaElement>('discussion-preview');
-    localizedValue(preview,[...this.preview,...(note?['\n\n',{literal:note}]:[]),...(this.postedUrl?['\n',{literal:this.postedUrl}]:[])]);
+    const code=this.saved&&!this.demo&&!this.removed&&this.runId?buildChallengeCode(this.day,this.runId):null;
+    localizedValue(preview,[...this.preview,...(code?['\n','好友挑戰碼：',{literal:code}]:[]),...(note?['\n\n',{literal:note}]:[]),...(this.postedUrl?['\n',{literal:this.postedUrl}]:[])]);
     return preview.value;
   }
   private renderLeader():void {

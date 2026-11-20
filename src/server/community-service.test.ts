@@ -126,3 +126,71 @@ test('leader tie count includes players beyond the top ten',async()=>{
  assert.equal((await service.board(day)).leaderTies,12);
  store.sets.get(key)!.delete('t2_tie12');assert.equal((await service.board(day)).leaderTies,12);
 });
+
+test('challenge resolves an accepted public run to the current daily best and actor-relative kind', async()=>{
+  const {service,store,advance}=setup();
+  const session=await service.start(actor);advance(120000);
+  const saved=await service.submit(actor,session.runId!,trace);
+  const code=`LS8:${saved.day}:${saved.runId}`;
+  const target=await service.resolveChallenge(code);
+  assert.deepEqual(target,{username:'Alice',score:saved.score,day:saved.day,rules:RULES_VERSION,kind:'rival'});
+  assert.equal((await service.resolveChallenge(code,actor.userId)).kind,'personal');
+  assert.equal((await service.resolveChallenge(code,'t2_other')).kind,'rival');
+  // Resolves the still-public current best, rather than a score embedded in a code or old audit.
+  await store.set(`${COMMUNITY_CONTRACT}:${RULES_VERSION}:best:${saved.day}:${actor.userId}`,JSON.stringify({...saved,score:saved.score+500}));
+  store.sets.get(`${COMMUNITY_CONTRACT}:${RULES_VERSION}:board:${saved.day}`)!.set(actor.userId,-saved.score-500);
+  assert.equal((await service.resolveChallenge(code)).score,saved.score+500);
+  assert.doesNotMatch(JSON.stringify(target),/userId|t2_alice|trace|acceptedAt|runId/);
+  // The setup crosses midnight: valid previous UTC day challenges remain readable.
+  assert.equal((await service.resolveChallenge(code)).day,20261115);
+  await service.remove(saved.day,actor.userId);
+  await assert.rejects(service.resolveChallenge(code),/challenge-unavailable/);
+});
+
+test('challenge rejects demos, unknown or mismatched runs and expired or future dates without writes',async()=>{
+  const {service,store,advance}=setup();
+  const demo=await service.start(actor,{demo:true});advance(120000);
+  const saved=await service.submit(actor,demo.runId!,trace);
+  const before=JSON.stringify([...store.values]);
+  await assert.rejects(service.resolveChallenge(`LS8:${saved.day}:${saved.runId}`),/challenge-unavailable/);
+  await assert.rejects(service.resolveChallenge(`LS8:${saved.day}:8080019d-e381-4899-82fc-ff89af9109ed`),/challenge-unavailable/);
+  await assert.rejects(service.resolveChallenge(`LS8:20261114:${saved.runId}`),/challenge-unavailable/);
+  await assert.rejects(service.resolveChallenge(`LS8:20261117:${saved.runId}`),/challenge-unavailable/);
+  await assert.rejects(service.resolveChallenge(`LS8:20260230:${saved.runId}`),/invalid-challenge/);
+  assert.equal(JSON.stringify([...store.values]),before);
+  advance(31*86400000);
+  await assert.rejects(service.resolveChallenge(`LS8:${saved.day}:${saved.runId}`),/challenge-unavailable/);
+});
+
+test('challenge fails closed when any audit, index or public membership is missing or incompatible',async()=>{
+  const {service,store,advance}=setup();
+  const session=await service.start(actor);advance(120000);
+  const saved=await service.submit(actor,session.runId!,trace),code=`LS8:${saved.day}:${saved.runId}`;
+  const auditKey=`${COMMUNITY_CONTRACT}:${RULES_VERSION}:audit:${saved.day}:${saved.runId}`;
+  const indexKey=`${COMMUNITY_CONTRACT}:${RULES_VERSION}:run-index:${saved.runId}`;
+  const currentBestKey=`${COMMUNITY_CONTRACT}:${RULES_VERSION}:best:${saved.day}:${actor.userId}`;
+  const currentBoardKey=`${COMMUNITY_CONTRACT}:${RULES_VERSION}:board:${saved.day}`;
+  const originalAudit=store.values.get(auditKey)!;
+  for(const patch of [{demo:true},{userId:'t2_other'},{version:'survival-7'},{day:20261114},{runId:'different'}]){
+    store.values.set(auditKey,JSON.stringify({...saved,...patch}));
+    await assert.rejects(service.resolveChallenge(code),/challenge-unavailable/);
+  }
+  store.values.delete(auditKey);await assert.rejects(service.resolveChallenge(code),/challenge-unavailable/);
+  store.values.set(auditKey,originalAudit);
+  const originalIndex=store.values.get(indexKey)!;store.values.delete(indexKey);
+  await assert.rejects(service.resolveChallenge(code),/challenge-unavailable/);store.values.set(indexKey,originalIndex);
+  const originalBest=store.values.get(currentBestKey)!;store.values.set(currentBestKey,'null');
+  await assert.rejects(service.resolveChallenge(code),/challenge-unavailable/);store.values.set(currentBestKey,originalBest);
+  store.sets.get(currentBoardKey)!.delete(actor.userId);
+  await assert.rejects(service.resolveChallenge(code),/challenge-unavailable/);
+});
+
+test('a genuine public challenge expires exactly at its UTC day thirty-day boundary',async()=>{
+  const start=Date.UTC(2026,10,15,12),{service,advance}=setup(start);
+  const session=await service.start(actor);advance(120000);
+  const saved=await service.submit(actor,session.runId!,trace),code=`LS8:${saved.day}:${saved.runId}`;
+  advance(Date.UTC(2026,11,15)-start-120000-1);
+  assert.equal((await service.resolveChallenge(code)).username,'Alice');
+  advance(1);
+  await assert.rejects(service.resolveChallenge(code),/challenge-unavailable/);
+});

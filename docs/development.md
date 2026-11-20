@@ -128,3 +128,9 @@ Reddit iframe restrictions block Blob-anchor downloads and navigator.share. The 
 POST /api/community/hall/certificate/image accepts only id, rendered PNG and publicImageConsent:true. CertificateImageService binds the actor’s own active certificate, validates PNG size/dimensions, claims an idempotent upload under WATCH, and rechecks ownership/revision before saving the Reddit media URL. Same-image requests reuse the cache; changed image/language requests follow a 60-second cooldown. Agreement time and hash are stored with the URL; withdrawal erases this cache. media.upload provides no image-delete API, so the additional public-image agreement explains that exported copies can remain. Images are presentations; the server certificate lookup remains authoritative.
 
 The frontend and this endpoint must deploy together in the full Devvit package. Native share and public-image navigation still require candidate live testing before formal release. No new provider secret, external service or scheduler was added.
+
+## v0.52 第三輪候選契約（2026-11-20，待私人部署）
+
+新增 additive 只讀 `GET /api/community/challenge?code=LS8:<YYYYMMDD>:<UUID>`，沿用 `community-3 / survival-8` envelope，返回 `{target:{username,score,day,rules,kind}}`。僅解析既有 index、accepted audit、當日目前 public best 與榜單成員資格；不回傳 userId、audit 或 trace，不新增伺服器儲存 key、migration 或背景任務。格式錯誤 400，示範／移除／過期／不存在為 404。原生 share data 僅接受 `{kind:"rival",code}`，桌面複製同一 code 為備援。接收端重新查驗、確認日期才設定 rival；舊日改玩今日。接受後開局再次查驗，不依賴只含前十的排行榜來維持好友目標。
+
+每日目標另存最多七個 UTC 遊玩日的單局最大進度，local／verified 分開，依 rules／post／user 隔離；只有成功 submit 回應可記 verified。示範與練習不推進個人成就，也不覆蓋個人本機最佳。這些快取不作為排名或證書依據。
