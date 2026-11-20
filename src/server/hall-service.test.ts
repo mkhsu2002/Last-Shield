@@ -94,3 +94,13 @@ test('certificate upgrades to the higher scoring run while keeping original proo
  const after=(await hall.list('t2_a')).me.certificate!;assert.equal(after.id,before.id);assert.equal(after.issuedAt,before.issuedAt);
  assert.equal(after.score,1400000);assert.equal(after.bestCombo,90);assert.equal((await hall.list()).topCombos[0]?.bestCombo,101);
 });
+
+test('an explicit empty callsign clears every public record and certificate, omission preserves it',async()=>{
+ const {hall}=setup();const saved=run();await hall.observe(saved,null);await hall.enroll(saved,'PleaseClear');
+ await hall.enroll(saved);assert.equal((await hall.list('t2_a')).me.callsign,'PleaseClear');
+ await hall.enroll(saved,'');const view=await hall.list('t2_a');
+ assert.equal(view.me.callsign,undefined);assert.equal(view.me.certificate?.callsign,undefined);
+ assert.equal(view.topScores[0]?.callsign,undefined);assert.equal(view.topCombos[0]?.callsign,undefined);
+ assert.equal(view.million[0]?.callsign,undefined);assert.equal(view.champions[0]?.winners[0]?.callsign,undefined);
+ assert.equal((await hall.certificate(view.me.certificate!.id))?.callsign,undefined);
+});

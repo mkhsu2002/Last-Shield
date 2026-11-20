@@ -5,7 +5,7 @@ if ! git rev-parse --verify "$base^{commit}" >/dev/null 2>&1; then
   exit 1
 fi
 if git diff --quiet "$base" HEAD -- \
-  src/ public/ scripts/ index.html package.json package-lock.json \
+  src/ public/ scripts/phaser-core.ts scripts/ignore-build.sh index.html package.json package-lock.json \
   npm-shrinkwrap.json pnpm-lock.yaml yarn.lock bun.lockb bun.lock \
   .npmrc .nvmrc ':(glob)tsconfig*.json' ':(glob)vite*.ts' \
   devvit.json vercel.json; then

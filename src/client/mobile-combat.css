@@ -37,14 +37,14 @@
   .adaptive-view .interface[data-combat="true"] #sound[aria-pressed="false"]::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e0f3ff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11 5 6 9H3v6h3l5 4V5Z'/%3E%3Cpath d='m16 9 6 6m0-6-6 6'/%3E%3C/svg%3E"); }
   .adaptive-view .interface[data-combat="true"] #pause::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e0f3ff' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M8 5v14M16 5v14'/%3E%3C/svg%3E"); }
   .adaptive-view .interface[data-combat="true"] .run-hud { position: static; inset: auto; width: auto; margin-top: 6px; padding: 0; border: 0; background: none; }
-  .adaptive-view .interface[data-combat="true"] .score-row { align-items: baseline; gap: 8px; }
+  .adaptive-view .interface[data-combat="true"] .score-row { align-items: baseline; flex-wrap: wrap; gap: 2px 8px; }
   .adaptive-view .interface[data-combat="true"] .health-block,
   .adaptive-view .interface[data-combat="true"] .score-block { display: flex; align-items: baseline; gap: 5px; }
-  .adaptive-view .interface[data-combat="true"] .score-row .label { display: inline; margin: 0; font-size: 10px; white-space: nowrap; }
+  .adaptive-view .interface[data-combat="true"] .score-row .label { display: inline; margin: 0; font-size: 11px; white-space: nowrap; }
   .adaptive-view .interface[data-combat="true"] .health-block strong,
   .adaptive-view .interface[data-combat="true"] #score-short { display: block; font-size: 22px; line-height: 1.1; }
   .adaptive-view .interface[data-combat="true"] .run-progress { height: 3px; margin-top: 4px; }
-  .adaptive-view .interface[data-combat="true"] .stats-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: start; gap: 6px; margin-top: 5px; font-size: 10px; line-height: 1.2; }
+  .adaptive-view .interface[data-combat="true"] .stats-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: start; gap: 6px; margin-top: 5px; font-size: 11px; line-height: 1.2; }
   .adaptive-view .interface[data-combat="true"] #combo { white-space: nowrap; }
   .adaptive-view .interface[data-combat="true"] .approach-compact { display: block; color: var(--gold); white-space: nowrap; }
   .adaptive-view .interface[data-combat="true"] #perfect-count,
@@ -52,7 +52,7 @@
   .adaptive-view .interface[data-combat="true"] .storm-strip,
   .adaptive-view .interface[data-combat="true"] .target,
   .adaptive-view .interface[data-combat="true"] .rival-goal { display: none; }
-  .adaptive-view .interface[data-combat="true"] .daily-leader { display: block; margin: 3px 0 0; font-size: 10px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .adaptive-view .interface[data-combat="true"] .daily-leader { display: block; margin: 3px 0 0; font-size: 11px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
 
 @media (max-width: 639px), (max-aspect-ratio: 1/1), (max-height: 500px) {

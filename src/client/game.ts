@@ -212,7 +212,7 @@ class ShieldScene extends Phaser.Scene {
       }
       if (
         event.code !== "Space" ||
-        (target?.matches("button,input,textarea,select,option") && target.id !== "fire")
+        (target?.matches("button,input,textarea,select,option,summary,a[href],[contenteditable]") && target.id !== "fire")
       )
         return;
       event.preventDefault();
@@ -669,7 +669,7 @@ class ShieldScene extends Phaser.Scene {
         }
         this.audio.beam(m.firing ? 1 - m.mass / 100 : null, false);
       } else this.audio.stop();
-      if (this.phase === "playing") this.renderHUD();
+      if (this.phase === "playing" || this.phase === "breaking") this.renderHUD();
     }
     const frame = {
       run: this.run,

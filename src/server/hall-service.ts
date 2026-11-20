@@ -100,7 +100,7 @@ export class HallService {
         if(run.acceptedAt<=state.withdrawnAt)throw new Error('revoked-run');
         if(state.member&&state.member.demo!==run.demo)throw new Error('mode-mismatch');
         let member=state.member??{ref:randomUUID(),username:run.username,demo:run.demo,enrolledAt:this.now(),scoreRun:entry(run,name),comboRun:entry(run,name),days:{},certificate:null};
-        member=this.updateMember({...member,callsign:name??member.callsign},run);
+        member=this.updateMember({...member,callsign:callsign===undefined?member.callsign:name},run);
         if(dailyScoreKey&&!member.demo){
           const visible=parse<VerifiedHallRun>(await this.store.get(dailyScoreKey));
           if(visible&&visible.userId===run.userId&&visible.day===run.day&&visible.version===run.version&&!visible.demo){

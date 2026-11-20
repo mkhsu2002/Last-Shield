@@ -1,18 +1,19 @@
 {
   "private": true,
   "name": "last-shield",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "scripts": {
     "dev": "devvit playtest",
     "build": "vite build",
     "check": "tsc --noEmit -p tsconfig.client.json && tsc --noEmit -p tsconfig.server.json",
     "test": "node --test src/shared/*.test.ts src/server/*.test.ts src/client/*.test.ts",
-    "deploy": "npm run check && npm run build && devvit upload",
+    "deploy": "npm run qa:prepare && devvit upload",
     "login": "devvit login",
     "build:standalone": "vite build --config vite.standalone.config.ts",
     "balance": "node scripts/balance-sim.ts",
-    "preview:local": "vite preview --config vite.standalone.config.ts --host 0.0.0.0 --port 4173 --strictPort"
+    "preview:local": "vite preview --config vite.standalone.config.ts --host 0.0.0.0 --port 4173 --strictPort",
+    "qa:prepare": "npm run check && npm test && npm run build && npm run build:standalone"
   },
   "engines": {
     "node": ">=24.18.0"
@@ -30,5 +31,5 @@
     "typescript": "6.0.3",
     "vite": "8.3.7"
   },
-  "displayVersion": "v1.05"
+  "displayVersion": "v1.06"
 }
