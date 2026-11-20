@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { dailyFocus } from '../shared/daily-focus.ts';
-import { focusTargetCopy, focusResultCopy, focusRecordCopy } from './daily-focus-copy.ts';
+import { focusTargetCopy, focusResultCopy, focusRunRecordCopy, focusRecordCopy } from './daily-focus-copy.ts';
 import { renderCopy, translate } from './i18n.ts';
 import { RULES_VERSION } from '../shared/game-logic.ts';
 import { runLearningGoal } from './coaching.ts';
@@ -50,4 +50,12 @@ test('missing, wrong-day or old-rule progress leaves the current daily target in
  for(const value of [null,{...record,day:20261119},{...record,version:'old-rules'}]) {
   assert.deepEqual(focusRecordCopy(day,value),focusTargetCopy(day));
  }
+});
+
+test('a run achievement stays visible after denied storage without promoting a local run to verified',()=>{
+ const day=20261120,stats={bestCombo:25,perfect:24,cleared:25};
+ const verified=renderCopy(focusRunRecordCopy(day,stats,null,'verified'),'en');
+ assert.match(verified,/Verified run best: 25\/25/);assert.match(verified,/Daily goal complete/);
+ const local=renderCopy(focusRunRecordCopy(day,stats,null,'local'),'en');
+ assert.match(local,/Local run best: 25\/25/);assert.doesNotMatch(local,/Verified/);
 });

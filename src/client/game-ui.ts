@@ -71,7 +71,7 @@ export function mountGameUI(): void {
         <button id="challenge-invite" class="secondary" disabled>邀請朋友挑戰</button>
         <p id="challenge-invite-status" class="fineprint" role="status"></p><textarea id="challenge-invite-fallback" readonly rows="3" aria-label="挑戰碼與遊戲連結" hidden></textarea>
         <details id="challenge-entry"><summary>接受好友挑戰</summary>
-          <label for="challenge-code">好友挑戰碼</label><input id="challenge-code" type="text" maxlength="64" autocomplete="off" spellcheck="false">
+          <p class="fineprint">挑戰目標會以好友目前公開的本日最佳為準。</p><label for="challenge-code">好友挑戰碼</label><input id="challenge-code" type="text" maxlength="64" autocomplete="off" spellcheck="false">
           <button id="challenge-find" class="secondary">查找挑戰</button>
           <p id="challenge-status" class="fineprint" role="status" aria-live="polite"></p>
           <button id="challenge-accept" class="primary" hidden>接受挑戰</button><button id="challenge-today" class="secondary" hidden>開始今日守城</button>

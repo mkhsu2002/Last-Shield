@@ -32,3 +32,12 @@ export function focusRecordCopy(day:number,record:FocusRecord|null):string[] {
   }
   return copy;
 }
+
+/** Keep the observed run visible even when optional persistent storage is denied. */
+export function focusRunRecordCopy(day:number,stats:FocusStats,record:FocusRecord|null,source:'local'|'verified'):string[] {
+  const goal=dailyFocus(day), current=focusProgress(goal,stats).current;
+  const same=record?.day===day && record.version===RULES_VERSION && record.metric===goal.metric ? record : null;
+  return focusRecordCopy(day,{version:RULES_VERSION,day,metric:goal.metric,
+    local:source==='local'?Math.max(same?.local??0,current):same?.local??null,
+    verified:source==='verified'?Math.max(same?.verified??0,current):same?.verified??null});
+}

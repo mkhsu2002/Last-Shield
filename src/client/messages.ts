@@ -1,5 +1,8 @@
 // Source-language keys keep gameplay copy in one bilingual catalog.
 export const MESSAGES: Record<string, string> = {
+  "本局已驗分，但本機無法保留每日進度。": "Run verified. Daily progress could not be saved on this device.",
+  "本局進度仍可查看，但本機無法保留。": "This run’s progress is shown, but could not be saved on this device.",
+  "挑戰目標會以好友目前公開的本日最佳為準。": "The target follows your friend’s current public best for that day.",
   "你能超過我在 {0} UTC 的 {1} 分嗎？": "Can you beat my {1} points in the {0} UTC storm?",
   "示範目標進度，不記入個人每日成就。": "Demonstration progress; excluded from personal daily achievements.",
   "AI 示範，不儲存個人紀錄": "AI demonstration · Personal records unchanged",
@@ -103,7 +106,7 @@ export const MESSAGES: Record<string, string> = {
   "護盾 −{0}% · 中斷 {1} 連擊": "Shield −{0}% · {1} combo broken",
   "換日倒數 {0} 小時 {1} 分": "New storm in {0}h {1}m",
   "上次本機守城：{0} · {1} 分": "Last local defense: {0} · {1} points",
-  "本局目標進度，尚未提交驗分。": "This run’s goal progress; score not yet submitted for verification.",
+  "本局戰績尚未提交驗分。": "This run’s score has not been submitted for verification.",
   "本局目標進度已驗分。": "This run’s goal progress is verified.",
   "今天你會把超載留給哪一波？": "Which wave are you saving Overdrive for today?",
 

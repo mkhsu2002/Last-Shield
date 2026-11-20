@@ -39,7 +39,7 @@ import { dailyStorm, nextChallengeDay } from "../shared/daily-storm";
 import { scopedFocusStorage, readFocusRecord, storeFocusRecord } from "./focus-records";
 import { dailyStrategyQuestion } from "./daily-strategy";
 import { dailyFocus, focusProgress, nextResetMinutes } from "../shared/daily-focus";
-import { focusUnit, focusResultCopy, focusRecordCopy } from "./daily-focus-copy";
+import { focusUnit, focusResultCopy, focusRecordCopy, focusRunRecordCopy } from "./daily-focus-copy";
 
 type Phase =
   | "intro"
@@ -94,9 +94,9 @@ class ShieldScene extends Phaser.Scene {
     this.graphics = this.add.graphics().setScale(RENDER_SCALE);
     const hall = new HallController();
     this.community = new Community(() => { void this.startRun(); }, hall, result => {
-      if (!this.community.isDemonstration) storeFocusRecord(this.focusStorage, result, "verified");
-      text("result-milestone", this.community.isDemonstration ? focusResultCopy(result.day, result) : focusRecordCopy(result.day, readFocusRecord(this.focusStorage, result.day)));
-      text("result-goal-status", this.community.isDemonstration ? "示範目標進度，不記入個人每日成就。" : "本局目標進度已驗分。");
+      const focusSaved = !this.community.isDemonstration && storeFocusRecord(this.focusStorage, result, "verified");
+      text("result-milestone", this.community.isDemonstration ? focusResultCopy(result.day, result) : focusRunRecordCopy(result.day, result, readFocusRecord(this.focusStorage, result.day), "verified"));
+      text("result-goal-status", this.community.isDemonstration ? "示範目標進度，不記入個人每日成就。" : focusSaved ? "本局目標進度已驗分。" : "本局已驗分，但本機無法保留每日進度。");
     });
     try {
       this.storage = window.localStorage;
@@ -564,9 +564,9 @@ class ShieldScene extends Phaser.Scene {
     text("result-combo", String(this.run.bestCombo));
     text("result-cleared", String(this.run.cleared));
     const learning = runLearningGoal({ ...this.run, brokenCombo: this.run.longestBrokenCombo, breakWave: this.run.brokenComboWave });
-    if (!this.community.isDemonstration) storeFocusRecord(this.focusStorage, { ...this.run, version: RULES_VERSION, day: this.run.daySeed }, "local");
-    text("result-milestone", this.community.isDemonstration ? focusResultCopy(this.run.daySeed, this.run) : focusRecordCopy(this.run.daySeed, readFocusRecord(this.focusStorage, this.run.daySeed)));
-    text("result-goal-status", this.community.isDemonstration ? "示範目標進度，不記入個人每日成就。" : this.community.hasSession ? "本局目標進度，尚未提交驗分。" : "本機目標進度。");
+    const focusSaved = !this.community.isDemonstration && storeFocusRecord(this.focusStorage, { ...this.run, version: RULES_VERSION, day: this.run.daySeed }, "local");
+    text("result-milestone", this.community.isDemonstration ? focusResultCopy(this.run.daySeed, this.run) : focusRunRecordCopy(this.run.daySeed, this.run, readFocusRecord(this.focusStorage, this.run.daySeed), "local"));
+    text("result-goal-status", this.community.isDemonstration ? "示範目標進度，不記入個人每日成就。" : !focusSaved ? "本局進度仍可查看，但本機無法保留。" : this.community.hasSession ? "本局戰績尚未提交驗分。" : "本機目標進度。");
     text("result-overdrive", learning.summary);
     text("retry-hint", learning.action);
     text("result-storm", this.run.storm.title);

@@ -81,6 +81,7 @@ export class Community {
   get hasSession():boolean { return this.runId !== null; }
   async begin(practice:boolean):Promise<number> {
     ++this.runGeneration; this.busy=false;
+    ++this.challengeGeneration;this.receivedChallenge=null;element('challenge-accept').hidden=true;element('challenge-today').hidden=true;
     text('challenge-invite-status','');element('challenge-invite-fallback').hidden=true;
     element<HTMLTextAreaElement>('challenge-invite-fallback').value='';
     this.hall.begin();
@@ -228,13 +229,13 @@ export class Community {
     const code=buildChallengeCode(this.day,this.runId);if(!code)return;
     const generation=this.runGeneration;
     const score=Math.max(this.verifiedScore,this.latestBoard?.day===this.day?this.latestBoard.me?.score??0:0);
-    const message=renderCopy([`你能超過我在 ${this.day} UTC 的 ${score.toLocaleString('en-US')} 分嗎？`, '\n', '好友挑戰碼：', {literal:code}, '\n', {literal:this.postedUrl}]);
+    const message=renderCopy([`你能超過我在 ${this.day} UTC 的 ${score.toLocaleString('en-US')} 分嗎？`, '\n', '好友挑戰碼：', {literal:code}, '\n', '挑戰目標會以好友目前公開的本日最佳為準。', '\n', {literal:this.postedUrl}]);
     try {
       await navigator.clipboard.writeText(message);
-      if(generation!==this.runGeneration)return;
+      if(generation!==this.runGeneration||this.removed)return;
       text('challenge-invite-status','已複製挑戰碼與遊戲連結。朋友可在排行榜貼上挑戰碼，接受挑戰。');
     } catch {
-      if(generation!==this.runGeneration)return;
+      if(generation!==this.runGeneration||this.removed)return;
       const fallback=element<HTMLTextAreaElement>('challenge-invite-fallback');fallback.value=message;fallback.hidden=false;fallback.focus();fallback.select();
       text('challenge-invite-status','請複製下方挑戰碼與遊戲連結，再傳給朋友。');
     }
@@ -258,7 +259,8 @@ export class Community {
       const today=utcDaySeed(new Date());
       localizedText(element('challenge-status'),target.day===today?['好友目標：',{literal:`u/${target.username} · ${target.score.toLocaleString('en-US')}`},' · ',String(target.day),' UTC']:['這是過去的挑戰；可改玩今日風暴。', ' ',{literal:`u/${target.username} · ${target.score.toLocaleString('en-US')} · ${target.day} UTC`}]);
       text('challenge-accept',target.day===today?'接受挑戰':'開始今日守城');element('challenge-accept').hidden=false;
-    } catch {if(generation===this.challengeGeneration){text('challenge-status','找不到公開的挑戰戰績，可能已移除或過期。仍可挑戰今日風暴。');element('challenge-today').hidden=false;}}
+      element('challenge-accept').focus();
+    } catch {if(generation===this.challengeGeneration){text('challenge-status','找不到公開的挑戰戰績，可能已移除或過期。仍可挑戰今日風暴。');element('challenge-today').hidden=false;element('challenge-today').focus();}}
   }
   private acceptChallenge():void {
     const received=this.receivedChallenge;if(!received)return;
