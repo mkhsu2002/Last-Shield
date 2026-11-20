@@ -1,5 +1,7 @@
 # v1.01 Adaptive Sky Implementation Plan
 
+> 歷史階段註記（2026-11-20）：下文保留本地試玩當時範圍。MK 後續明確要求直接正式上線，原本不 push／merge／deploy 的限制已撤銷；後續狀態見 [正式發布記錄](../../v1-01-release-2026-11-20.md)。
+
 **Goal:** Local-only adaptive portrait battlefield and deeper meteor approach with unchanged deterministic gameplay.
 **Architecture:** Pure display projection shared by sprite, beam, effect and pointer layers; native responsive CSS and desktop side controls.
 **Tech Stack:** Existing Phaser, TypeScript, Vite.
