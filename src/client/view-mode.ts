@@ -19,6 +19,7 @@ export function refreshBattlefieldViewport(refreshScale:()=>void=()=>{}):void {
   if(compact&&active) {
     const arena=document.getElementById('battlefield')!.getBoundingClientRect();
     const frame=fitCombatCanvas(arena.width,arena.height);
+    SKY_TOP=frame.skyTop;
     for(const [property,value] of [['--combat-canvas-height',`${frame.height}px`],['--combat-canvas-top',`${frame.top}px`]]) {
       if(root.style.getPropertyValue(property)!==value){root.style.setProperty(property,value);resized=true;}
     }
@@ -32,7 +33,7 @@ export function refreshBattlefieldViewport(refreshScale:()=>void=()=>{}):void {
   if(!canvas||!hud||hud.hidden) return;
   const field=canvas.getBoundingClientRect();
   const overlay=hud.getBoundingClientRect();
-  if(compact&&active) { SKY_TOP=140;return; }
+  if(compact&&active) return;
   if(root.dataset.tightBattle==='true')root.dataset.tightBattle='false';
   const intersects=overlay.left<field.right&&overlay.right>field.left;
   SKY_TOP=intersects&&field.width>0 ? Math.max(140,(overlay.bottom+50-field.top)*540/field.width) : 140;

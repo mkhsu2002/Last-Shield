@@ -1,10 +1,12 @@
-/** Keep the complete approach, shield and lit city inside a dedicated arena.
- * Source rows outside this camera window contain only decorative sky/city. */
-export const ARENA_TOP = 96;
-export const ARENA_BOTTOM = 920;
+/** Prefer full width, adapting the camera's upper sky to the available height.
+ * Only exceptionally short arenas reduce the scale, preserving complete targets. */
+const MIN_CAMERA_SPAN = 500;
+const CITY_BOTTOM = 920;
 export function fitCombatCanvas(width:number,height:number) {
-  const canvasHeight=Math.max(1,Math.floor(Math.min(1080,width*2,height*1080/(ARENA_BOTTOM-ARENA_TOP))));
-  return {width:canvasHeight/2,height:canvasHeight,top:-ARENA_TOP*canvasHeight/1080};
+  const canvasWidth=Math.max(1,Math.min(width,height*540/MIN_CAMERA_SPAN));
+  const scale=canvasWidth/540;
+  const top=Math.min(0,height-CITY_BOTTOM*scale);
+  return {width:canvasWidth,height:canvasWidth*2,top,skyTop:Math.max(140,-top/scale+40)};
 }
 
 /** Floor compact labels so 999,999 never appears to have reached a million.
