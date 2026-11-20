@@ -2,6 +2,7 @@ import { localizedAttribute } from "./i18n";
 import * as Phaser from "phaser";
 import {
   DefenseRun,
+  comboMultiplier,
   volleySpecs,
   stormPhase,
   RULES_VERSION,
@@ -24,6 +25,7 @@ import {
   energyCopy,
 } from "./coaching";
 import { GAME_VERSION } from "./version";
+import { HallController } from "./hall";
 import { Community } from "./community";
 import { drawBattlefield, FIELD } from "./battlefield";
 import { SceneArt, preloadSceneArt } from "./scene-art";
@@ -78,7 +80,8 @@ class ShieldScene extends Phaser.Scene {
   create(): void {
     this.art = new SceneArt(this, RENDER_SCALE);
     this.graphics = this.add.graphics().setScale(RENDER_SCALE);
-    this.community = new Community(() => { void this.startRun(); });
+    const hall = new HallController();
+    this.community = new Community(() => { void this.startRun(); }, hall);
     try {
       this.storage = window.localStorage;
     } catch {
@@ -163,11 +166,12 @@ class ShieldScene extends Phaser.Scene {
     fire.addEventListener("pointercancel", fireRelease);
     fire.addEventListener("lostpointercapture", fireRelease);
     const keydown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      if (document.querySelector("dialog[open]") || target?.isContentEditable) return;
       if (event.code === "Escape" && !event.repeat) {
         if (this.phase === "playing") this.pauseRun();
         else if (this.phase === "paused") this.resumeRun();
       }
-      const target = event.target as HTMLElement;
       if (
         event.code === "KeyE" &&
         !event.repeat &&
@@ -179,7 +183,7 @@ class ShieldScene extends Phaser.Scene {
       }
       if (
         event.code !== "Space" ||
-        (target?.matches("button,textarea,select,option") && target.id !== "fire")
+        (target?.matches("button,input,textarea,select,option") && target.id !== "fire")
       )
         return;
       event.preventDefault();
@@ -624,7 +628,7 @@ class ShieldScene extends Phaser.Scene {
       (this.lastResolution === "impact" && this.feedbackMs > 0)
         ? "#ffad8e"
         : "#edf5ff";
-    text("combo", `連擊 ${run.combo}`);
+    text("combo", `連擊 ${run.combo} · ${comboMultiplier(run.combo, this.practiceMode)} 倍`);
     text("perfect-count", `完美擊破 ${run.perfect}`);
     text(
       "wave",

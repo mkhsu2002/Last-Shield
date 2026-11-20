@@ -6,7 +6,7 @@ import { localizedText, localizedValue, localizedAttribute } from './i18n';
 import { dailyStorm, type StormId } from '../shared/daily-storm';
 import { chooseRival, defaultRival, refreshRival, rivalStatus, nearbyEntries, type RivalTarget } from './rival';
 
-type Start = {contract:string;rules:string;day:number;storm:StormId;runId:string|null};
+type Start = {contract:string;rules:string;day:number;storm:StormId;runId:string|null;demo:boolean};
 async function request<T>(path:string, method='GET', body?:unknown):Promise<T> {
   const response=await fetch(`/api/community/${path}`,{
     method,headers:body?{'Content-Type':'application/json'}:undefined,
@@ -24,6 +24,8 @@ export class Community {
   private runId:string|null=null;
   private trace:TraceStep[]=[];
   private day=utcDaySeed(new Date());
+  private demo=false;
+  private runGeneration=0;
   private finished=false;
   private busy=false;
   private saved=false;
@@ -31,10 +33,11 @@ export class Community {
   private boardGeneration=0;
   private preview:string[]=[];
   private latestBoard:Board|null=null;
+  private boardUnavailable=false;
   private nextTarget:RivalTarget|null=null;
   private activeTarget:RivalTarget|null=null;
   private postedUrl=context?.postId?`https://www.reddit.com/comments/${context.postId.replace(/^t3_/,'')}`:'';
-  constructor(private readonly onChallenge:()=>void) {
+  constructor(private readonly onChallenge:()=>void, private readonly hall:{begin():void;accepted(runId:string,score:number,demo:boolean):void}) {
     element('intro-board').addEventListener('click',()=>void this.openBoard());
     element('result-board').addEventListener('click',()=>void this.openBoard());
     element('board-close').addEventListener('click',()=>element<HTMLDialogElement>('community-dialog').close());
@@ -58,27 +61,30 @@ export class Community {
     if(this.enabled) void this.refresh();
   }
   async begin(practice:boolean):Promise<number> {
+    ++this.runGeneration; this.busy=false;
+    this.hall.begin();
+    this.demo=!practice && element<HTMLInputElement>('demo-mode').checked;
     ++this.boardGeneration;
     this.runId=null; this.trace=[]; this.finished=false; this.saved=false; this.removed=false;
     this.day=utcDaySeed(new Date());
     if(!practice && !this.nextTarget && this.latestBoard?.day===this.day) this.nextTarget=defaultRival(this.latestBoard);
     if(this.enabled && !practice) {
       try {
-        const session=await request<Start>('start','POST');
-        this.day=session.day; this.runId=session.runId;
+        const session=await request<Start>('start','POST',{demo:this.demo});
+        this.day=session.day; this.runId=session.runId; this.demo=session.demo;
       } catch { /* Keep the complete local game available during a platform outage. */ }
-      if(this.nextTarget) {
+      {
         try {
           const board=await request<Board>(`board?day=${this.day}`);
-          this.nextTarget=refreshRival(this.nextTarget,board);
-          this.latestBoard=board;
-        } catch { this.nextTarget=null; this.latestBoard=null; }
+          if(this.nextTarget) this.nextTarget=refreshRival(this.nextTarget,board);
+          this.latestBoard=board; this.boardUnavailable=false; this.renderLeader();
+        } catch { this.nextTarget=null; this.latestBoard=null; this.boardUnavailable=true; }
       }
     }
-    if(practice) this.activeTarget=null;
+    if(practice || this.demo) this.activeTarget=null;
     else this.activeTarget=this.nextTarget??(this.latestBoard?.day===this.day?defaultRival(this.latestBoard):null);
     if(this.activeTarget?.day!==this.day || this.activeTarget.rules!==RULES_VERSION) this.activeTarget=null;
-    this.nextTarget=null;
+    this.nextTarget=null; this.renderLeader();
     this.controls(); return this.day;
   }
   record(step:TraceStep):void {
@@ -119,7 +125,7 @@ export class Community {
       const board=await request<Board>(`board?day=${this.day}`);
       if(generation!==this.boardGeneration) return;
       if(board.day!==this.day) throw new Error('version-mismatch');
-      this.latestBoard=board;
+      this.latestBoard=board; this.boardUnavailable=false; this.renderLeader();
       text('board-total',`今日 ${board.total} 位守城者`);
       text('board-status',board.total?'同分並列；每日僅計最高分。':'今天還沒有人上榜，來留下第一道防線。');
       text('board-me',board.me?[`你的排名：第 ${board.me.rank} 名 · ${board.me.score} 分`,board.gap?` · 再多 ${board.gap} 分超越上一名`:'']:context?.userId?
@@ -150,29 +156,42 @@ export class Community {
           element(id).append(item);
         }
       }
-    } catch { if(generation===this.boardGeneration) text('board-status','暫時無法讀取排名，請稍後重新整理。你的本機戰績仍保留。'); }
+    } catch { if(generation===this.boardGeneration) { this.boardUnavailable=true; this.renderLeader(); text('board-status','暫時無法讀取排名，請稍後重新整理。你的本機戰績仍保留。'); } }
   }
   private async submit():Promise<void> {
     if(this.busy||!this.finished||!this.runId||this.saved)return;
+    const runId=this.runId,day=this.day,demo=this.demo,generation=this.runGeneration;
     this.busy=true;this.controls();text('board-status','正在提交戰績…');
     try {
-      const response=await request<{result:RunResult}>('submit','POST',{runId:this.runId,trace:this.trace});
-      if(response.result.day!==this.day || response.result.version!==RULES_VERSION || response.result.storm!==dailyStorm(this.day).id) throw new Error('version-mismatch');
+      const response=await request<{result:RunResult}>('submit','POST',{runId,trace:this.trace});
+      if(generation!==this.runGeneration)return;
+      if(response.result.day!==day || response.result.version!==RULES_VERSION || response.result.storm!==dailyStorm(this.day).id) throw new Error('version-mismatch');
       this.saved=true;
+      this.hall.accepted(runId,response.result.score,demo);
       await this.refresh();
-      text('board-status',`已提交 ${response.result.score} 分，今日僅保留你的最高分。`);
+      if(generation!==this.runGeneration)return;
+      text('board-status',demo?'示範戰績已確認，可選擇加入英雄館；不列入每日榜或競爭排名。':`已提交 ${response.result.score} 分，今日僅保留你的最高分。`);
     } catch(error) {
+      if(generation!==this.runGeneration)return;
       const code=error instanceof Error?error.message:'';
       text('board-status',/expired-session|invalid-session/.test(code)?'本局提交期限已過，仍保留本機戰績。再玩一局即可參加社群榜。':
         /invalid-trace|invalid-duration|unfinished-run|trace-too-large/.test(code)?'本局無法列入社群排名，仍可保留本機戰績並繼續遊玩。':
         '戰績尚未確認儲存，請按提交重試。重試不會重複計分。');
-    } finally {this.busy=false;this.controls();}
+    } finally {if(generation===this.runGeneration){this.busy=false;this.controls();}}
   }
   private async remove():Promise<void> {
-    if(this.busy)return;this.busy=true;this.controls();
-    try { await request(`entry?day=${this.day}`,'DELETE');this.removed=true;await this.refresh();text('board-status','已移除你在這一天的社群排名。本機紀錄仍保留。'); }
-    catch {text('board-status','暫時無法移除排名，請稍後重試。');}
-    finally {this.busy=false;this.controls();}
+    if(this.busy)return;
+    const day=this.day,generation=this.runGeneration;
+    this.busy=true;this.controls();
+    try {
+      await request(`entry?day=${day}`,'DELETE');
+      if(generation!==this.runGeneration)return;
+      this.removed=true;await this.refresh();
+      if(generation!==this.runGeneration)return;
+      text('board-status','已移除你在這一天的社群排名。本機紀錄仍保留。');
+    } catch {
+      if(generation===this.runGeneration)text('board-status','暫時無法移除排名，請稍後重試。');
+    } finally {if(generation===this.runGeneration){this.busy=false;this.controls();}}
   }
   private async copyDiscussion():Promise<void> {
     const copy=this.renderDiscussionPreview();
@@ -187,6 +206,10 @@ export class Community {
     const preview=element<HTMLTextAreaElement>('discussion-preview');
     localizedValue(preview,[...this.preview,...(note?['\n\n',{literal:note}]:[]),...(this.postedUrl?['\n',{literal:this.postedUrl}]:[])]);
     return preview.value;
+  }
+  private renderLeader():void {
+    const leader=this.latestBoard?.day===this.day?this.latestBoard.top[0]:null;
+    localizedText(element('daily-leader'),this.demo?'AI 示範 · 不列入競爭榜':!this.enabled?'今日最高：請到 Reddit 查看':this.boardUnavailable?'今日最高：暫時無法讀取':leader?['今日最高：', {literal:`u/${leader.username} · ${leader.score.toLocaleString('en-US')}`},this.latestBoard!.leaderTies>1?` · ${this.latestBoard!.leaderTies} 位並列`:'']:'今日最高：尚無紀錄');
   }
   rivalCopy(score:number):string {
     const target=this.activeTarget,status=rivalStatus(target,this.day,RULES_VERSION,score);

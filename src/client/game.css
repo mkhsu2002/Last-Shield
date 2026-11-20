@@ -1148,3 +1148,22 @@ button:disabled { opacity: .5; cursor: default; }
   .launch-guide { margin-bottom: 8px; }
   .daily-card .fineprint { font-size: 11px; margin-top: 3px; }
 }
+
+/* Hero records remain readable at narrow mobile widths. */
+.daily-leader { color: #acd7e0; font-size: 11px; margin: 3px 0; overflow-wrap: anywhere; }
+.score-block strong { font-variant-numeric: tabular-nums; font-size: clamp(25px, 6vw, 42px); }
+.demo-options { margin: 8px 0; font-size: 12px; color: #b2c7ce; }
+.demo-options summary { cursor: pointer; padding: 8px 0; }
+.demo-options label, .hall-consent-label { display: flex; align-items: flex-start; gap: 10px; line-height: 1.6; }
+.demo-options input, .hall-consent-label input { flex: 0 0 auto; width: 20px; height: 20px; margin-top: 3px; }
+.hall-tabs { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px; }
+.hall-tabs button { min-height: 44px; padding: 10px 4px; color: #b5d3dc; background: #142b3b; border: 1px solid #45616c; border-radius: 8px; cursor: pointer; }
+.hall-tabs [aria-selected="true"] { color: #101e2c; background: #edce84; border-color: #edce84; }
+.hall-tabs button:focus-visible { outline: 2px solid #8be5ed; outline-offset: 2px; }
+.hall-membership, .hall-certificate, #hall-records section { border-top: 1px solid #3d535e; margin-top: 20px; padding-top: 12px; }
+.hall-dialog input[type="text"] { box-sizing: border-box; width: 100%; padding: 12px; margin: 6px 0 12px; color: #e3edf2; background: #0e202e; border: 1px solid #647c87; border-radius: 8px; font: inherit; }
+.hall-dialog .leaderboard li { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; overflow-wrap: anywhere; }
+.hall-dialog .leaderboard li small { color: #edce84; }
+.hall-certificate-preview { width: 100%; height: auto; border-radius: 8px; margin: 12px 0; }
+.hall-dialog a.secondary { display: block; text-decoration: none; text-align: center; }
+.hall-dialog [hidden] { display: none !important; }

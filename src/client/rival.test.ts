@@ -5,7 +5,7 @@ import { COMMUNITY_CONTRACT } from '../shared/community.ts';
 import { RULES_VERSION } from '../shared/game-logic.ts';
 import { chooseRival, defaultRival, refreshRival, rivalStatus, nearbyEntries } from './rival.ts';
 
-const board:Board={contract:COMMUNITY_CONTRACT,rules:RULES_VERSION,storm:'relay',day:20261119,total:3,
+const board:Board={contract:COMMUNITY_CONTRACT,rules:RULES_VERSION,storm:'relay',day:20261119,leaderTies:1,total:3,
   top:[{username:'Leader',score:900,rank:1,isYou:false},{username:'Near',score:500,rank:2,isYou:false},{username:'Me',score:300,rank:3,isYou:true}],
   nearby:[],me:{username:'Me',score:300,rank:3,isYou:true},gap:201};
 test('choosing an actual rival records a day-scoped snapshot without claiming a rank',()=>{
