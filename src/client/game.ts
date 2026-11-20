@@ -10,6 +10,7 @@ import {
   meteorGeometry,
   contactInMs,
   PERFECT_WINDOW_MS,
+  SHIELD_RADIUS,
 } from "../shared/game-logic";
 import type { RunEvent } from "../shared/game-logic";
 import { SynthAudio } from "./audio";
@@ -26,7 +27,9 @@ import {
 import { GAME_VERSION } from "./version";
 import { Community } from "./community";
 import { drawBattlefield, FIELD } from "./battlefield";
+import { SceneArt, preloadSceneArt } from "./scene-art";
 import type { BattleEffect } from "./battlefield";
+import { PracticeReview, practiceDelta } from "./practice";
 
 type Phase =
   | "intro"
@@ -34,11 +37,15 @@ type Phase =
   | "paused"
   | "breaking"
   | "results"
+  | "practice-review"
   | "trained";
 const KIND_NAMES = { normal: "普通核心", fast: "快速核心", heavy: "重型核心" };
 mountGameUI();
+// Supersample rendering without changing the FIELD coordinate system used by input/physics.
+const RENDER_SCALE = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
 
 class ShieldScene extends Phaser.Scene {
+  private art!: SceneArt;
   private graphics!: Phaser.GameObjects.Graphics;
   private community!: Community;
   private starting = false;
@@ -53,6 +60,7 @@ class ShieldScene extends Phaser.Scene {
   private effects: BattleEffect[] = [];
   private overdriveFlash = 0;
   private practiceMode = false;
+  private practiceReview: PracticeReview | null = null;
   private feedbackMs = 0;
   private breakMs = 0;
   private previousTarget = -1;
@@ -66,8 +74,11 @@ class ShieldScene extends Phaser.Scene {
     super("shield");
   }
 
+  preload(): void { preloadSceneArt(this); }
+
   create(): void {
-    this.graphics = this.add.graphics();
+    this.art = new SceneArt(this, RENDER_SCALE);
+    this.graphics = this.add.graphics().setScale(RENDER_SCALE);
     this.community = new Community();
     try {
       this.storage = window.localStorage;
@@ -82,6 +93,12 @@ class ShieldScene extends Phaser.Scene {
       this.startRun(true)
     );
     element("practice-start").addEventListener("click", () => this.startRun());
+    element("practice-continue").addEventListener("click", () => {
+      if (this.phase !== "practice-review" || !this.practiceReview?.canContinue(this.inputs.size > 0)) return;
+      this.releaseAll();
+      this.setPhase("trained");
+      element("practice-again").focus({ preventScroll: true });
+    });
     const special = element("overdrive");
     special.addEventListener("pointerdown", (event) => {
       if (event.button !== 0) return;
@@ -174,9 +191,12 @@ class ShieldScene extends Phaser.Scene {
     const keyup = (event: KeyboardEvent) => {
       if (event.code === "Space") this.release("keyboard");
     };
-    const blur = () => this.pauseRun();
+    const blur = () => {
+      if (this.phase === "practice-review") this.releaseAll();
+      else this.pauseRun();
+    };
     const visibility = () => {
-      if (document.hidden) this.pauseRun();
+      if (document.hidden) blur();
     };
     const cancel = () => this.releaseAll();
     window.addEventListener("keydown", keydown);
@@ -221,18 +241,20 @@ class ShieldScene extends Phaser.Scene {
     this.phase = phase;
     document.querySelector<HTMLElement>(".interface")!.dataset.state = phase;
     const live =
-      phase === "playing" || phase === "paused" || phase === "breaking";
+      phase === "playing" || phase === "paused" || phase === "breaking" || phase === "practice-review";
     for (const [id, visible] of [
       ["intro", phase === "intro"],
       ["results", phase === "results"],
       ["paused", phase === "paused"],
       ["trained", phase === "trained"],
+      ["practice-review", phase === "practice-review"],
       ["run-hud", live],
       ["action", live],
       ["pause", phase === "playing"],
     ] as const)
       show(id, visible);
-    element<HTMLButtonElement>("fire").disabled = phase !== "playing";
+    // Keep pointer capture alive until the practice player's original press is released.
+    element<HTMLButtonElement>("fire").disabled = phase !== "playing" && phase !== "practice-review";
     element<HTMLButtonElement>("overdrive").disabled =
       phase !== "playing" ||
       this.practiceMode ||
@@ -259,10 +281,12 @@ class ShieldScene extends Phaser.Scene {
     this.effects = [];
     this.overdriveFlash = 0;
     this.practiceMode = practice;
+    this.practiceReview = null;
     this.feedbackMs = 0;
     this.passedBest = false;
     this.cityMilestone = 0;
     this.lastResolution = "clear";
+    localizedAttribute(element("fire"), "aria-label", "按住發射光束");
     text("feedback", "");
     text("share-status", "");
     show("share-box", false);
@@ -294,10 +318,15 @@ class ShieldScene extends Phaser.Scene {
       this.handleEvent(event);
   }
   private release(source: string): void {
-    this.inputs.delete(source);
+    const released = this.inputs.delete(source);
     if (!this.inputs.size) {
       this.audio.stop();
-      if (this.phase === "playing") this.stepRun(0, false);
+      if (this.phase === "playing") {
+        this.stepRun(0, false);
+        if (released && this.practiceMode && this.run.meteor) {
+          this.reviewPractice("放開得太早了。", "金色時按下只是起手。保持按住，直到核心爆裂，再放開迎擊下一顆。");
+        }
+      }
     }
   }
   private releaseAll(): void {
@@ -321,6 +350,22 @@ class ShieldScene extends Phaser.Scene {
     text("feedback", message);
     this.feedbackMs = 1200;
     document.querySelector<HTMLElement>(".interface")!.dataset.tone = tone;
+  }
+
+  private reviewPractice(title: string, explanation: string): void {
+    this.audio.stop();
+    this.stepRun(0, false);
+    this.practiceReview = new PracticeReview();
+    this.renderHUD();
+    this.setPhase("practice-review");
+    text("practice-title", title);
+    text("practice-explanation", explanation);
+    text("practice-review-title", title);
+    text("practice-review-explanation", explanation);
+    text("fire-label", "練習已結束，請放開");
+    localizedAttribute(element("fire"), "aria-label", "練習已結束，請放開");
+    text("fire-detail", "看完回饋，再按繼續");
+    element<HTMLButtonElement>("practice-continue").disabled = true;
   }
 
   private handleEvent(event: RunEvent): void {
@@ -351,11 +396,11 @@ class ShieldScene extends Phaser.Scene {
       this.audio.overdrive();
       this.overdriveFlash = 1;
       this.feedback(`超載震爆！清除 ${event.cleared} 顆隕石`, "perfect");
-      if (!this.reducedMotion) this.cameras.main.shake(180, 0.006);
+      if (!this.reducedMotion) this.cameras.main.shake(280, 0.008);
     } else if (event.type === "clear") {
       this.lastResolution = "clear";
       const perfect = event.grade === "perfect";
-      if (!event.overdrive) this.audio.clear(perfect, false);
+      if (!event.overdrive) this.audio.clear(perfect, false, Math.max(-0.9, Math.min(0.9, event.point.x / SHIELD_RADIUS * 0.9)));
       const label = event.overdrive
         ? "超載擊碎"
         : perfect
@@ -378,25 +423,19 @@ class ShieldScene extends Phaser.Scene {
         );
       }
       if (this.practiceMode) {
-        this.releaseAll();
-        this.setPhase("trained");
-        text("practice-title", perfect ? "這就是完美起手。" : "起手太早了。");
-        text(
-          "practice-explanation",
+        this.reviewPractice(
+          perfect ? "這就是完美起手。" : event.grade === "early" ? "起手太早了。" : "成功攔截，再試著抓住金色。",
           perfect
-            ? "金色按住後，核心會被定住，3 倍光束擊碎後得到 1 格能量。鎖定後不用重按；擊碎再放開，接續下一顆的金色接力。失手仍能等下一輪補救。"
-            : "提早按住仍能攻擊，也可等下一輪金色放開重按，進度保留。再練一次：等圓環與下方指標變成金色，再按住直到核心擊碎。"
+            ? "你抓住了金色，並持續按住直到擊碎。完美擊破會得到 1 格超載能量。放開後，再迎擊下一顆。"
+            : "這次擊碎了核心，但沒有抓住金色。下次等圓環變金色再按住，直到核心擊碎。"
         );
       }
     } else if (event.type === "impact") {
       this.lastResolution = "impact";
-      this.audio.impact(event.damage);
+      this.audio.impact(event.damage, Math.max(-0.9, Math.min(0.9, event.point.x / SHIELD_RADIUS * 0.9)));
       if (this.practiceMode) {
-        this.releaseAll();
-        this.setPhase("trained");
-        text("practice-title", "要按到核心擊碎。");
-        text(
-          "practice-explanation",
+        this.reviewPractice(
+          this.run.mistakes.released > 0 ? "放開得太早了。" : "這次沒有擋下核心。",
           "金色時按下只是起手。保持按住，直到核心爆裂，再放開迎擊下一顆。"
         );
       }
@@ -525,9 +564,19 @@ class ShieldScene extends Phaser.Scene {
     const dt = Math.max(0, Math.min(100, delta));
     if (this.phase !== "paused") {
       for (const fx of this.effects)
-        fx.life = Math.max(0, fx.life - dt / (fx.impact ? 1000 : 600));
+        fx.life = Math.max(0, fx.life - dt / (fx.overdrive ? 1000 : fx.impact ? 1000 : 600));
       this.effects = this.effects.filter((fx) => fx.life > 0);
-      this.overdriveFlash = Math.max(0, this.overdriveFlash - dt / 650);
+      this.overdriveFlash = Math.max(0, this.overdriveFlash - dt / 1000);
+    }
+    if (this.phase === "practice-review" && this.practiceReview) {
+      this.practiceReview.advance(dt);
+      const holding = this.inputs.size > 0;
+      element<HTMLButtonElement>("practice-continue").disabled = !this.practiceReview.canContinue(holding);
+      if (!holding) {
+        element<HTMLButtonElement>("fire").disabled = true;
+        text("fire-label", "本次練習已完成");
+        localizedAttribute(element("fire"), "aria-label", "本次練習已完成");
+      }
     }
     if (this.phase === "breaking") {
       this.breakMs -= dt;
@@ -537,14 +586,10 @@ class ShieldScene extends Phaser.Scene {
       this.feedbackMs = Math.max(0, this.feedbackMs - dt);
       if (!this.feedbackMs) text("feedback", "");
       const target = this.run.meteor;
-      const practiceDelta =
-        this.practiceMode && target?.grade === null && this.inputs.size === 0
-          ? Math.min(
-              dt,
-              Math.max(0, target.chargeStartMs - this.run.waveElapsedMs)
-            )
-          : dt;
-      for (const event of this.stepRun(practiceDelta, this.inputs.size > 0))
+      const stepMs = this.practiceMode && target
+        ? practiceDelta(dt, this.run.waveElapsedMs, target.chargeStartMs, this.inputs.size > 0, target.grade !== null)
+        : dt;
+      for (const event of this.stepRun(stepMs, this.inputs.size > 0))
         this.handleEvent(event);
       const m = this.run.meteor;
       if (m && this.phase === "playing") {
@@ -560,9 +605,9 @@ class ShieldScene extends Phaser.Scene {
         }
         this.audio.beam(m.firing ? 1 - m.mass / 100 : null, false);
       } else this.audio.stop();
-      this.renderHUD();
+      if (this.phase === "playing") this.renderHUD();
     }
-    drawBattlefield(this.graphics, {
+    const frame = {
       run: this.run,
       live: this.phase !== "intro",
       reducedMotion: this.reducedMotion,
@@ -573,7 +618,11 @@ class ShieldScene extends Phaser.Scene {
           : 0,
       overdriveFlash: this.overdriveFlash,
       time,
-    });
+      hasCity: this.art.hasCity,
+      texturedMeteors: this.art.texturedMeteors,
+    };
+    this.art.draw(frame);
+    drawBattlefield(this.graphics, frame);
   }
 
   private renderHUD(): void {
@@ -778,8 +827,8 @@ new Phaser.Game({
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: FIELD.width,
-    height: FIELD.height,
+    width: Math.round(FIELD.width * RENDER_SCALE),
+    height: Math.round(FIELD.height * RENDER_SCALE),
   },
   scene: [ShieldScene],
   render: { antialias: true },

@@ -1,4 +1,6 @@
-> 最新工作（2026-11-16）：已發布的 v0.49 手機控制改善與正式驗證見 [v0.49 紀錄](v0-49-mobile-controls-2026-11-16.md)，對外展示同步見 [展示紀錄](presentation-review-2026-11-16.md)。
+> 最新工作（2026-11-19，America/Vancouver）：依 MK 人工驗收回饋改善練習停留與超載藍白雷射／爆裂音效；私人 Devvit **0.50.0.3** 已安裝到 staging 並完成原生實玩，等待 MK 再驗收。正式 Reddit 仍是 0.49.0，YouTube／Devpost 未更新。最新驗證見 [練習與超載修訂](v0-50-practice-overdrive-2026-11-19.md)；接手與 audit 歷史見 [首輪候選紀錄](v0-50-staging-2026-11-19.md)。
+
+> 正式發布基準（2026-11-16 的歷史證據）：v0.49 手機控制改善與正式驗證見 [v0.49 紀錄](v0-49-mobile-controls-2026-11-16.md)，對外展示同步見 [展示紀錄](presentation-review-2026-11-16.md)。本輪只重新查核 Reddit 安裝版本，不將舊 Vercel／Devpost 證據日期更新為今天。
 
 > 狀態補記（2026-11-16）：v0.48／0.48.2 已於 Reddit 核准公開並完整安裝到正式與 staging，main 已合併；目前即時狀態見 [發布紀錄](community-release-2026-11-15.md)。下方 v0.47 段落為歷史紀錄，不能作為新 API 的 live 驗證。
 
@@ -72,7 +74,7 @@ Vercel 專案 `last-shield` 連接 GitHub `main`，正式站為 [last-shield.ver
 
 即時狀態見 [Reddit 發布紀錄](reddit-release-2026-11-14.md) 與 [Devpost 提交包](devpost-submission-2026-11-14.md)。[v0.46 驗證紀錄](v0-46-verification-2026-11-14.md)、[v0.45](v0-45-verification-2026-11-14.md)、[v0.44](v0-44-verification-2026-11-14.md)、[v0.43](v0-43-verification-2026-11-14.md)、[v0.42](v0-42-verification-2026-11-14.md)、[v0.41](v0-41-verification-2026-11-14.md)、[v0.40](survival-verification-2026-11-14.md) 與 [v0.3](mvp-verification-2026-11-14.md) 均是歷史版本，不代表新規則。
 
-正式獨立站為靜態前端；Reddit 0.47.1 的 client、server 與 permissions 已完整部署安裝，公開貼文已由未登入玩家實際啟動。未加入 schema／migration、外部 API、排程或 provider secret。沒有跨裝置帳號、全球排行榜、伺服器驗證分數、城市共建或追蹤分析。真實 iOS／Android 與人工試聽仍待確認；瀏覽器音效輸出／波形通過不代表主觀聽感已驗收。Phaser 套件大小提示見 v0.47 建置紀錄；Devvit CLI 間接依賴 advisories 為前版紀錄，本輪未重新稽核。
+以下為 v0.47 歷史範圍，已被 v0.48 社群功能取代，不能作為目前架構說明：當時 Reddit 0.47.1 的 client、server 與 permissions 已完整部署安裝，公開貼文已由未登入玩家實際啟動；當時尚無社群榜或伺服器重算分數。現在的排行榜、重播與 audit 架構見下方 Community development；v0.50 CLI 間接依賴 audit 見最新私人候選紀錄。獨立站仍為靜態前端；真實 iOS／Android 與人工主觀試聽仍待確認。
 
 ## 版本規則
 

@@ -1,5 +1,14 @@
 // Source-language keys keep gameplay copy in one bilingual catalog.
 export const MESSAGES: Record<string, string> = {
+  "繼續": "Continue",
+  "練習已結束，請放開": "Practice complete · Release now",
+  "看完回饋，再按繼續": "Read your result, then continue",
+  "本次練習已完成": "Practice complete",
+  "成功攔截，再試著抓住金色。": "Meteor cleared. Try catching the gold next.",
+  "你抓住了金色，並持續按住直到擊碎。完美擊破會得到 1 格超載能量。放開後，再迎擊下一顆。": "You caught the gold and held until the meteor shattered. A perfect clear earns 1 Overdrive charge. Release before the next meteor.",
+  "這次擊碎了核心，但沒有抓住金色。下次等圓環變金色再按住，直到核心擊碎。": "You shattered the core, but missed the gold. Next time, wait for the gold ring, then hold until it shatters.",
+  "放開得太早了。": "You released too soon.",
+  "這次沒有擋下核心。": "The core got through this time.",
   "介面語言": "Interface language",
   "{0} +{1}": "{0} +{1}",
   "新巴比倫 · 城市守衛": "NEO BABYLON · CITY DEFENSE",

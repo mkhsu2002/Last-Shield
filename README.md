@@ -21,6 +21,8 @@ Open the [playable Reddit post](https://www.reddit.com/r/last_shield_dev/comment
 - **Your community's daily board.** Submit your best run to see the top ten, the players near you, and the score needed to pass the next defender. Tied scores share a rank.
 - **Strategies worth discussing.** Preview your result, add an optional note about your run, and bring the conversation back to the Reddit post.
 
+New in **v0.50**: a painted Neo Babylon skyline, textured meteors, blue-white Overdrive beams, and stereo impact effects bring the defense to life. Timing practice gives you room to see your result and choose when to continue.
+
 New in **v0.49**: a clearer battlefield and a bottom fire control keep the defense within reach on smaller screens. Overdrive stays compact as your charge changes.
 
 New in **v0.48**: community rankings, scores recalculated from gameplay before ranking, and score-and-strategy sharing. You can play without logging in; joining the board is your choice.
@@ -82,7 +84,7 @@ Last Shield is set in the original Neo Babylon world. Rights to the original wor
 
 ## Current release
 
-Game version **v0.49**, Devvit package **0.49.0**. The public test post is free to play, with no app purchase, invite list, or game usage limit. It will remain available for hackathon judging through **December 16, 2026 at 6:00 p.m. PST**. Reddit may apply its own security checks.
+Game version **v0.50**, Devvit package **0.50.0**. The public test post is free to play, with no app purchase, invite list, or game usage limit. It will remain available for hackathon judging through **December 16, 2026 at 6:00 p.m. PST**. Reddit may apply its own security checks.
 
 
 For development and release information, see the [development notes](docs/development.md).

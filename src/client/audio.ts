@@ -1,16 +1,44 @@
 /** Shared scheduling functions also allow an OfflineAudioContext to render the actual mix. */
 export function createMasterBus(ctx: BaseAudioContext): GainNode {
   const master = ctx.createGain();
-  master.gain.value = 0.85;
+  master.gain.value = 0.78;
   const limiter = ctx.createDynamicsCompressor();
-  limiter.threshold.value = -9;
-  limiter.knee.value = 5;
-  limiter.ratio.value = 10;
+  limiter.threshold.value = -12;
+  limiter.knee.value = 6;
+  limiter.ratio.value = 12;
   limiter.attack.value = 0.003;
   limiter.release.value = 0.2;
   master.connect(limiter);
   limiter.connect(ctx.destination);
   return master;
+}
+
+function clampPan(pan: number): number {
+  return Number.isFinite(pan) ? Math.max(-1, Math.min(1, pan)) : 0;
+}
+
+/** Equal-power stereo movement on transient detail; keep deep bass centered. */
+function spatial(
+  ctx: BaseAudioContext,
+  output: AudioNode,
+  pan: number,
+  schedule: (bus: AudioNode) => AudioScheduledSourceNode[]
+): AudioScheduledSourceNode[] {
+  const panner = ctx.createStereoPanner();
+  panner.pan.value = clampPan(pan);
+  panner.connect(output);
+  const sources = schedule(panner);
+  let remaining = sources.length;
+  for (const source of sources) {
+    source.addEventListener(
+      "ended",
+      () => {
+        if (--remaining === 0) panner.disconnect();
+      },
+      { once: true }
+    );
+  }
+  return sources;
 }
 
 function tone(
@@ -20,11 +48,12 @@ function tone(
   to: number,
   duration: number,
   volume: number,
-  type: OscillatorType = "sine"
+  type: OscillatorType = "sine",
+  delay = 0
 ): OscillatorNode {
   const osc = ctx.createOscillator(),
     gain = ctx.createGain(),
-    now = ctx.currentTime;
+    now = ctx.currentTime + delay;
   osc.type = type;
   osc.frequency.setValueAtTime(from, now);
   osc.frequency.exponentialRampToValueAtTime(to, now + duration);
@@ -33,7 +62,7 @@ function tone(
   gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
   osc.connect(gain);
   gain.connect(output);
-  osc.start();
+  osc.start(now);
   osc.stop(now + duration + 0.03);
   osc.addEventListener(
     "ended",
@@ -96,16 +125,43 @@ function noise(
 export function scheduleImpact(
   ctx: BaseAudioContext,
   output: AudioNode,
-  damage = 34
+  damage = 34,
+  pan = 0
 ): AudioScheduledSourceNode[] {
   const weight = 0.55 + (Math.min(34, Math.max(1, damage)) / 34) * 0.45;
   return [
-    tone(ctx, output, 155, 38, 0.72, 0.34 * weight),
-    tone(ctx, output, 310, 80, 0.24, 0.17 * weight, "triangle"),
-    tone(ctx, output, 680, 140, 0.11, 0.13 * weight, "sawtooth"),
-    noise(ctx, output, 0.82, 0.32 * weight, 430, "lowpass"),
-    noise(ctx, output, 0.35, 0.3 * weight, 1250, "bandpass"),
-    noise(ctx, output, 0.46, 0.14 * weight, 2100, "highpass"),
+    // A sub sweep gives weight on headphones; its tuned upper partial gives
+    // small speakers a bass cue rather than just adding more low-end gain.
+    tone(ctx, output, 76, 43, 0.58, 0.31 * weight),
+    tone(ctx, output, 152, 86, 0.37, 0.17 * weight, "triangle"),
+    ...spatial(ctx, output, pan, (side) => [
+      tone(ctx, side, 457, 130, 0.16, 0.14 * weight, "triangle"),
+      noise(ctx, side, 0.43, 0.3 * weight, 1300, "bandpass"),
+      noise(ctx, side, 0.17, 0.16 * weight, 2850, "highpass"),
+    ]),
+    ...spatial(ctx, output, -pan * 0.64, (side) => [
+      tone(ctx, side, 295, 146, 0.42, 0.055 * weight, "triangle", 0.032),
+      noise(ctx, side, 0.57, 0.21 * weight, 510, "bandpass"),
+    ]),
+  ];
+}
+
+/** A single broad blast with centered weight and stereo laser/debris detail. */
+export function scheduleOverdrive(ctx: BaseAudioContext, output: AudioNode): AudioScheduledSourceNode[] {
+  return [
+    tone(ctx, output, 91, 34, 0.85, 0.38),
+    tone(ctx, output, 182, 68, 0.52, 0.19, "triangle"),
+    noise(ctx, output, 0.85, 0.32, 450, "lowpass"),
+    ...spatial(ctx, output, -0.8, side => [
+      tone(ctx, side, 2400, 160, 0.48, 0.12, "sawtooth"),
+      noise(ctx, side, 0.32, 0.22, 1900, "bandpass"),
+      tone(ctx, side, 1250, 250, 0.65, 0.055, "triangle", 0.045),
+    ]),
+    ...spatial(ctx, output, 0.8, side => [
+      tone(ctx, side, 2800, 210, 0.55, 0.12, "sawtooth", 0.018),
+      noise(ctx, side, 0.52, 0.24, 2600, "bandpass"),
+      tone(ctx, side, 1610, 330, 0.78, 0.055, "triangle", 0.075),
+    ]),
   ];
 }
 
@@ -136,6 +192,17 @@ export class SynthAudio {
     }
   }
   private track(nodes: AudioScheduledSourceNode[]): void {
+    // Bound overlapping transients even when events are spammed.
+    while (this.voices.size + nodes.length > 32 && this.voices.size) {
+      const oldest = this.voices.values().next().value;
+      if (!oldest) break;
+      this.voices.delete(oldest);
+      try {
+        oldest.stop();
+      } catch {
+        /* Already ended. */
+      }
+    }
     for (const node of nodes) {
       this.voices.add(node);
       node.addEventListener("ended", () => this.voices.delete(node), {
@@ -154,53 +221,87 @@ export class SynthAudio {
       return;
     this.track([tone(this.ctx, this.master, from, to, duration, volume, type)]);
   }
-  clear(perfect: boolean, overdrive: boolean): void {
+  clear(perfect: boolean, overdrive: boolean, pan = 0): void {
     this.stop();
-    this.tone(
-      perfect ? 660 : 440,
-      overdrive ? 1760 : 1120,
-      0.24,
-      0.075,
-      "triangle"
-    );
-    if (perfect) this.tone(990, 1480, 0.32, 0.04);
-  }
-  overdrive(): void {
-    this.tone(120, 750, 0.35, 0.14, "triangle");
-    this.tone(240, 1500, 0.25, 0.07);
-  }
-  impact(damage = 34): void {
-    this.stop();
-    if (this.muted || !this.ctx || !this.master || this.ctx.state !== "running")
-      return;
-    this.track(scheduleImpact(this.ctx, this.master, damage));
-  }
-  shatter(destroyed = false): void {
     if (this.muted || !this.ctx || !this.master || this.ctx.state !== "running")
       return;
     const ctx = this.ctx,
       output = this.master;
     this.track([
-      noise(
-        ctx,
-        output,
-        destroyed ? 1.3 : 0.4,
-        destroyed ? 0.26 : 0.1,
-        1100,
-        "bandpass"
-      ),
-      noise(
-        ctx,
-        output,
-        destroyed ? 1.6 : 0.4,
-        destroyed ? 0.22 : 0.08,
-        350,
-        "lowpass"
-      ),
+      ...spatial(ctx, output, pan, (side) => [
+        tone(
+          ctx,
+          side,
+          perfect ? 660 : 440,
+          overdrive ? 1760 : 1120,
+          0.24,
+          0.075,
+          "triangle"
+        ),
+        noise(ctx, side, 0.22, 0.12, 1900, "bandpass"),
+      ]),
+      ...spatial(ctx, output, -pan * 0.47, (side) => [
+        tone(ctx, side, 2210, 530, 0.23, 0.032, "triangle", 0.028),
+      ]),
+      tone(ctx, output, 126, 72, 0.26, perfect ? 0.16 : 0.1, "triangle"),
+      ...(perfect ? [tone(ctx, output, 990, 1480, 0.32, 0.04)] : []),
     ]);
-    for (let i = 0; i < 4; i++)
-      this.tone(1700 + i * 410, 350 + i * 90, 0.5 + i * 0.14, 0.018);
-    if (destroyed) this.tone(95, 25, 1.3, 0.26, "triangle");
+  }
+  overdrive(): void {
+    this.stop();
+    if (this.muted || !this.ctx || !this.master || this.ctx.state !== "running") return;
+    this.track(scheduleOverdrive(this.ctx, this.master));
+  }
+  impact(damage = 34, pan = 0): void {
+    this.stop();
+    if (this.muted || !this.ctx || !this.master || this.ctx.state !== "running")
+      return;
+    this.track(scheduleImpact(this.ctx, this.master, damage, pan));
+  }
+  shatter(destroyed = false, pan = 0): void {
+    if (this.muted || !this.ctx || !this.master || this.ctx.state !== "running")
+      return;
+    const ctx = this.ctx;
+    const output = this.master;
+    const origin = clampPan(pan);
+    const fragments = [
+      ...spatial(ctx, output, origin, (side) => [
+        noise(
+          ctx,
+          side,
+          destroyed ? 0.9 : 0.33,
+          destroyed ? 0.22 : 0.1,
+          1610,
+          "bandpass"
+        ),
+        tone(ctx, side, 2600, 470, 0.23, 0.046, "triangle"),
+      ]),
+    ];
+    for (let i = 0; i < 4; i++) {
+      const spread = (i % 2 === 0 ? -1 : 1) * (0.52 + 0.1 * i);
+      fragments.push(
+        ...spatial(ctx, output, origin * 0.35 + spread, (side) => [
+          tone(
+            ctx,
+            side,
+            1660 + i * 430,
+            330 + i * 95,
+            0.33 + i * 0.08,
+            0.038,
+            "triangle",
+            0.022 * i
+          ),
+        ])
+      );
+    }
+    if (destroyed) {
+      fragments.push(
+        tone(ctx, output, 103, 41, 0.85, 0.26),
+        tone(ctx, output, 206, 82, 0.52, 0.13, "triangle"),
+        noise(ctx, output, 0.65, 0.15, 470, "lowpass")
+      );
+    }
+    this.track(fragments);
   }
   beam(progress: number | null, overdrive: boolean): void {
     const ctx = this.ctx;
@@ -218,7 +319,12 @@ export class SynthAudio {
       this.oscillator = ctx.createOscillator();
       this.gain = ctx.createGain();
       this.oscillator.type = "triangle";
-      this.gain.gain.value = overdrive ? 0.055 : 0.03;
+      this.gain.gain.value = 0;
+      this.gain.gain.setTargetAtTime(
+        overdrive ? 0.055 : 0.03,
+        ctx.currentTime,
+        0.018
+      );
       this.oscillator.connect(this.gain);
       this.gain.connect(this.master);
       this.oscillator.start();

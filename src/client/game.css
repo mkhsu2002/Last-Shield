@@ -935,6 +935,18 @@ textarea {
 .practice-panel .primary {
   margin-top: 10px;
 }
+.practice-review {
+  padding: 14px 16px;
+  border: 1px solid #78e5f266;
+  border-radius: 16px;
+  background: #102235f5;
+  color: #edf5ff;
+}
+.practice-review h2 { margin: 0 0 8px; font-size: 20px; line-height: 1.25; }
+.practice-review p { margin: 0 0 12px; line-height: 1.5; font-size: 14px; }
+.practice-review .primary { width: 100%; min-height: 44px; }
+.interface[data-state="practice-review"] .action > :not(#fire):not(#practice-review) { display: none; }
+.interface[data-state="practice-review"] #fire { cursor: default; }
 @media (max-height: 700px) {
   .timing-labels {
     font-size: 9px;
