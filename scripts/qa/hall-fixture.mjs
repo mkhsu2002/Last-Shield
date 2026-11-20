@@ -2,6 +2,7 @@
  * Run only against the local Vite server through the authorized browser lane. */
 export async function runHallFixture(page,devURL='http://127.0.0.1:4177') {
   if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(devURL))throw Error('Local fixture only');
+  if(await page.evaluate(()=>document.visibilityState)!=='visible')throw Error('Activate the visible canonical lane tab before QA');
   await page.goto(`${devURL}/scripts/qa/harness.html`);
   return page.evaluate(async()=>{
     const {mountGameUI}=await import('/src/client/game-ui.ts');

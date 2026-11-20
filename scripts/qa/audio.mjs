@@ -1,6 +1,7 @@
 /** Offline rendering of production scheduling functions, no device-listening claim. */
 export async function runAudioQA(page,devURL='http://127.0.0.1:4177') {
   if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(devURL))throw Error('Local QA only');
+  if(await page.evaluate(()=>document.visibilityState)!=='visible')throw Error('Activate the visible canonical lane tab before QA');
   await page.goto(devURL+'/scripts/qa/harness.html');
   return page.evaluate(async()=>{
     const {createMasterBus,scheduleImpact,scheduleOverdrive}=await import('/src/client/audio.ts');
