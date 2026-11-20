@@ -15,37 +15,25 @@ export function refreshBattlefieldViewport(refreshScale:()=>void=()=>{}):void {
   const live=ui.dataset.combat==='true';
   const wasCompact=root.dataset.compactBattle==='true';
   let resized=false;
-  if(compact&&live) {
-    if(ui.dataset.state==='playing'||ui.dataset.state==='breaking'||!wasCompact) {
-      const bounds=root.getBoundingClientRect(),controls=action.getBoundingClientRect();
-      const frame=fitCombatCanvas(bounds.width,bounds.height,controls.top-bounds.top);
-      const value=`${frame.height}px`;
-      if(root.style.getPropertyValue('--combat-canvas-height')!==value) {
-        root.style.setProperty('--combat-canvas-height',value);resized=true;
-      }
+  const active=live&&ui.dataset.state!=='paused';
+  if(compact&&active) {
+    const arena=document.getElementById('battlefield')!.getBoundingClientRect();
+    const frame=fitCombatCanvas(arena.width,arena.height);
+    for(const [property,value] of [['--combat-canvas-height',`${frame.height}px`],['--combat-canvas-top',`${frame.top}px`]]) {
+      if(root.style.getPropertyValue(property)!==value){root.style.setProperty(property,value);resized=true;}
     }
     if(!wasCompact){root.dataset.compactBattle='true';resized=true;}
   } else if(wasCompact) {
-    root.dataset.compactBattle='false';root.style.removeProperty('--combat-canvas-height');resized=true;
+    root.dataset.compactBattle='false';root.style.removeProperty('--combat-canvas-height');root.style.removeProperty('--combat-canvas-top');resized=true;
   }
   if(resized) refreshScale();
   const canvas=document.querySelector('canvas');
   const hud=document.getElementById('run-hud');
   if(!canvas||!hud||hud.hidden) return;
   const field=canvas.getBoundingClientRect();
-  let overlay=hud.getBoundingClientRect();
-  const shieldTop=field.top+568/1080*field.height;
-  if(compact&&live) {
-    const gap=shieldTop-overlay.bottom;
-    const tight=root.dataset.tightBattle==='true';
-    if(!tight&&gap<40){root.dataset.tightBattle='true';overlay=hud.getBoundingClientRect();}
-    else if(tight&&gap>90){
-      root.dataset.tightBattle='false';overlay=hud.getBoundingClientRect();
-      // Restore details only if the expanded HUD itself has enough clearance.
-      // Large text can otherwise toggle between layouts on consecutive frames.
-      if(shieldTop-overlay.bottom<60){root.dataset.tightBattle='true';overlay=hud.getBoundingClientRect();}
-    }
-  } else if(root.dataset.tightBattle==='true') root.dataset.tightBattle='false';
+  const overlay=hud.getBoundingClientRect();
+  if(compact&&active) { SKY_TOP=140;return; }
+  if(root.dataset.tightBattle==='true')root.dataset.tightBattle='false';
   const intersects=overlay.left<field.right&&overlay.right>field.left;
   SKY_TOP=intersects&&field.width>0 ? Math.max(140,(overlay.bottom+50-field.top)*540/field.width) : 140;
 }

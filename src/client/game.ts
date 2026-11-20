@@ -43,6 +43,7 @@ import { focusUnit, focusResultCopy, focusRecordCopy, focusRunRecordCopy } from 
 import { CLASSIC_VIEW, SKY_TOP, refreshBattlefieldViewport } from "./view-mode";
 import "./adaptive-view.css";
 import "./mobile-combat.css";
+import "./mobile-menus.css";
 import { compactHudScore } from "./combat-layout";
 import { projectBattlePoint } from "./battlefield-view";
 

@@ -1,4 +1,4 @@
-# Last Shield v1.03
+# Last Shield v1.04
 
 **A daily meteor defense game built around Reddit rivals and lasting records.**
 
@@ -54,7 +54,7 @@ An impact resets the combo. Partly melting a meteor reduces its impact damage. H
 
 ## A taller sky on every screen
 
-The battlefield keeps its proportions as the window changes. On phones, meteors enter below the status display and approach the shield from the upper sky. Wider screens place status and controls beside the city, leaving the flight path clear. Compact phone controls keep the full shield and city above the buttons. Pause for full run details; compact scores use K and M, while pause, results and rankings show the exact score.
+The battlefield keeps its proportions as the window changes. On phones, meteors enter below the status display and approach the shield from the upper sky. Wider screens place status and controls beside the city, leaving the flight path clear. On phones, status, battlefield and controls occupy separate rows, keeping the meteor approach, full shield and lit city clear. Menus scroll beneath the header, with play and practice before the daily details. Pause for full run details; compact scores use K and M, while pause, results and rankings show the exact score.
 
 ## Gameplay recording (v1.0)
 
@@ -79,7 +79,7 @@ Install [Last Shield](https://developers.reddit.com/apps/last-shield), then choo
 
 ## Development
 
-Built with Devvit Web, TypeScript, Phaser, Vite, Hono, Web Audio and Reddit Redis. The client and server share deterministic game rules; submission retries are idempotent. See [development notes](docs/development.md) and the [v1.03 release record](docs/v1-03-mobile-combat-2026-11-20.md).
+Built with Devvit Web, TypeScript, Phaser, Vite, Hono, Web Audio and Reddit Redis. The client and server share deterministic game rules; submission retries are idempotent. See [development notes](docs/development.md) and the [v1.04 release record](docs/v1-04-separated-mobile-layout-2026-11-20.md).
 
 [Source](https://github.com/mkhsu2002/Last-Shield) · [App listing](https://developers.reddit.com/apps/last-shield) · [Community](https://www.reddit.com/r/last_shield_dev/)
 

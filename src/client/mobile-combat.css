@@ -1,3 +1,6 @@
+.interface { isolation: isolate; }
+#battlefield { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+#battlefield canvas { pointer-events: auto; }
 .score-short, .approach-compact, .overdrive-charge { display: none; }
 .pause-run-details { margin: 12px 0; padding: 12px; border: 1px solid var(--line); border-radius: 12px; }
 .pause-run-details h3 { margin: 0 0 8px; font-size: 15px; color: var(--cyan); }
@@ -9,7 +12,7 @@
   .adaptive-view #game-container[data-compact-battle="true"] { width: min(100vw, 620px); }
   .adaptive-view #game-container[data-compact-battle="true"] #canvas-host {
     left: 50%;
-    top: 0;
+    top: var(--combat-canvas-top);
     height: var(--combat-canvas-height);
     width: calc(var(--combat-canvas-height) / 2);
     transform: translateX(-50%);
@@ -100,3 +103,21 @@
   .adaptive-view .interface[data-combat="true"] #cue { font-size: 12px; }
 }
 .adaptive-view #game-container[data-tight-battle="true"] .interface[data-combat="true"] .stats-row { display: none; }
+
+@media (max-width: 639px), (max-aspect-ratio: 1/1) {
+  .adaptive-view .interface[data-combat="true"]:not([data-state="paused"]) {
+    display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 6px;
+  }
+  .adaptive-view .interface[data-combat="true"]:not([data-state="paused"]) .topbar { grid-row: 1; }
+  .adaptive-view .interface[data-combat="true"]:not([data-state="paused"]) .run-hud { grid-row: 2; margin: 0; }
+  .adaptive-view .interface[data-combat="true"]:not([data-state="paused"]) #battlefield {
+    position: relative; inset: auto; grid-row: 3; min-height: 0; overflow: hidden;
+    border-radius: 10px; background: radial-gradient(ellipse at center, #123149, #071525);
+  }
+  .adaptive-view .interface[data-combat="true"]:not([data-state="paused"]) .action {
+    position: relative; inset: auto; grid-row: 4; min-height: 0;
+  }
+  .adaptive-view #game-container[data-compact-battle="true"] #canvas-host { mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent); }
+  .adaptive-view .interface[data-state="practice-review"] .action { max-height: min(260px, 50dvh); }
+  .adaptive-view .interface[data-state="paused"] #battlefield { visibility: hidden; }
+}
