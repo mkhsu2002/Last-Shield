@@ -9,6 +9,7 @@ Catch the gold, hold your beam, and defend Neo Babylon against an escalating met
 Open the [playable Reddit post](https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/) and choose **Start defending**. The game runs inside Reddit; no external game website is required.
 
 - [Watch v0.50 Reddit gameplay](https://www.youtube.com/watch?v=DLHAouzPwTI)
+- [Watch K’s 1,272,630-point AI run — upcoming Citizen challenge preview](https://www.youtube.com/watch?v=7jT7e-c_XqU)
 - [View the Last Shield hackathon project](https://devpost.com/software/last-shield)
 - [Devvit app listing](https://developers.reddit.com/apps/last-shield)
 - [Public test community](https://www.reddit.com/r/last_shield_dev/)
@@ -57,7 +58,7 @@ Try **Practice perfect timing** before starting the daily challenge. Practice sl
 
 ## Candidate development
 
-Formal delivery remains on hold. The candidate passed the latest internal four-axis quality review at 9.0/10 per axis; this is not a claim of measured human retention or a competition result. [Current quality work and unverified items](docs/v0-52-quality-round-2-2026-11-20.md).
+The [million-point challenge preview](https://www.youtube.com/watch?v=7jT7e-c_XqU) is public as a development teaser. Citizen cards and the new Hall are coming with the candidate update; the current public game remains v0.50. Final competition delivery remains on hold. The candidate passed the latest internal four-axis quality review at 9.0/10 per axis; this is not a claim of measured human retention or a competition result. [Current quality work and unverified items](docs/v0-52-quality-round-2-2026-11-20.md).
 
 The active v0.52 candidate combines rotating daily storms and rival challenges with combo score multipliers, a daily leader HUD, daily champion history, score and combo Top 100 collections, and optional long-term Neo Babylon Citizen certificates. This is development status; the public release below remains v0.50 until full deployment is verified. [Implementation and release checklist](docs/superpowers/plans/2026-11-19-v0-52-heroes.md).
 
