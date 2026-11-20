@@ -63,6 +63,8 @@ In the candidate, consecutive clears earn 1× / 2× / 5× / 10× / 25× / 50× p
 
 Hall enrollment is separate from daily score submission and requires explicit agreement. Names and compact best records persist while enrolled; withdrawal removes the display and invalidates the certificate. A verified finished run **strictly above 1,000,000** earns eligibility. Certificates retain their original ID and issue time as a higher-scoring run updates their achievement. Known AI demonstration runs are labeled and excluded from competitive boards. The Hall is scoped to the current Reddit installation and season. Historical records start when enabled; no past winners are invented.
 
+The candidate also adds a branded social preview card for the public Reddit post and the standalone website. Private staging links remain private and cannot provide the same external preview. [Sharing setup and verification](docs/social-sharing-2026-11-19.md).
+
 ## Scores and privacy
 
 Your daily best and language choice are saved on your device when storage is available. The game remains playable without storage or a Reddit login.

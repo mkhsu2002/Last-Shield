@@ -114,3 +114,7 @@ The project uses TypeScript, Devvit Web, Phaser, Vite, Hono, and Web Audio. Game
 ## Community development
 
 The default playtest target is the private `r/last_shield_stage`, separate from the public judging post in `r/last_shield_dev`. Do not playtest over the judging installation. The v0.52 candidate uses `community-3` and `survival-8`, with score multipliers and an installation-local Hero Hall. All client/server routes must deploy together. Public v0.50 remains on its original contract until the candidate release is verified. The server recalculates scores from gameplay inputs, which prevents arbitrary score submissions but does not establish that a human performed the inputs. No external database, new scheduled job, or comment-as-user permission is required.
+
+## Social preview images (v0.52 candidate)
+
+`src/server/share-card.ts` uploads the versioned public card through Reddit media, caches its i.redd.it URL and updates only the selected managed post’s shareImageUrl. The moderator menu checks the current account and posts/all permissions. New post creation includes the image; existing posts require the menu action once. `permissions.media` is enabled; client/server/config and the image must ship together. Standalone OG/Twitter metadata lives in index.html. Private staging does not support external unfurls; see [sharing verification](social-sharing-2026-11-19.md). Existing formal post activation is pending, not a completed external-state change.

@@ -25,6 +25,13 @@
         "location": "subreddit",
         "forUserType": "moderator",
         "endpoint": "/internal/menu/create-post"
+      },
+      {
+        "label": "Update Last Shield share image",
+        "description": "Refresh the social preview image for this game post",
+        "location": "post",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/update-share-card"
       }
     ]
   },
@@ -37,7 +44,8 @@
     "reddit": true,
     "http": {
       "enable": false
-    }
+    },
+    "media": true
   },
   "dev": {
     "subreddit": "last_shield_stage"
