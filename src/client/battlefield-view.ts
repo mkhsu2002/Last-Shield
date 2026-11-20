@@ -14,7 +14,8 @@ export function projectBattlePoint<T extends { x:number; y:number }>(point:T, sk
   const progress=Math.min(1,Math.max(0,(distance-near)/(METEOR_SPAWN_RADIUS-near)));
   const blend=progress*progress*(3-2*progress);
   const spawnX=Math.cos(angle)*200;
-  const spawnY=skyTop-DISPLAY_CENTER_Y+Math.abs(Math.cos(angle))*45;
+  const safeTop=Math.min(skyTop,DISPLAY_CENTER_Y-SHIELD_RADIUS-25-64);
+  const spawnY=safeTop-DISPLAY_CENTER_Y+Math.abs(Math.cos(angle))*45;
   return {...point,
     x:point.x+(spawnX-Math.cos(angle)*METEOR_SPAWN_RADIUS)*blend,
     y:point.y+(spawnY-Math.sin(angle)*METEOR_SPAWN_RADIUS)*blend,

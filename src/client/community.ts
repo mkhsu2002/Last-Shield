@@ -283,10 +283,11 @@ export class Community {
     localizedValue(preview,[...this.preview,...(code?['\n','好友挑戰碼：',{literal:code}]:[]),...(note?['\n\n',{literal:note}]:[]),...(this.postedUrl?['\n',{literal:this.postedUrl}]:[])]);
     return preview.value;
   }
-  private renderLeader():void {
+  leaderCopy():Parameters<typeof localizedText>[1] {
     const leader=this.latestBoard?.day===this.day?this.latestBoard.top[0]:null;
-    localizedText(element('daily-leader'),this.demo?'AI 示範 · 不列入競爭榜':!this.enabled?'今日最高：請到 Reddit 查看':this.boardUnavailable?'今日最高：暫時無法讀取':leader?['今日最高：', {literal:`u/${leader.username} · ${leader.score.toLocaleString('en-US')}`},this.latestBoard!.leaderTies>1?` · ${this.latestBoard!.leaderTies} 位並列`:'']:'今日最高：尚無紀錄');
+    return this.demo?'AI 示範 · 不列入競爭榜':!this.enabled?'今日最高：請到 Reddit 查看':this.boardUnavailable?'今日最高：暫時無法讀取':leader?['今日最高：', {literal:`u/${leader.username} · ${leader.score.toLocaleString('en-US')}`},this.latestBoard!.leaderTies>1?` · ${this.latestBoard!.leaderTies} 位並列`:'']:'今日最高：尚無紀錄';
   }
+  private renderLeader():void { localizedText(element('daily-leader'),this.leaderCopy()); }
   rivalCopy(score:number):string {
     const target=this.activeTarget,status=rivalStatus(target,this.day,RULES_VERSION,score);
     if(!target||!status)return '';
