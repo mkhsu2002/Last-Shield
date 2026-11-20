@@ -1,8 +1,9 @@
+import type { CertificateImageService } from './certificate-image.ts';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { CommunityService, envelope, type Actor } from './community-service.ts';
 
-export function createCommunityRouter(community:CommunityService, actor:(includeUsername?:boolean)=>Promise<Actor>):Hono {
+export function createCommunityRouter(community:CommunityService, actor:(includeUsername?:boolean)=>Promise<Actor>,images?:CertificateImageService):Hono {
   const app=new Hono();
   app.use('/api/*', bodyLimit({maxSize:3*1024*1024,
     onError:c=>c.json({...envelope,error:'trace-too-large'},413)}));
@@ -11,10 +12,10 @@ export function createCommunityRouter(community:CommunityService, actor:(include
     const code=error.message;
     const allowed=['login-required','invalid-context','rate-limited','invalid-session','expired-session',
       'invalid-trace','invalid-duration','unfinished-run','invalid-day','retry-submit','invalid-request',
-      'consent-required','invalid-callsign','invalid-certificate','certificate-unavailable','revoked-run','mode-mismatch'];
+      'consent-required','invalid-callsign','invalid-certificate','certificate-unavailable','revoked-run','mode-mismatch','invalid-image','image-processing','image-unavailable'];
     if(!allowed.includes(code)) console.error('Community storage unavailable');
     return c.json({...envelope,error:allowed.includes(code)?code:'unavailable'},
-      code==='login-required'?401:code==='rate-limited'?429:code==='certificate-unavailable'?404:allowed.includes(code)?400:503);
+      code==='login-required'?401:code==='rate-limited'?429:code==='certificate-unavailable'?404:code==='image-unavailable'?503:code==='image-processing'?429:allowed.includes(code)?400:503);
   });
   app.post('/api/community/start',async(c)=>{
     let body:Record<string,unknown>={};
@@ -53,6 +54,15 @@ export function createCommunityRouter(community:CommunityService, actor:(include
   app.delete('/api/community/hall',async(c)=>{
     const owner=await actor();if(!owner.userId)throw new Error('login-required');
     await community.hall.withdraw(owner.userId);return c.json({...envelope,removed:true});
+  });
+  app.post('/api/community/hall/certificate/image',async(c)=>{
+    let body:unknown;try{body=await c.req.json();}catch{throw new Error('invalid-request');}
+    if(!body||typeof body!=='object'||!('id' in body)||typeof body.id!=='string'||!('image' in body)||typeof body.image!=='string'||Object.keys(body).some(k=>!['id','image','publicImageConsent'].includes(k)))throw new Error('invalid-request');
+    if(!('publicImageConsent' in body)||body.publicImageConsent!==true)throw new Error('consent-required');
+    const owner=await actor();if(!owner.userId)throw new Error('login-required');
+    if(!images)throw new Error('image-unavailable');
+    const imageUrl=await images.exportImage(owner.userId,{id:body.id,image:body.image,publicImageConsent:true});
+    return c.json({...envelope,imageUrl});
   });
   app.get('/api/community/hall/certificate',async(c)=>{
     const certificate=await community.hall.certificate(c.req.query('id')??'');

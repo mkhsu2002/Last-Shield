@@ -48,3 +48,9 @@ test('AI demonstrations remain clearly labelled in share text and title', () => 
   assert.match(view.title, /AI demonstration/);
   assert.doesNotMatch(certificatePresentation(certificate, postUrl).text, /AI demonstration/);
 });
+
+test('certificate source names the exact Reddit game post without query or credentials',async()=>{
+ const {certificateSource}=await import('./certificate.ts');
+ assert.equal(certificateSource('https://www.reddit.com/comments/1xximge'),'reddit.com/comments/1xximge');
+ for(const value of ['https://evil.example/comments/1xximge','https://user:password@www.reddit.com/comments/1xximge','https://www.reddit.com/comments/1xximge?context=private','https://www.reddit.com/user/someone'])assert.equal(certificateSource(value),'');
+});

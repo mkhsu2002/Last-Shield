@@ -10,7 +10,7 @@ type Dependencies={
  read:(id:PostId)=>Promise<Styles>;
  write:(id:PostId,styles:Styles)=>Promise<unknown>;
 };
-function validImage(value:string):boolean {
+export function isRedditImageUrl(value:string):boolean {
  try{const url=new URL(value);return url.protocol==='https:'&&url.hostname==='i.redd.it'&&!url.username&&!url.password&&!url.port&&/^\/[a-zA-Z0-9_.-]+$/.test(url.pathname)&&!url.search&&!url.hash;}
  catch{return false;}
 }
@@ -19,9 +19,9 @@ export class ShareCardService {
  constructor(dependencies:Dependencies){this.dependencies=dependencies;}
  async imageUrl():Promise<string>{
   const cached=await this.dependencies.get(CACHE_KEY);
-  if(cached&&validImage(cached))return cached;
+  if(cached&&isRedditImageUrl(cached))return cached;
   const {mediaUrl}=await this.dependencies.upload({url:SHARE_CARD_SOURCE,type:'image'});
-  if(!validImage(mediaUrl))throw new Error('invalid-share-image');
+  if(!isRedditImageUrl(mediaUrl))throw new Error('invalid-share-image');
   await this.dependencies.set(CACHE_KEY,mediaUrl);return mediaUrl;
  }
  async update(id:PostId):Promise<string>{

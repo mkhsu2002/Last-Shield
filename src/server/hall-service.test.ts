@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { certificateImageKey } from './certificate-image.ts';
 import { HallService, type VerifiedHallRun } from './hall-service.ts';
 import { MemoryStore } from './community-test-store.ts';
 import { RULES_VERSION } from '../shared/game-logic.ts';
@@ -27,7 +28,8 @@ test('strict million threshold, idempotent certificate and known demo isolation'
 });
 test('withdrawal revokes certificate and old retries never resurrect public identity',async()=>{
  const {hall,advance,store}=setup();const saved=run();await hall.observe(saved,null);await hall.enroll(saved,'K');
- const cert=(await hall.list('t2_a')).me.certificate!;advance(1000);await hall.withdraw('t2_a');
+ const cert=(await hall.list('t2_a')).me.certificate!;await store.set(certificateImageKey(cert.id),JSON.stringify({url:'https://i.redd.it/Alice.png'}));advance(1000);await hall.withdraw('t2_a');
+ assert.equal(await store.get(certificateImageKey(cert.id)),'null');
  await hall.observe(saved,null);await assert.rejects(hall.enroll(saved,'K'),/revoked-run/);
  assert.equal(await hall.certificate(cert.id),null);assert.equal((await hall.list('t2_a')).million.length,0);
  assert.ok(![...store.values.values()].some(v=>v.includes('Alice')));

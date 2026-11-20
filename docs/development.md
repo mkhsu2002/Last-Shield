@@ -118,3 +118,11 @@ The default playtest target is the private `r/last_shield_stage`, separate from 
 ## Social preview images (v0.52 candidate)
 
 `src/server/share-card.ts` uploads the versioned public card through Reddit media, caches its i.redd.it URL and updates only the selected managed post’s shareImageUrl. The moderator menu checks the current account and posts/all permissions. New post creation includes the image; existing posts require the menu action once. `permissions.media` is enabled; client/server/config and the image must ship together. Standalone OG/Twitter metadata lives in index.html. Private staging does not support external unfurls; see [sharing verification](social-sharing-2026-11-19.md). Existing formal post activation is pending, not a completed external-state change.
+
+## Native certificate sharing and public image export
+
+Reddit iframe restrictions block Blob-anchor downloads and navigator.share. The candidate now uses the official showShareSheet/getShareData bridge with only a strict certificate ID; receiving clients query the existing certificate API. No signed request context or credential is shared.
+
+POST /api/community/hall/certificate/image accepts only id, rendered PNG and publicImageConsent:true. CertificateImageService binds the actor’s own active certificate, validates PNG size/dimensions, claims an idempotent upload under WATCH, and rechecks ownership/revision before saving the Reddit media URL. Same-image requests reuse the cache; changed image/language requests follow a 60-second cooldown. Agreement time and hash are stored with the URL; withdrawal erases this cache. media.upload provides no image-delete API, so the additional public-image agreement explains that exported copies can remain. Images are presentations; the server certificate lookup remains authoritative.
+
+The frontend and this endpoint must deploy together in the full Devvit package. Native share and public-image navigation still require candidate live testing before formal release. No new provider secret, external service or scheduler was added.

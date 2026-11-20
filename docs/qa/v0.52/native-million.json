@@ -1,0 +1,98 @@
+{
+  "checkedAt": "2026-11-20T15:50:40.495476+00:00",
+  "source": "native inputs in existing private Reddit post; no score/time/health manipulation",
+  "version": "0.52.0.2",
+  "username": "OwnDifference7782",
+  "demo": true,
+  "result": {
+    "version": "survival-8",
+    "day": 20261120,
+    "storm": "heavy",
+    "score": 1272630,
+    "perfect": 118,
+    "cleared": 173,
+    "bestCombo": 146,
+    "waveReached": 60,
+    "elapsedMs": 115167.49999999939,
+    "username": "OwnDifference7782",
+    "acceptedAt": 1795188765906,
+    "demo": true
+  },
+  "serverHTTP": 200,
+  "certificate": {
+    "id": "8080019d-e381-4899-82fc-ff89af9109ed",
+    "username": "OwnDifference7782",
+    "callsign": "K",
+    "score": 1272630,
+    "bestCombo": 146,
+    "day": 20261120,
+    "rules": "survival-8",
+    "demo": true,
+    "issuedAt": 1795188766428
+  },
+  "galleryCountAtIssue": 1,
+  "competitiveScoreEntries": 0,
+  "competitiveComboEntries": 0,
+  "capture": {
+    "source": "private r/last_shield_stage, 0.52.0.2, native inputs",
+    "recordedFrames": 2523,
+    "audioOffsetMs": 805,
+    "crop": {
+      "x": 358,
+      "y": 178,
+      "width": 724,
+      "height": 644
+    },
+    "files": [
+      {
+        "name": "last-shield-v052-stage-million-1x.mp4",
+        "bytes": 15494850,
+        "sha256": "bb451bf01599c8c244a9fe2313de1faaaf09fe6a09c87722a8231deb3bf591cb",
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 724,
+            "height": 644
+          },
+          {
+            "codec_name": "aac",
+            "sample_rate": "48000",
+            "channels": 2
+          }
+        ],
+        "format": {
+          "duration": "127.233333"
+        }
+      },
+      {
+        "name": "last-shield-v052-stage-million-3x.mp4",
+        "bytes": 7794848,
+        "sha256": "17ddc031789be5009a8f0af89d92c97ebfd1f7114fa21f4bf098d7e1840b8713",
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 724,
+            "height": 644
+          },
+          {
+            "codec_name": "aac",
+            "sample_rate": "48000",
+            "channels": 2
+          }
+        ],
+        "format": {
+          "duration": "42.400000"
+        }
+      }
+    ]
+  },
+  "speedAudioDifferenceRMSdB": -39.266306,
+  "filesRetainedLocally": ".codex-attachments/v0.52-staging/",
+  "publishedToYouTube": false,
+  "submittedToDevpost": false,
+  "formalRecordCreated": false
+}

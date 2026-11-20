@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
 import { createServer, getServerPort, reddit, redis, context, media } from '@devvit/web/server';
+import { CertificateImageService } from './certificate-image';
 import { CommunityService } from './community-service';
 import { createCommunityRouter } from './community-router';
 
@@ -21,10 +22,12 @@ async function canManagePosts(subredditName:string):Promise<boolean>{
   return moderators.some(user=>user.id===context.userId&&user.moderatorInfo.modPermissions.some(permission=>permission==='all'||permission==='posts'));
 }
 const app = new Hono();
-app.route('/', createCommunityRouter(new CommunityService(redis), async (includeUsername) => ({
+const community=new CommunityService(redis);
+const certificateImages=new CertificateImageService({store:redis,own:userId=>community.hall.ownCertificate(userId),userWatchKey:userId=>community.hall.userWatchKey(userId),upload:options=>media.upload(options)});
+app.route('/', createCommunityRouter(community, async (includeUsername) => ({
   userId: context.userId, postId: context.postId,
   username: includeUsername && context.userId ? await reddit.getCurrentUsername() : undefined,
-})));
+}),certificateImages));
 
 app.post('/internal/menu/create-post', async (c) => {
   try {

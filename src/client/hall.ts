@@ -1,9 +1,9 @@
-import { context } from '@devvit/web/client';
+import { context, showShareSheet, getShareData, navigateTo } from '@devvit/web/client';
 import { COMMUNITY_CONTRACT } from '../shared/community';
 import { RULES_VERSION } from '../shared/game-logic';
 import type { CitizenCertificate, DailyChampion, HeroEntry, HeroHall } from '../shared/heroes';
 import { certificatePresentation, renderCertificate } from './certificate';
-import { hallCanEnroll, mergeChampionHistory, mergeChampionPage, hallApiError, hallEnrollmentFailure, hallAchievementCopy } from './hall-markup';
+import { hallCanEnroll, mergeChampionHistory, mergeChampionPage, hallApiError, hallEnrollmentFailure, hallAchievementCopy, parseCitizenShareData, certificateImageUrl, hallCanExport } from './hall-markup';
 import { currentLanguage, localizeTree, localizedAttribute, localizedText, localizedValue } from './i18n';
 
 type Tab = 'champions' | 'scores' | 'combos' | 'million';
@@ -16,7 +16,7 @@ const dayLabel = (day: number) => String(day).replace(/^(\d{4})(\d{2})(\d{2})$/,
 async function request<T extends object>(path: string, method = 'GET', body?: unknown): Promise<T & Envelope> {
   const response = await fetch(`/api/community/${path}`, {
     method, headers: body ? { 'Content-Type': 'application/json' } : undefined,
-    body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(15_000),
+    body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(path === 'hall/certificate/image' ? 45_000 : 15_000),
   });
   const value: unknown = await response.json();
   if (!value || typeof value !== 'object') throw new Error('hall-unavailable');
@@ -41,6 +41,8 @@ export class HallController {
   private objectUrl: string | null = null;
   private certificate: CitizenCertificate | null = null;
   private shareFile: File | null = null;
+  private exportedImageUrl: string | null = null;
+  private imageExporting = false;
   private removed = false;
   private readonly championLoading = new Set<number>();
 
@@ -67,10 +69,16 @@ export class HallController {
     get('hall-verify').addEventListener('click', () => void this.verify());
     get('hall-share').addEventListener('click', () => void this.share());
     get('hall-copy').addEventListener('click', () => void this.copy());
+    get('hall-image-consent').addEventListener('change', () => this.controls());
+    get('hall-export').addEventListener('click', () => void this.exportImage());
+    get('hall-open-image').addEventListener('click', () => {
+      if (this.exportedImageUrl) navigateTo(this.exportedImageUrl);
+    });
     document.querySelectorAll('.language-select').forEach(select => select.addEventListener('change', () => {
       if (this.certificate) void this.prepareCertificate(this.certificate);
     }));
     this.controls();
+    if (this.enabled) void this.openSharedCertificate();
   }
   begin(): void { this.pendingRun = null; this.controls(); }
   accepted(runId: string, score: number, _demo: boolean): void {
@@ -91,6 +99,11 @@ export class HallController {
     get<HTMLButtonElement>('hall-verify').disabled = !this.enabled || this.busy;
     get<HTMLButtonElement>('hall-older').disabled = this.loading || this.busy;
     get('hall-older').hidden = this.tab !== 'champions' || this.hall?.historyCursor == null;
+    const ownId = this.hall?.me.enrolled ? this.hall.me.certificate?.id ?? null : null;
+    get('hall-image-options').hidden = !ownId || ownId !== this.certificate?.id;
+    get<HTMLButtonElement>('hall-export').disabled = !hallCanExport(this.enabled, ownId, this.certificate?.id ?? null,
+      get<HTMLInputElement>('hall-image-consent').checked, Boolean(this.shareFile), this.busy || this.imageExporting);
+    get('hall-open-image').hidden = !this.exportedImageUrl;
     say('hall-enroll', this.hall?.me.enrolled ? '更新我的英雄館展示' : '加入英雄館');
     say('hall-member-status', !this.enabled ? '英雄館請到 Reddit 遊戲貼文開啟；本頁仍可繼續遊玩。' : this.hall?.me.enrolled ? '你已加入英雄館，可更新呼號或移除自己的展示與證書。' : this.pendingRun ? '本局戰績已確認。勾選公開同意後，即可加入英雄館。' : this.removed ? '已移除展示與證書。完成並提交新的一局後，可重新選擇加入。' : '完成並提交一局戰績後，可選擇加入英雄館。');
   }
@@ -220,10 +233,14 @@ export class HallController {
   }
   private clearCertificate(): void {
     ++this.imageGeneration; this.certificate = null; this.shareFile = null;
+    this.exportedImageUrl = null; this.imageExporting = false;
+    get<HTMLInputElement>('hall-image-consent').checked = false;
+    get('hall-image-options').hidden = true;
+    get<HTMLButtonElement>('hall-export').disabled = true;
+    get('hall-open-image').hidden = true;
     if (this.objectUrl) URL.revokeObjectURL(this.objectUrl);
     this.objectUrl = null;
     get<HTMLImageElement>('hall-preview').removeAttribute('src'); get('hall-preview').hidden = true;
-    get<HTMLAnchorElement>('hall-download').removeAttribute('href'); get('hall-download').hidden = true;
     get<HTMLButtonElement>('hall-share').disabled = true; get<HTMLButtonElement>('hall-copy').disabled = true;
     get<HTMLTextAreaElement>('hall-copy-fallback').value = ''; get('hall-copy-fallback').hidden = true;
     say('hall-certificate-status', '');
@@ -246,28 +263,70 @@ export class HallController {
     say('hall-certificate-status', '正在準備證書圖片…');
     try {
       const presentation = certificatePresentation(cert, this.postUrl);
-      const blob = await renderCertificate(cert, currentLanguage());
+      const blob = await renderCertificate(cert, currentLanguage(), this.postUrl);
       if (generation !== this.imageGeneration) return;
       this.certificate = cert; this.objectUrl = URL.createObjectURL(blob);
       this.shareFile = new File([blob], presentation.filename, { type: 'image/png' });
       get<HTMLInputElement>('hall-certificate-id').value = cert.id;
       const preview = get<HTMLImageElement>('hall-preview'); preview.src = this.objectUrl; preview.hidden = false;
-      const download = get<HTMLAnchorElement>('hall-download'); download.href = this.objectUrl; download.download = presentation.filename; download.hidden = false;
       get<HTMLButtonElement>('hall-share').disabled = false; get<HTMLButtonElement>('hall-copy').disabled = false;
+      this.controls();
       say('hall-certificate-status', cert.demo ? '有效證書 · AI 示範' : '有效的新巴比倫公民證書');
     } catch { if (generation === this.imageGeneration) say('hall-certificate-status', '暫時無法產生證書圖片，請重新查驗。'); }
   }
+  private async openSharedCertificate(): Promise<void> {
+    let id: string | null = null;
+    try { id = parseCitizenShareData(getShareData()); } catch { return; }
+    if (!id) return;
+    await this.open();
+    get<HTMLInputElement>('hall-certificate-id').value = id;
+    await this.verify();
+  }
   private async share(): Promise<void> {
-    if (!this.certificate || !this.shareFile) return;
+    if (!this.enabled || !this.certificate || !this.shareFile) return;
     const presentation = certificatePresentation(this.certificate, this.postUrl);
+    const generation = this.imageGeneration;
     try {
-      // File is already rendered so the native share call retains the click activation.
-      if (navigator.share && navigator.canShare?.({ files: [this.shareFile] })) {
-        await navigator.share({ title: presentation.title, text: presentation.text, files: [this.shareFile] });
-      } else { say('hall-certificate-status', '可下載證書圖片，或複製證書與貼文連結後自行分享。'); }
+      await showShareSheet({ title: presentation.title, text: presentation.text,
+        data: JSON.stringify({ kind: 'citizen', id: this.certificate.id }) });
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') return;
-      say('hall-certificate-status', '可下載證書圖片，或複製證書與貼文連結後自行分享。');
+      if (generation !== this.imageGeneration || (error instanceof Error && error.name === 'AbortError')) return;
+      say('hall-certificate-status', '暫時無法開啟分享，可複製證書與貼文連結後自行分享。');
+    }
+  }
+  private async exportImage(): Promise<void> {
+    const cert = this.certificate;
+    const file = this.shareFile;
+    const ownId = this.hall?.me.enrolled ? this.hall.me.certificate?.id ?? null : null;
+    if (!cert || !file || !hallCanExport(this.enabled, ownId, cert.id, get<HTMLInputElement>('hall-image-consent').checked,
+      true, this.busy || this.imageExporting)) return;
+    const generation = this.imageGeneration;
+    this.imageExporting = true; this.controls(); say('hall-certificate-status', '正在建立公開證書圖片…');
+    try {
+      const image = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => typeof reader.result === 'string' ? resolve(reader.result) : reject(new Error('invalid-image'));
+        reader.onerror = () => reject(new Error('invalid-image'));
+        reader.onabort = () => reject(new Error('invalid-image'));
+        reader.readAsDataURL(file);
+      });
+      if (generation !== this.imageGeneration || !get<HTMLInputElement>('hall-image-consent').checked) return;
+      const result = await request<{ imageUrl: string }>('hall/certificate/image', 'POST', { id: cert.id, image, publicImageConsent: true });
+      if (generation !== this.imageGeneration) return;
+      const url = certificateImageUrl(result.imageUrl);
+      if (!url) throw new Error('invalid-image');
+      this.exportedImageUrl = url;
+      say('hall-certificate-status', '公開圖片已建立。點選「開啟證書圖片」，可前往儲存或分享。');
+    } catch (error) {
+      if (generation !== this.imageGeneration) return;
+      const code = error instanceof Error ? error.message : '';
+      say('hall-certificate-status', code === 'image-processing' ? '圖片仍在準備中，請稍候再試。' :
+        code === 'rate-limited' ? '操作太頻繁，請稍候再試。' :
+        code === 'certificate-unavailable' ? '這張證書已無法匯出，請重新查驗。' :
+        code === 'invalid-image' ? '這張圖片無法匯出，請重新查驗證書後再試。' :
+        '暫時無法建立公開圖片，請稍後重試。');
+    } finally {
+      if (generation === this.imageGeneration) { this.imageExporting = false; this.controls(); }
     }
   }
   private async copy(): Promise<void> {

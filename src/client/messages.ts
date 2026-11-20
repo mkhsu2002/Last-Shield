@@ -1,5 +1,16 @@
 // Source-language keys keep gameplay copy in one bilingual catalog.
 export const MESSAGES: Record<string, string> = {
+  "我同意公開匯出這張證書圖片；已匯出或分享的圖片可能持續存在，移除英雄館不會刪除這些副本。": "I agree to export this certificate as a public image. Exported or shared images may remain available after I remove my Hall display.",
+  "建立公開證書圖片": "Create public certificate image",
+  "開啟證書圖片": "Open certificate image",
+  "暫時無法開啟分享，可複製證書與貼文連結後自行分享。": "Sharing is unavailable. Copy the certificate and game link to share it yourself.",
+  "正在建立公開證書圖片…": "Creating public certificate image…",
+  "公開圖片已建立。點選「開啟證書圖片」，可前往儲存或分享。": "Public image created. Select “Open certificate image” to save or share it.",
+  "圖片仍在準備中，請稍候再試。": "The image is still being prepared. Please try again shortly.",
+  "這張證書已無法匯出，請重新查驗。": "This certificate cannot be exported. Please verify it again.",
+  "這張圖片無法匯出，請重新查驗證書後再試。": "This image cannot be exported. Verify the certificate again and retry.",
+  "暫時無法建立公開圖片，請稍後重試。": "The public image is unavailable. Please try again shortly.",
+
   "達成日期：": "Achieved: ",
   "本賽季": "This season",
   "今日最高：請到 Reddit 查看": "Today’s best: open the Reddit game",

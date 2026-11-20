@@ -21,6 +21,14 @@ function challengeDay(day: number): string {
 }
 function issuedDate(cert: CitizenCertificate): string { return new Date(cert.issuedAt).toISOString().slice(0, 10); }
 
+export function certificateSource(postUrl: string): string {
+  try {
+    const url = new URL(postUrl);
+    if (url.protocol !== 'https:' || !['www.reddit.com', 'reddit.com'].includes(url.hostname) || url.username || url.password || url.port || url.search || url.hash || !/^\/comments\/[a-z0-9]+\/?$/.test(url.pathname)) return '';
+    return `reddit.com${url.pathname.replace(/\/$/, '')}`;
+  } catch { return ''; }
+}
+
 /** Formats the server-issued certificate. The server remains the authority for eligibility and proof. */
 export function certificatePresentation(cert: CitizenCertificate, postUrl: string): { filename: string; title: string; text: string } {
   validate(cert);
@@ -42,7 +50,7 @@ export function certificatePresentation(cert: CitizenCertificate, postUrl: strin
 }
 
 /** Produces a portable PNG from the existing city artwork without changing the source asset. */
-export async function renderCertificate(cert: CitizenCertificate, locale: Locale = 'en'): Promise<Blob> {
+export async function renderCertificate(cert: CitizenCertificate, locale: Locale = 'en', postUrl = ''): Promise<Blob> {
   validate(cert);
   const zh = locale === 'zh-Hant';
   const canvas = document.createElement('canvas');
@@ -104,6 +112,8 @@ export async function renderCertificate(cert: CitizenCertificate, locale: Locale
   }
   line(zh ? '公開證書編號' : 'PUBLIC CERTIFICATE ID', 860, 17, '#bba77d', sans, '600');
   line(cert.id, 895, 24, '#e1ded5');
+  const source = certificateSource(postUrl);
+  if (source) line(zh ? `遊戲內查驗：${source}` : `Verify in game: ${source}`, 928, 17, '#aebfc8');
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error(zh ? '無法匯出證書。' : 'Unable to export certificate.')), 'image/png');
   });

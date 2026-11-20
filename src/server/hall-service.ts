@@ -1,3 +1,4 @@
+import { certificateImageKey } from './certificate-image.ts';
 import { randomUUID } from 'node:crypto';
 import { RULES_VERSION } from '../shared/game-logic.ts';
 import { dailyStorm } from '../shared/daily-storm.ts';
@@ -121,7 +122,7 @@ export class HallService {
         if(member){
           await tx.set(refKey(member.ref),'null');
           for(const key of [scoreKey,comboKey,millionKey])await tx.zRem(key,[member.ref]);
-          if(member.certificate)await tx.set(certificateKey(member.certificate.id),'null');
+          if(member.certificate){await tx.set(certificateKey(member.certificate.id),'null');await tx.set(certificateImageKey(member.certificate.id),'null');}
           const days=Object.keys(member.days).map(Number).sort((a,b)=>b-a);
           for(const day of days.slice(0,20))await tx.zRem(dayMembers(day),[member.ref]);
           if(days.length>20){await tx.set(`${prefix}:cleanup:${member.ref}`,JSON.stringify(days.slice(20)));await tx.zAdd(cleanupKey,{member:member.ref,score:this.now()});}
@@ -130,6 +131,7 @@ export class HallService {
       }catch(error){if(active)await tx.discard().catch(()=>{});if(!/WATCH|transaction.*abort|transaction.*conflict/i.test(String(error)))throw error;}
     }throw new Error('retry-submit');
   }
+  async ownCertificate(userId:string):Promise<CitizenCertificate|null>{return (await this.state(userId)).member?.certificate??null;}
   async certificate(id:string):Promise<CitizenCertificate|null>{
     if(!/^[a-f0-9-]{36}$/.test(id))throw new Error('invalid-certificate');
     return parse<CitizenCertificate>(await this.store.get(certificateKey(id)));

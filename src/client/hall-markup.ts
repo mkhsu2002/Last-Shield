@@ -1,5 +1,30 @@
 import type { DailyChampion } from '../shared/heroes.ts';
 
+const CERTIFICATE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+export function parseCitizenShareData(source: unknown): string | null {
+  if (typeof source !== 'string' || source.length > 1024) return null;
+  try {
+    const value: unknown = JSON.parse(source);
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    const entries = Object.keys(value);
+    if (entries.length !== 2 || !entries.includes('kind') || !entries.includes('id')) return null;
+    const data = value as { kind: unknown; id: unknown };
+    return data.kind === 'citizen' && typeof data.id === 'string' && CERTIFICATE_ID.test(data.id) ? data.id.toLowerCase() : null;
+  } catch { return null; }
+}
+export function certificateImageUrl(source: unknown): string | null {
+  if (typeof source !== 'string') return null;
+  try {
+    const url = new URL(source);
+    if (url.protocol !== 'https:' || url.hostname !== 'i.redd.it' || url.port || url.username || url.password || url.search || url.hash ||
+      !/^\/[A-Za-z0-9_-]+\.(png|jpe?g|webp)$/i.test(url.pathname)) return null;
+    return url.href;
+  } catch { return null; }
+}
+export function hallCanExport(enabled: boolean, ownId: string | null, displayedId: string | null, consent: boolean, rendered: boolean, busy: boolean): boolean {
+  return enabled && Boolean(ownId) && ownId === displayedId && consent && rendered && !busy;
+}
+
 export function hallAchievementCopy(row: { day: number; rules: string }): (string | { literal: string })[] {
   const day = String(row.day).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3');
   const season = /^survival-(\d+)$/.exec(row.rules)?.[1];
@@ -8,7 +33,7 @@ export function hallAchievementCopy(row: { day: number; rules: string }): (strin
 
 const API_ERRORS = new Set(['login-required', 'invalid-context', 'rate-limited', 'invalid-session', 'expired-session',
   'invalid-day', 'retry-submit', 'invalid-request', 'consent-required', 'invalid-callsign', 'invalid-certificate',
-  'certificate-unavailable', 'revoked-run', 'mode-mismatch']);
+  'certificate-unavailable', 'revoked-run', 'mode-mismatch', 'image-processing', 'invalid-image']);
 export function hallApiError(value: unknown): string {
   if (!value || typeof value !== 'object' || !('error' in value) || typeof value.error !== 'string') return 'hall-unavailable';
   return API_ERRORS.has(value.error) ? value.error : 'hall-unavailable';
@@ -75,7 +100,11 @@ export function hallMarkup(): string {
       <button id="hall-verify" class="secondary">查驗證書</button>
       <p id="hall-certificate-status" class="fineprint" role="status" aria-live="polite"></p>
       <img id="hall-preview" class="hall-certificate-preview" alt="新巴比倫公民證書預覽" hidden>
-      <a id="hall-download" class="secondary" hidden>下載證書 PNG</a>
+      <div id="hall-image-options" hidden>
+        <label class="hall-consent-label"><input id="hall-image-consent" type="checkbox">我同意公開匯出這張證書圖片；已匯出或分享的圖片可能持續存在，移除英雄館不會刪除這些副本。</label>
+        <button id="hall-export" class="secondary" disabled>建立公開證書圖片</button>
+      </div>
+      <button id="hall-open-image" class="secondary" hidden>開啟證書圖片</button>
       <button id="hall-share" class="primary" disabled>分享證書</button>
       <button id="hall-copy" class="secondary" disabled>複製證書與貼文連結</button>
       <textarea id="hall-copy-fallback" readonly rows="7" aria-label="證書與貼文連結" hidden></textarea>
