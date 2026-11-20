@@ -13,4 +13,4 @@
 - 片中示範上榜為後端重算的真實 2,900 分。錄影後已移除；同局重送不重複排名，移除後重送也未復活。沒有捏造玩家或活躍數。
 - [capture-info.json](capture-info.json) 保存來源、時間點、音軌同步與 SHA-256。正式練習／超載／結果／榜單影格及新截圖已肉眼檢查；主觀聽感不以訊號量測代替。
 
-YouTube 已於 2026-11-19 發布到 @neobabylon-mk，Studio 顯示公開，匿名 oEmbed 200、觀看頁播放成功；詳見 [youtube-publication.json](youtube-publication.json)。Devpost 尚待登入。外部更新狀態見 [發布紀錄](../../v0-50-release-2026-11-19.md)。舊 v0.47 影片保留為歷史素材，不作為新版展示。
+YouTube 已於 2026-11-19 發布到 @neobabylon-mk，Studio 顯示公開，匿名 oEmbed 200、觀看頁播放成功；詳見 [youtube-publication.json](youtube-publication.json)。[原 Devpost 投稿](https://devpost.com/software/last-shield)已保存同一影片、四張 v0.50 截圖及新版 story，維持 SUBMITTED／5/5；詳見 [devpost-publication.json](devpost-publication.json)。外部更新狀態見 [發布紀錄](../../v0-50-release-2026-11-19.md)。舊 v0.47 影片保留為歷史素材，不作為新版展示。

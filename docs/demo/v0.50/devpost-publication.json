@@ -1,0 +1,99 @@
+{
+  "dateVancouver": "2026-11-19",
+  "url": "https://devpost.com/software/last-shield",
+  "softwareId": 1546455,
+  "submissionId": 1301583,
+  "hackathonId": 31644,
+  "owner": "mkhsu2002",
+  "authorizedLane": "codex-mk-personal",
+  "scope": "MK personal competition entry; explicit user browser selection",
+  "status": "SUBMITTED",
+  "steps": "5/5",
+  "finalizationMessage": "Project submitted!",
+  "videoUrl": "https://www.youtube.com/watch?v=DLHAouzPwTI",
+  "photos": [
+    {
+      "id": 5970464,
+      "source": "docs/media/last-shield-v0.50-community-board.png"
+    },
+    {
+      "id": 5970465,
+      "source": "docs/media/last-shield-v0.50-intro.png"
+    },
+    {
+      "id": 5970466,
+      "source": "docs/media/last-shield-v0.50-practice.png"
+    },
+    {
+      "id": 5970467,
+      "source": "docs/media/last-shield-v0.50-overdrive.png"
+    }
+  ],
+  "savedFields": [
+    {
+      "name": "software[tag_list]",
+      "value": "devvit,typescript,phaser.js,vite,hono,web-audio-api,html,css"
+    },
+    {
+      "name": "software[urls_attributes][0][url]",
+      "value": "https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/"
+    },
+    {
+      "name": "software[urls_attributes][1][url]",
+      "value": "https://developers.reddit.com/apps/last-shield"
+    },
+    {
+      "name": "software[urls_attributes][2][url]",
+      "value": "https://www.reddit.com/r/last_shield_dev/"
+    },
+    {
+      "name": "software[urls_attributes][3][url]",
+      "value": "https://github.com/mkhsu2002/Last-Shield"
+    },
+    {
+      "name": "software[urls_attributes][4][url]",
+      "value": "https://github.com/mkhsu2002/Last-Shield/blob/main/README.md"
+    },
+    {
+      "name": "software[photos_attributes][0][caption]",
+      "value": "A completed 2,900-point run on the daily community board, with personal rank and nearby players."
+    },
+    {
+      "name": "software[photos_attributes][1][caption]",
+      "value": "v0.50: defend Neo Babylon inside Reddit, with a shared daily storm and community rankings."
+    },
+    {
+      "name": "software[photos_attributes][2][caption]",
+      "value": "Practice at your own pace: catch the gold, hold until the meteor shatters, then review your result."
+    },
+    {
+      "name": "software[photos_attributes][3][caption]",
+      "value": "Blue-white Overdrive beams clear incoming meteors above the painted Neo Babylon skyline."
+    },
+    {
+      "name": "software[video_url]",
+      "value": "https://www.youtube.com/watch?v=DLHAouzPwTI"
+    }
+  ],
+  "readback": {
+    "editorReloaded": true,
+    "publicPageReloaded": true,
+    "newVideoEmbedded": true,
+    "fourUniquePhotosLoaded": true,
+    "practiceStoryVisible": true,
+    "firstPersonStoryVisible": true,
+    "testCount59Visible": true,
+    "originalFiveUrlsPreserved": true,
+    "additionalInfoPreserved": true,
+    "redditUsername": "OwnDifference7782",
+    "portedGame": "No, this submission is not a ported game",
+    "anonymousHttpStatus": 403,
+    "anonymousHttpPassed": false
+  },
+  "operations": {
+    "savedVia": "Save & continue on existing project",
+    "newSubmission": false,
+    "newTermsAccepted": false,
+    "photoDeleteScope": "ul.image-gallery-list > li a.ss-delete; original URLs restored before saving and verified preserved"
+  }
+}
