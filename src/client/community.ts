@@ -285,7 +285,7 @@ export class Community {
   }
   leaderCopy():Parameters<typeof localizedText>[1] {
     const leader=this.latestBoard?.day===this.day?this.latestBoard.top[0]:null;
-    return this.demo?'AI 示範 · 不列入競爭榜':!this.enabled?'今日最高：請到 Reddit 查看':this.boardUnavailable?'今日最高：暫時無法讀取':leader?['今日最高：', {literal:`u/${leader.username} · ${leader.score.toLocaleString('en-US')}`},this.latestBoard!.leaderTies>1?` · ${this.latestBoard!.leaderTies} 位並列`:'']:'今日最高：尚無紀錄';
+    return this.demo?'AI 示範 · 不列入競爭榜':!this.enabled?'今日最高：請到 Reddit 查看':this.boardUnavailable?'今日最高：暫時無法讀取':leader?['今日最高：', {literal:`${leader.score.toLocaleString('en-US')} · u/${leader.username}`},this.latestBoard!.leaderTies>1?` · ${this.latestBoard!.leaderTies} 位並列`:'']:'今日最高：尚無紀錄';
   }
   private renderLeader():void { localizedText(element('daily-leader'),this.leaderCopy()); }
   rivalCopy(score:number):string {

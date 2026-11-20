@@ -20,6 +20,9 @@ test('hall endpoints require explicit consent, bind run owner and expose only pu
  assert.equal((await enroll(body)).status,200);
  const hall=await(await app.request('/api/community/hall')).json();assert.equal(hall.hall.topScores[0].username,'Alice');assert.equal(hall.hall.me.enrolled,true);
  assert.doesNotMatch(JSON.stringify(hall),/t2_a|userId/);
+ assert.equal((await enroll({...body,callsign:''})).status,200);
+ const cleared=await(await app.request('/api/community/hall')).json();
+ assert.equal(cleared.hall.me.callsign,undefined);assert.equal(cleared.hall.topScores[0].callsign,undefined);
  assert.equal((await app.request('/api/community/hall',{method:'DELETE'})).status,200);
  assert.equal((await(await app.request('/api/community/hall')).json()).hall.topScores.length,0);
 });

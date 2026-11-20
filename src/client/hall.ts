@@ -124,7 +124,12 @@ export class HallController {
     try {
       const result = await request<{ hall: HeroHall }>(`hall${older ? `?before=${this.hall!.historyCursor}` : ''}`);
       if (generation !== this.generation) return;
-      const hall = result.hall;
+      await this.applyHall(result.hall,older);
+      say('hall-status', '同分並列；英雄館只展示自願公開的守城者。');
+    } catch { if (generation === this.generation) say('hall-status', '暫時無法讀取英雄館，請稍後重新開啟。'); }
+    finally { if (generation === this.generation) { this.loading = false; this.controls(); } }
+  }
+  private async applyHall(hall:HeroHall,older=false):Promise<void> {
       if (!hall || !Array.isArray(hall.champions) || !Array.isArray(hall.topScores) || !Array.isArray(hall.topCombos) || !Array.isArray(hall.million) || !hall.me) throw new Error('hall-unavailable');
       if (older && this.hall) hall.champions = mergeChampionHistory(this.hall.champions, hall.champions);
       const previousOwnCertificate = this.hall?.me.certificate?.id;
@@ -133,10 +138,8 @@ export class HallController {
       const season = /^survival-(\d+)$/.exec(hall.season)?.[1] ?? /^survival-(\d+)$/.exec(RULES_VERSION)?.[1];
       say('hall-season', `第 ${season} 賽季`);
       if (hall.me.enrolled && document.activeElement !== get('hall-callsign')) get<HTMLInputElement>('hall-callsign').value = hall.me.callsign ?? '';
-      this.render(); say('hall-status', '同分並列；英雄館只展示自願公開的守城者。');
+      this.render(); this.controls();
       if (hall.me.certificate) await this.prepareCertificate(hall.me.certificate);
-    } catch { if (generation === this.generation) say('hall-status', '暫時無法讀取英雄館，請稍後重新開啟。'); }
-    finally { if (generation === this.generation) { this.loading = false; this.controls(); } }
   }
   private person(row: HeroEntry | CitizenCertificate): HTMLElement {
     const item = document.createElement('li');
@@ -213,9 +216,11 @@ export class HallController {
     this.busy = true; ++this.generation; this.loading = false; this.controls(); say('hall-status', '正在儲存你的展示…');
     try {
       const callsign = get<HTMLInputElement>('hall-callsign').value.trim();
-      await request<{ hall: HeroHall }>('hall/enroll', 'POST', { runId, publicConsent: true, ...(callsign ? { callsign } : {}) });
+      const result=await request<{ hall: HeroHall }>('hall/enroll', 'POST', { runId, publicConsent: true, callsign });
+      ++this.generation; this.loading=false;
+      await this.applyHall(result.hall);
       get<HTMLInputElement>('hall-consent').checked = false;
-      await this.refresh(); say('hall-status', '你的守城紀錄已加入英雄館。');
+      say('hall-status', '你的守城紀錄已加入英雄館。');
     } catch (error) {
       const code = error instanceof Error ? error.message : '';
       if (code === 'revoked-run') { this.revokedProofs.add(runId); this.pendingRun = null; }
