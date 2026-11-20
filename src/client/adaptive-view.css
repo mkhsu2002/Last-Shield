@@ -1,0 +1,130 @@
+/* Keep the battlefield's coordinate plane undistorted; the shell owns the HUD. */
+.adaptive-view #game-container {
+  width: min(100vw, 620px);
+  height: 100dvh;
+  max-height: 1080px;
+  border: 0;
+  background: linear-gradient(#061323dc, #050d19ed), url("./art/city.webp") center / cover;
+}
+.adaptive-view #canvas-host {
+  inset: auto;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(100%, 50dvh, 540px);
+  height: min(100dvh, 1080px);
+}
+.adaptive-view #canvas-host canvas {
+  height: auto !important;
+  aspect-ratio: 1 / 2;
+}
+.adaptive-view .interface {
+  padding: max(10px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+}
+.adaptive-view .topbar { gap: 8px; }
+.adaptive-view .topbar .eyebrow { display: none; }
+.adaptive-view .brand h1 { font-size: 22px; }
+.adaptive-view .run-hud { margin-top: 10px; }
+.adaptive-view .health-block strong { font-size: 28px; }
+.adaptive-view .score-block strong { font-size: 28px; }
+.adaptive-view .stats-row { margin-top: 6px; }
+.adaptive-view .growth-strip { flex-wrap: wrap; font-size: 10px; gap: 3px 10px; }
+.adaptive-view .daily-leader { font-size: 10px; }
+.adaptive-view .action {
+  left: 14px;
+  right: 14px;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid #88d3f12b;
+  border-radius: 16px;
+  background: linear-gradient(#08192bc9, #071322ed);
+  backdrop-filter: blur(8px);
+}
+.adaptive-view .action .city-line, .adaptive-view .action .cue-help { display: none; }
+.adaptive-view .action .cue { font-size: 20px; line-height: 1.25; margin: 0; }
+.adaptive-view .action .feedback:empty { min-height: 0; }
+.adaptive-view .action .energy-card { background: #0a192be8; }
+.adaptive-view .action .fire-button { height: 60px; min-height: 60px; }
+.adaptive-view .intro { top: 76px; bottom: 12px; }
+.adaptive-view .intro-copy { top: 0; }
+.adaptive-view .intro h2 { font-size: clamp(30px, 7cqw, 42px); margin: 10px 0 8px; }
+.adaptive-view .launch-card {
+  bottom: 0;
+  max-height: calc(100% - 138px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: 16px;
+}
+.adaptive-view .panel { left: 50%; right: auto; transform: translateX(-50%); width: min(92%, 500px); }
+.adaptive-view .results { top: 78px; max-height: calc(100% - 92px); }
+.adaptive-view .pause-panel, .adaptive-view .practice-panel { top: 78px; max-height: calc(100% - 92px); overflow-y: auto; touch-action: pan-y; }
+.adaptive-view .community-dialog { max-height: 90dvh; }
+
+/* Landscape shells give the sky its own column, leaving instructions beside it. */
+@media (min-width: 640px) and (min-aspect-ratio: 1/1) {
+  .adaptive-view #game-container { width: min(100vw, 1120px); --side: 296px; }
+  .adaptive-view #canvas-host { left: calc((100% - var(--side) - 32px) / 2); width: min(calc(100% - var(--side) - 42px), 50dvh, 540px); }
+  .adaptive-view .interface { padding: 18px 20px; }
+  .adaptive-view #canvas-host { mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent); }
+  .adaptive-view .topbar { position: absolute; top: 16px; left: 20px; right: 20px; }
+  .adaptive-view .brand h1 { font-size: 25px; }
+  .adaptive-view .brand .version { display: inline !important; }
+  .adaptive-view .run-hud { position: absolute; top: 94px; right: 20px; width: var(--side); margin: 0; padding: 18px; border: 1px solid #88d3f12b; border-radius: 16px; background: #091a2dd9; }
+  .adaptive-view .label { font-size: 11px; }
+  .adaptive-view .health-block strong, .adaptive-view .score-block strong { font-size: 32px; }
+  .adaptive-view .storm-strip { margin-top: 12px; }
+  .adaptive-view .daily-leader { margin-top: 10px; }
+  .adaptive-view .target:not(:empty) { display: block; }
+  .adaptive-view .action { left: auto; right: 20px; bottom: 22px; width: var(--side); gap: 10px; }
+  .adaptive-view .action .cue { font-size: 23px; }
+  .adaptive-view .action .fire-button { height: 64px; min-height: 64px; }
+  .adaptive-view .action .fire-button strong { font-size: 18px; }
+  .adaptive-view .action .fire-button > span { font-size: 10px; }
+  .adaptive-view .action .energy-card { padding: 10px; }
+  .adaptive-view .action .cue-help { display: block; font-size: 12px; margin: 0 0 4px; }
+  .adaptive-view .action .city-line { display: flex; font-size: 10px; }
+  .adaptive-view .intro { top: 94px; bottom: 22px; }
+  .adaptive-view .intro-copy { width: calc(100% - var(--side) - 72px); left: 28px; right: auto; }
+  .adaptive-view .intro h2 { font-size: clamp(30px, 4cqw, 50px); }
+  .adaptive-view .launch-card { width: var(--side); left: auto; right: 20px; top: 0; bottom: auto; max-height: 100%; padding: 18px; }
+  .adaptive-view .daily-card strong { font-size: 22px; }
+  .adaptive-view .launch-card .primary { font-size: 16px; }
+  .adaptive-view .launch-card .secondary { min-height: 44px; }
+}
+@media (min-width: 640px) and (min-aspect-ratio: 1/1) and (max-width: 850px) {
+  .adaptive-view #game-container { --side: 254px; }
+  .adaptive-view .interface { padding-inline: 14px; }
+  .adaptive-view .run-hud { right: 14px; top: 76px; padding: 12px; }
+  .adaptive-view .action { right: 14px; bottom: 14px; gap: 6px; }
+  .adaptive-view .action .cue-help, .adaptive-view .action .city-line { display: none; }
+  .adaptive-view .action .cue { font-size: 18px; }
+  .adaptive-view .action .fire-button strong { font-size: 16px; }
+  .adaptive-view .intro { top: 76px; bottom: 14px; }
+  .adaptive-view .intro-copy { left: 20px; }
+  .adaptive-view .launch-card { right: 14px; padding: 14px; }
+}
+@media (max-height: 500px) {
+  .adaptive-view .run-hud { top: 64px; padding: 10px; }
+  .adaptive-view .growth-strip, .adaptive-view .daily-leader, .adaptive-view .storm-strip, .adaptive-view .rival-goal, .adaptive-view .target { display: none; }
+  .adaptive-view .health-block strong, .adaptive-view .score-block strong { font-size: 24px; }
+  .adaptive-view .action { gap: 3px; max-height: calc(100% - 164px); overflow-y: auto; touch-action: pan-y; }
+  .adaptive-view .action .energy-card { padding: 3px 8px; }
+  .adaptive-view .action .fire-button { height: 44px; min-height: 44px; }
+  .adaptive-view .action .cue-help, .adaptive-view .action .city-line { display: none; }
+  .adaptive-view .intro { top: 64px; }
+  .adaptive-view .intro-copy > p { display: none; }
+}
+@media (max-height: 500px) and (min-width: 640px) and (min-aspect-ratio: 1/1) {
+  .adaptive-view .run-hud { padding: 6px 10px; }
+  .adaptive-view .run-hud .target:not(:empty) { display: none; }
+  .adaptive-view .action { padding: 8px; max-height: calc(100% - 168px); }
+  .adaptive-view .action .cue { font-size: 16px; }
+}
+@media (min-width: 640px) and (min-aspect-ratio: 1/1) and (min-height: 501px) and (max-height: 720px) {
+  .adaptive-view .run-hud { top: 76px; padding: 12px; }
+  .adaptive-view .action { bottom: 14px; gap: 6px; }
+  .adaptive-view .action .cue-help, .adaptive-view .action .city-line { display: none; }
+  .adaptive-view .action .cue { font-size: 20px; }
+}

@@ -1,13 +1,15 @@
 import * as Phaser from "phaser";
 import {
-  meteorGeometry,
   SHIELD_RADIUS,
   PERFECT_WINDOW_MS,
   contactInMs,
 } from "../shared/game-logic";
 import type { DefenseRun, Meteor } from "../shared/game-logic";
 
-export const FIELD = { width: 540, height: 1080, x: 270, y: 560 };
+import { CLASSIC_VIEW, SKY_TOP } from './view-mode';
+import { displayedMeteorGeometry, DISPLAY_CENTER_Y } from './battlefield-view';
+export const FIELD = { width: 540, height: 1080, x: 270, y: CLASSIC_VIEW ? 560 : DISPLAY_CENTER_Y };
+export const viewMeteorGeometry = (spec: Parameters<typeof displayedMeteorGeometry>[0], elapsed:number, mass:number) => displayedMeteorGeometry(spec, elapsed, mass, CLASSIC_VIEW, SKY_TOP);
 const CYAN = 0x78e5f2,
   OVERDRIVE_BLUE = 0x55bfff,
   GOLD = 0xffc46b,
@@ -273,7 +275,7 @@ function shield(g: Graphics, state: State): void {
 function core(g: Graphics, m: Meteor, state: State): void {
   const { run, reducedMotion } = state;
   const elapsed = run.waveElapsedMs;
-  const geometry = meteorGeometry(m, elapsed, m.mass);
+  const geometry = viewMeteorGeometry(m, elapsed, m.mass);
   const x = FIELD.x + geometry.x,
     y = FIELD.y + geometry.y,
     radius = geometry.radius;
