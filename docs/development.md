@@ -1,5 +1,7 @@
 > 最新工作（2026-11-19，America/Vancouver）：MK 已通過 v0.50 人工驗收；PR #1 已合併 main、tag v0.50，Reddit 0.50.0 已核准公開並同版安裝到 staging／正式，Vercel production 同版讀回通過。新版英文立體聲實錄與截圖已完成；YouTube 新版已公開發布並通過播放驗證；原 Devpost 投稿已同步新版影片、四張截圖與第一人稱 story，讀回 SUBMITTED／5/5。見 [正式發布紀錄](v0-50-release-2026-11-19.md)。
 
+> 後續精進提案（同日）：MK 要求持續提升四項評分至各 9 分以上。[每日風暴與對手挑戰設計](superpowers/specs/2026-11-19-v0-51-daily-rival-design.md)已完成初步架構檢查、自審與 v0.50 基準驗證，狀態為待 MK 審閱設計，尚未實作或發布；不可把提案視為現有功能或已達 9 分。
+
 > 正式發布基準（2026-11-16 的歷史證據）：v0.49 手機控制改善與正式驗證見 [v0.49 紀錄](v0-49-mobile-controls-2026-11-16.md)，對外展示同步見 [展示紀錄](presentation-review-2026-11-16.md)。本輪只重新查核 Reddit 安裝版本，不將舊 Vercel／Devpost 證據日期更新為今天。
 
 > 狀態補記（2026-11-16）：v0.48／0.48.2 已於 Reddit 核准公開並完整安裝到正式與 staging，main 已合併；目前即時狀態見 [發布紀錄](community-release-2026-11-15.md)。下方 v0.47 段落為歷史紀錄，不能作為新 API 的 live 驗證。
