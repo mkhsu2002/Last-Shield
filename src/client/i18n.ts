@@ -41,15 +41,17 @@ export function translate(source: string, locale: Language = language): string {
   return (source.match(/^\s*/)?.[0] ?? "") + result + (source.match(/\s*$/)?.[0] ?? "");
 }
 
-type Copy = string | string[];
+type Copy = string | readonly (string | {literal:string})[];
 const staticText = new Map<Text, string>();
 const dynamicText = new Map<HTMLElement, Copy>();
 const attributes = new Map<Element, Map<string, string>>();
 const values = new Map<HTMLTextAreaElement, Copy>();
-const render = (copy: Copy) => Array.isArray(copy) ? copy.map(s => translate(s)).join("") : translate(copy);
+export function renderCopy(copy:Copy, locale:Language=language):string {
+  return typeof copy==='string'?translate(copy,locale):copy.map(part=>typeof part==='string'?translate(part,locale):part.literal).join('');
+}
 export function localizedText(el: HTMLElement, copy: Copy): void {
   dynamicText.set(el, copy);
-  const next = render(copy);
+  const next = renderCopy(copy);
   if (el.textContent !== next) el.textContent = next;
 }
 export function localizedAttribute(el: Element, name: string, source: string): void {
@@ -60,7 +62,7 @@ export function localizedAttribute(el: Element, name: string, source: string): v
 }
 export function localizedValue(el: HTMLTextAreaElement, copy: Copy): void {
   values.set(el, copy);
-  el.value = render(copy);
+  el.value = renderCopy(copy);
 }
 export function localizeTree(root: HTMLElement): void {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);

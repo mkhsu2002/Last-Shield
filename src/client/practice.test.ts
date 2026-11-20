@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { PracticeReview, practiceDelta } from './practice.ts';
+import { PracticeReview, practiceDelta, hasPracticed, markPracticed } from './practice.ts';
 
 test('practice approaches gold slowly and waits there without consuming the window', () => {
   assert.equal(practiceDelta(100, 950, 1000, false, false), 50);
@@ -23,4 +23,11 @@ test('letting go immediately still leaves time to read the result', () => {
   assert.equal(review.canContinue(false), false);
   review.advance(1);
   assert.equal(review.canContinue(false), true);
+});
+test('practice guidance is prominent until reviewed and storage failure remains optional',()=>{
+  const values=new Map<string,string>();const storage={getItem:(k:string)=>values.get(k)??null,setItem:(k:string,v:string)=>{values.set(k,v);}};
+  assert.equal(hasPracticed(storage),false);markPracticed(storage);assert.equal(hasPracticed(storage),true);
+  assert.equal(hasPracticed(null),false);assert.doesNotThrow(()=>markPracticed(null));
+  const denied={getItem(){throw new Error('denied');},setItem(){throw new Error('denied');}};
+  assert.equal(hasPracticed(denied),false);assert.doesNotThrow(()=>markPracticed(denied));
 });

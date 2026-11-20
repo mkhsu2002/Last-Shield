@@ -28,7 +28,7 @@ import { Community } from "./community";
 import { drawBattlefield, FIELD } from "./battlefield";
 import { SceneArt, preloadSceneArt } from "./scene-art";
 import type { BattleEffect } from "./battlefield";
-import { PracticeReview, practiceDelta } from "./practice";
+import { PracticeReview, practiceDelta, hasPracticed, markPracticed } from "./practice";
 import { dailyStorm, nextChallengeDay } from "../shared/daily-storm";
 
 type Phase =
@@ -95,6 +95,7 @@ class ShieldScene extends Phaser.Scene {
     element("practice-continue").addEventListener("click", () => {
       if (this.phase !== "practice-review" || !this.practiceReview?.canContinue(this.inputs.size > 0)) return;
       this.releaseAll();
+      markPracticed(this.storage);
       this.setPhase("trained");
       element("practice-again").focus({ preventScroll: true });
     });
@@ -217,6 +218,12 @@ class ShieldScene extends Phaser.Scene {
   }
 
   private loadDay(): void {
+    const guideFirst=!hasPracticed(this.storage);
+    element('practice').classList.toggle('primary',guideFirst);
+    element('practice').classList.toggle('secondary',!guideFirst);
+    element('start').classList.toggle('primary',!guideFirst);
+    element('start').classList.toggle('secondary',guideFirst);
+    element('launch-controls').prepend(element(guideFirst?'practice':'start'));
     const stamp = String(this.run.daySeed);
     text(
       "day",

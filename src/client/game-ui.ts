@@ -27,9 +27,9 @@ export function mountGameUI(): void {
         <div class="launch-card">
           <div class="daily-card"><span class="eyebrow">今日風暴</span><strong id="daily-title"></strong><p id="daily-description"></p><span id="daily-tomorrow" class="fineprint"></span></div>
           <p class="launch-guide">金色時按住，擊碎再放開。三次完美蓄滿超載。</p>
-          <button id="start" class="primary">開始守城 <span aria-hidden="true">↗</span></button>
+          <div id="launch-controls"><button id="start" class="primary">開始守城 <span aria-hidden="true">↗</span></button>
           <button id="practice" class="secondary practice-button">練習完美起手</button>
-          <button id="intro-board" class="secondary">查看社群每日榜</button>
+          <button id="intro-board" class="secondary">查看社群每日榜</button></div>
           <p id="intro-best" class="fineprint"></p>
         </div>
       </section>

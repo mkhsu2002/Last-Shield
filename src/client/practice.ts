@@ -1,4 +1,12 @@
 /** Practice slows observation without changing the rules used by ranked runs. */
+import type { RecordStorage } from './records.ts';
+const PRACTICE_KEY='last-shield:practice-reviewed';
+export function hasPracticed(storage:RecordStorage|null):boolean {
+  try{return storage?.getItem(PRACTICE_KEY)==='1';}catch{return false;}
+}
+export function markPracticed(storage:RecordStorage|null):void {
+  try{storage?.setItem(PRACTICE_KEY,'1');}catch{ /* Practice and direct play remain available. */ }
+}
 export function practiceDelta(
   dt: number, elapsed: number, goldAt: number, holding: boolean, engaged: boolean
 ): number {

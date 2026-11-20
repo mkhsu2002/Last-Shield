@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { translate, readLanguage, LANGUAGE_KEY } from "./i18n.ts";
+import { translate, readLanguage, LANGUAGE_KEY, renderCopy } from "./i18n.ts";
 import { MESSAGES } from "./messages.ts";
 import { dailyStorm } from '../shared/daily-storm.ts';
 
@@ -32,7 +32,7 @@ test("all catalog messages render in English with their interpolation values int
 test("English sharing preserves the challenge date, score and line breaks", () => {
   const source = "最後防線 v0.46 · 2026-11-14 UTC\n1,234 分 · 完美擊破 8 次 · 擊碎 12 顆隕石\n守到第 7 波 · 最高連擊 9。同一片天空，換你守守看！";
   const result = translate(source, "en");
-  assert.equal(result, "Last Shield v0.46 · 2026-11-14 UTC\n1,234 points · 8 perfect clears · 12 meteors cleared\nWave 7 · Best combo 9. Same sky. Your turn to defend!");
+  assert.equal(result, "Last Shield v0.46 · 2026-11-14 UTC\n1,234 points · Perfect clears: 8 · Meteors cleared: 12\nWave 7 · Best combo 9. Same sky. Your turn to defend!");
   assert.equal(translate(source, "zh-Hant"), source);
 });
 
@@ -50,4 +50,9 @@ test('daily profile and rival copy remain meaningful in both languages',()=>{
   assert.equal(translate('再得 201 分，超過 u/Near','en'),'201 more points to pass u/Near');
   assert.equal(translate('追平 u/Near 的 500 分','en'),'Tied u/Near at 500 points');
   assert.equal(translate('本局已超過 u/Near 的 500 分','en'),'This run passed u/Near’s 500 points');
+});
+test('language changes retain literal player notes and links in the complete share preview',()=>{
+  const copy=['重核雨','\n\n',{literal:'繼續'},'\n',{literal:'https://www.reddit.com/comments/1xximge'}];
+  assert.equal(renderCopy(copy,'en'),'Heavy Rain\n\n繼續\nhttps://www.reddit.com/comments/1xximge');
+  assert.equal(renderCopy(copy,'zh-Hant'),'重核雨\n\n繼續\nhttps://www.reddit.com/comments/1xximge');
 });

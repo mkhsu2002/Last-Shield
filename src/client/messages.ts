@@ -127,7 +127,7 @@ export const MESSAGES: Record<string, string> = {
   "再多 {0} 分就能刷新紀錄。": "{0} more points for a new best. ",
   "達成 {0} 次守城里程碑 · 下個目標 {1} 顆": "{0} milestones reached · Next goal: {1} clears",
   "手動超載 {0} 次 · 清除 {1} 顆威脅": "Overdrive used {0} times · {1} threats cleared",
-  "最後防線 {0} · {1}-{2}-{3} UTC\n{4} 分 · 完美擊破 {5} 次 · 擊碎 {6} 顆隕石\n守到第 {7} 波 · 最高連擊 {8}。同一片天空，換你守守看！": "Last Shield {0} · {1}-{2}-{3} UTC\n{4} points · {5} perfect clears · {6} meteors cleared\nWave {7} · Best combo {8}. Same sky. Your turn to defend!",
+  "最後防線 {0} · {1}-{2}-{3} UTC\n{4} 分 · 完美擊破 {5} 次 · 擊碎 {6} 顆隕石\n守到第 {7} 波 · 最高連擊 {8}。同一片天空，換你守守看！": "Last Shield {0} · {1}-{2}-{3} UTC\n{4} points · Perfect clears: {5} · Meteors cleared: {6}\nWave {7} · Best combo {8}. Same sky. Your turn to defend!",
   "戰績已複製，貼給朋友就能邀請挑戰。": "Score copied. Share it to challenge a friend.",
   "請長按上方文字，選取後複製。": "Press and hold the text above to select and copy.",
   "連擊 {0}": "Combo {0}",

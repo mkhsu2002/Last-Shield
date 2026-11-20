@@ -2,7 +2,7 @@ import { context, navigateTo } from '@devvit/web/client';
 import { utcDaySeed, RULES_VERSION } from '../shared/game-logic';
 import { COMMUNITY_CONTRACT, MAX_TRACE_STEPS, type Board, type RunResult, type TraceStep } from '../shared/community';
 import { element, text } from './game-ui';
-import { localizedText, localizedValue, localizedAttribute, translate } from './i18n';
+import { localizedText, localizedValue, localizedAttribute } from './i18n';
 import { dailyStorm, type StormId } from '../shared/daily-storm';
 import { chooseRival, defaultRival, refreshRival, rivalStatus, nearbyEntries, type RivalTarget } from './rival';
 
@@ -44,8 +44,10 @@ export class Community {
     element('discussion').addEventListener('click',()=>{
       element<HTMLTextAreaElement>('discussion-note').value='';
       text('discussion-status','');
+      this.renderDiscussionPreview();
       element<HTMLDialogElement>('discussion-dialog').showModal();
     });
+    element('discussion-note').addEventListener('input',()=>this.renderDiscussionPreview());
     element('discussion-close').addEventListener('click',()=>element<HTMLDialogElement>('discussion-dialog').close());
     element('discussion-copy').addEventListener('click',()=>void this.copyDiscussion());
     element('discussion-open').addEventListener('click',()=>{
@@ -173,13 +175,18 @@ export class Community {
     finally {this.busy=false;this.controls();}
   }
   private async copyDiscussion():Promise<void> {
-    const note=element<HTMLTextAreaElement>('discussion-note').value.trim();
-    const copy=this.preview.map(s=>translate(s)).join('')+(note?`\n\n${note}`:'')+(this.postedUrl?`\n${this.postedUrl}`:'');
+    const copy=this.renderDiscussionPreview();
     try {await navigator.clipboard.writeText(copy);text('discussion-status','已複製。前往貼文後貼上，你可以再編輯並自行送出留言。');}
     catch {
-      const preview=element<HTMLTextAreaElement>('discussion-preview');preview.value=copy;preview.focus();preview.select();
+      const preview=element<HTMLTextAreaElement>('discussion-preview');preview.focus();preview.select();
       text('discussion-status','請選取上方戰績與心得並複製，再到貼文留言。');
     }
+  }
+  private renderDiscussionPreview():string {
+    const note=element<HTMLTextAreaElement>('discussion-note').value.trim();
+    const preview=element<HTMLTextAreaElement>('discussion-preview');
+    localizedValue(preview,[...this.preview,...(note?['\n\n',{literal:note}]:[]),...(this.postedUrl?['\n',{literal:this.postedUrl}]:[])]);
+    return preview.value;
   }
   rivalCopy(score:number):string {
     const target=this.activeTarget,status=rivalStatus(target,this.day,RULES_VERSION,score);
