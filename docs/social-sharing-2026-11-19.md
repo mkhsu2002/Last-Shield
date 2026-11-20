@@ -19,6 +19,8 @@
 
 ## 驗證與未完成事項
 
+- 本輪完整套件已upload並安裝 **0.52.0.2／PRIVATE** 至既有stage；官方API讀回正式仍 **0.50.0／PUBLIC**。候選CDN分享圖HTTP200/image/png、SHA-256與本機一致，見 [candidate readback](qa/v0.52/share-candidate-readback.json)。既有貼文styles與外部unfurl仍標記未驗證。
+
 - ShareCardService 5項測試：同圖不重複上傳／不重設其他style、不可信URL拒絕、不一致readback不得回報成功、無關貼文不得觸發upload或寫入、建立成功後registry失敗仍回原貼文連結並有限重試，不誘導重建。完整114項測試、型別check、兩套build通過。
 - 固定圖片來源已push；匿名抓回HTTP200/image/png，2,461,965bytes，SHA-256與本機一致，見 [source readback](qa/v0.52/share-source-readback.json)。
 - 待候選部署後，從現有貼文執行menu action，確認上傳所得 `i.redd.it` 可公開讀取、`getPostStyles()`的shareImageUrl一致；私人stage本身不當作對外OG驗證。
