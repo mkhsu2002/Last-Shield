@@ -1,6 +1,16 @@
 // Deterministic rules shared by the standalone and Reddit clients.
 import { dailyStorm, type DailyStorm } from './daily-storm.ts';
-export const RULES_VERSION = "survival-7";
+export const RULES_VERSION = "survival-8";
+/** Daily streak rewards use the combo after this clear; practice stays unscaled. */
+export function comboMultiplier(combo: number, practice = false): number {
+  if (practice) return 1;
+  if (combo >= 100) return 50;
+  if (combo >= 75) return 25;
+  if (combo >= 50) return 10;
+  if (combo >= 25) return 5;
+  if (combo >= 10) return 2;
+  return 1;
+}
 export const SHIELD_RADIUS = 132;
 export const METEOR_SPAWN_RADIUS = 218;
 export const PERFECT_WINDOW_MS = 180;
@@ -498,10 +508,11 @@ export class DefenseRun {
     this.bestCombo = Math.max(this.bestCombo, this.combo);
     this.cleared++;
     const base = grade === "perfect" ? 200 : grade === "good" ? 100 : 70;
-    const points =
+    const points = (
       Math.round(base * (m.kind === "heavy" ? (!this.practice && this.waveIndex >= 3 ? this.storm.heavyScoreMultiplier : 1.5) : 1)) +
       Math.min(100, (this.combo - 1) * 10) +
-      (overdrive ? 200 : 0);
+      (overdrive ? 200 : 0)
+    ) * comboMultiplier(this.combo, this.practice);
     this.score += points;
     const point = meteorGeometry(m, this.waveElapsedMs, m.mass);
     this.remove(m, holding);

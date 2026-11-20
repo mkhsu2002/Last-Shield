@@ -10,11 +10,26 @@ export type Strategy =
 export function simulateDefense(
   day: number,
   strategy: Strategy,
-  maxMs = 180000,
-  maxWaves = 48,
+  maxMs = 600000,
+  maxWaves = 240,
   options: {practice?: boolean} = {}
 ) {
   const run = new DefenseRun(day, options);
+  const reactionDelayModel = strategy === "human" || strategy === "human-blast";
+  const reactionDelayMs = 120, releaseDelayMs = 160;
+  const provenance = {
+    model: reactionDelayModel ? "reaction-delay-simulation" : "ideal-bot",
+    reactionDelayMs: reactionDelayModel ? reactionDelayMs : null,
+    releaseDelayMs: reactionDelayModel ? releaseDelayMs : null,
+    interpretation: "Simulation only; not evidence of human performance or native-UI play.",
+  };
+  let millionAtMs: number | null = null, millionAtWave: number | null = null;
+  const observeMillion = () => {
+    if (millionAtMs === null && run.score >= 1_000_000) {
+      millionAtMs = Math.round(run.elapsedMs);
+      millionAtWave = run.waveIndex + 1;
+    }
+  };
   let held = false;
   let releaseAt = 0, nextPressAt = 0, goldSeenAt: number | null = null;
   let firstStormBefore: number | null = null,
@@ -25,6 +40,7 @@ export function simulateDefense(
     ticks < maxMs / 10 && !run.finished && run.waveIndex < maxWaves;
     ticks++
   ) {
+    observeMillion();
     if (run.waveIndex === 5 && firstStormBefore === null) {
       firstStormBefore = run.integrity;
       firstStormAtMs = run.elapsedMs;
@@ -34,11 +50,11 @@ export function simulateDefense(
     const target = run.meteor;
     if (strategy === "human" || strategy === "human-blast") {
       if (held && (!target || target.requireRelease))
-        releaseAt = Math.min(releaseAt, run.elapsedMs + 120);
+        releaseAt = Math.min(releaseAt, run.elapsedMs + reactionDelayMs);
       if (held && run.elapsedMs >= releaseAt) {
         run.step(0, false);
         held = false;
-        nextPressAt = run.elapsedMs + 160;
+        nextPressAt = run.elapsedMs + releaseDelayMs;
         goldSeenAt = null;
       }
       const imminent = Math.min(
@@ -49,7 +65,7 @@ export function simulateDefense(
       } else if (!held && target && run.elapsedMs >= nextPressAt) {
         if (Math.abs(run.timingOffset(target)) <= 180) {
           goldSeenAt ??= run.elapsedMs;
-          if (run.elapsedMs - goldSeenAt >= 120) {
+          if (run.elapsedMs - goldSeenAt >= reactionDelayMs) {
             run.step(0, true);
             held = true;
             releaseAt = Infinity;
@@ -93,13 +109,19 @@ export function simulateDefense(
     }
     run.step(10, held);
   }
+  observeMillion();
   if (firstStormAfter === null && firstStormBefore !== null)
     firstStormAfter = run.integrity;
   return {
     day,
     strategy,
+    ...provenance,
     storm: options.practice ? "neutral" : run.storm.id,
     score: run.score,
+    bestCombo: run.bestCombo,
+    millionAtMs,
+    millionAtWave,
+    stoppedBy: run.finished ? "destroyed" : run.waveIndex >= maxWaves ? "wave-limit" : "time-limit",
     health: run.integrity,
     wave: run.waveIndex + 1,
     elapsedMs: Math.round(run.elapsedMs),
@@ -115,16 +137,29 @@ export function simulateDefense(
 }
 
 if (process.argv[1]?.endsWith("balance-sim.ts")) {
-  const days = [20261114, 20261115, 20261116, 20261117, 20261118];
-  console.log(
-    JSON.stringify(
-      days.flatMap((day) =>
-        (["bank", "early", "never", "hold-early", "retry", "human", "human-blast"] as Strategy[]).map(
-          (strategy) => simulateDefense(day, strategy)
-        )
-      ),
-      null,
-      2
-    )
-  );
+  // Thirty real November dates cover every daily storm profile. The larger cap
+  // avoids treating the old 48-wave simulation cutoff as a gameplay ceiling.
+  const days = Array.from({length: 30}, (_, i) => 20261101 + i);
+  const strategies: Strategy[] = ["bank", "early", "never", "hold-early", "retry", "human", "human-blast"];
+  const runs = days.flatMap(day => strategies.map(strategy => simulateDefense(day, strategy)));
+  const summary = strategies.map(strategy => {
+    const samples = runs.filter(run => run.strategy === strategy);
+    return {
+      strategy,
+      model: samples[0]!.model,
+      reactionDelayMs: samples[0]!.reactionDelayMs,
+      releaseDelayMs: samples[0]!.releaseDelayMs,
+      interpretation: samples[0]!.interpretation,
+      days: samples.length,
+      minScore: Math.min(...samples.map(run => run.score)),
+      maxScore: Math.max(...samples.map(run => run.score)),
+      millionRuns: samples.filter(run => run.millionAtMs !== null).length,
+      minWave: Math.min(...samples.map(run => run.wave)),
+      maxWave: Math.max(...samples.map(run => run.wave)),
+      maxCombo: Math.max(...samples.map(run => run.bestCombo)),
+      destroyed: samples.filter(run => run.finished).length,
+      capped: samples.filter(run => !run.finished).length,
+    };
+  });
+  console.log(JSON.stringify({limits: {maxMs: 600000, maxWaves: 240}, summary, runs}, null, 2));
 }

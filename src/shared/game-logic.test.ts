@@ -427,3 +427,113 @@ test("early forgiveness and later manual-blast pressure hold across thirty dates
     assert.equal(run.integrity, 100); assert.equal(run.energy, 1);
   }
 });
+
+
+test("combo multiplier exposes every inclusive daily tier", () => {
+  assert.equal(typeof rules.comboMultiplier, "function");
+  for (const [combo, multiplier] of [[0, 1], [1, 1], [9, 1], [10, 2], [24, 2], [25, 5], [49, 5], [50, 10], [74, 10], [75, 25], [99, 25], [100, 50], [1000, 50]]) {
+    assert.equal(rules.comboMultiplier(combo), multiplier, `combo ${combo}`);
+    assert.equal(rules.comboMultiplier(combo, true), 1, `practice combo ${combo}`);
+  }
+});
+
+test("a perfect clear earns its new tier after incrementing combo", () => {
+  const run = new rules.DefenseRun(20261114);
+  run.combo = 9;
+  clearTarget(run);
+  assert.equal(run.combo, 10);
+  assert.equal(run.score, (200 + 90) * 2);
+  assert.equal(run.energy, 1);
+  assert.equal(run.integrity, 100);
+});
+
+test("each Overdrive clear crosses combo tiers sequentially including heavy points", () => {
+  for (const boundary of [10, 25, 50, 75, 100]) {
+    const run = atWave(41);
+    run.combo = boundary - 2;
+    run.energy = 3;
+    const kinds = run.meteors.map(m => m.kind);
+    const events = run.activateOverdrive(false).filter(e => e.type === "clear");
+    assert.equal(events.length, kinds.length);
+    const expected = kinds.map((kind, i) => {
+      const combo = boundary - 1 + i;
+      const multiplier = combo >= 100 ? 50 : combo >= 75 ? 25 : combo >= 50 ? 10 : combo >= 25 ? 5 : combo >= 10 ? 2 : 1;
+      return (Math.round(100 * (kind === "heavy" ? run.storm.heavyScoreMultiplier : 1)) + Math.min(100, (combo - 1) * 10) + 200) * multiplier;
+    });
+    assert.deepEqual(events.map(e => e.points), expected);
+    assert.equal(run.score, expected.reduce((sum, points) => sum + points, 0));
+    assert.equal(run.energy, 0);
+    assert.equal(run.perfect, 0);
+  }
+});
+
+test("impact resets earned multiplier before the next clear", () => {
+  const run = new rules.DefenseRun(20261114);
+  run.combo = 100;
+  run.step(run.meteor!.durationMs, false);
+  assert.equal(run.combo, 0);
+  clearTarget(run);
+  assert.equal(run.score, 200);
+  assert.equal(run.combo, 1);
+});
+
+test("practice keeps original clear points at a high combo", () => {
+  const run = new rules.DefenseRun(20261114, {practice: true});
+  run.combo = 99;
+  clearTarget(run);
+  assert.equal(run.score, 300);
+  assert.equal(run.combo, 100);
+});
+
+test("high-tier scoring remains deterministic across frame partitions", () => {
+  const replay = (slice: number) => {
+    const run = new rules.DefenseRun(20261114);
+    run.combo = 99;
+    run.step(run.meteor!.chargeStartMs, false);
+    const events: rules.RunEvent[] = [];
+    for (let left = 400; left > 0; left -= Math.min(left, slice))
+      events.push(...run.step(Math.min(left, slice), true));
+    return { score: run.score, combo: run.combo, energy: run.energy,
+      events: events.map(event => event.type === "clear" ? {type: event.type, grade: event.grade, points: event.points, overdrive: event.overdrive, sector: event.sector} : event) };
+  };
+  assert.equal(replay(400).score, 15000);
+  assert.deepEqual(replay(400), replay(16));
+  assert.deepEqual(replay(10), replay(16));
+});
+
+test("balance simulation reports the actual stop and unreached million threshold", () => {
+  const result = simulateDefense(20261114, "never", 10, 240);
+  assert.equal(result.stoppedBy, "time-limit");
+  assert.equal(result.millionAtMs, null);
+  assert.equal(result.millionAtWave, null);
+  assert.equal(result.bestCombo, 0);
+  const capped = simulateDefense(20261114, "bank", 600000, 1);
+  assert.equal(capped.stoppedBy, "wave-limit");
+  const lost = simulateDefense(20261114, "human");
+  assert.equal(lost.stoppedBy, "destroyed");
+  assert.ok(lost.bestCombo > 0);
+});
+
+test("extended balance horizon measures a real million-point run beyond wave 48", () => {
+  const result = simulateDefense(20261101, "bank");
+  assert.ok(result.score >= 1_000_000);
+  assert.ok(result.millionAtWave! > 48);
+  assert.ok(result.millionAtMs! > 0 && result.millionAtMs! <= result.elapsedMs);
+  assert.equal(result.stoppedBy, "destroyed");
+  assert.deepEqual(simulateDefense(20261101, "bank"), result);
+});
+
+test("balance results label ideal bots and reaction-delay simulations without claiming human proof", () => {
+  for (const strategy of ["human", "human-blast"] as const) {
+    const result = simulateDefense(20261114, strategy, 10);
+    assert.equal(result.model, "reaction-delay-simulation");
+    assert.equal(result.reactionDelayMs, 120);
+    assert.equal(result.releaseDelayMs, 160);
+    assert.equal(result.interpretation, "Simulation only; not evidence of human performance or native-UI play.");
+  }
+  const ideal = simulateDefense(20261114, "bank", 10);
+  assert.equal(ideal.model, "ideal-bot");
+  assert.equal(ideal.reactionDelayMs, null);
+  assert.equal(ideal.releaseDelayMs, null);
+  assert.equal(ideal.interpretation, "Simulation only; not evidence of human performance or native-UI play.");
+});
