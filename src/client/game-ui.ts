@@ -10,8 +10,8 @@ const boltIcon =
 export function mountGameUI(): void {
   const root = document.getElementById("game-container")!;
   root.innerHTML = `
-    <div id="canvas-host" aria-hidden="true"></div>
-    <div class="interface" data-energy="charging">
+    <div class="interface" data-energy="charging" data-state="intro">
+      <div id="arena" aria-hidden="true"><div id="canvas-host"></div></div>
       <header class="topbar">
         <div class="brand">${shieldIcon}<div><span class="eyebrow">新巴比倫 · 城市守衛</span><h1>最後防線<span class="version">${GAME_VERSION}</span></h1></div></div>
         <div class="tools"><select id="language" class="language-select" aria-label="Interface language" data-no-translate><option value="en" lang="en">EN</option><option value="zh-Hant" lang="zh-Hant">繁中</option></select><button id="sound" class="icon-button" aria-label="關閉音效" aria-pressed="true">音效開</button><button id="pause" class="icon-button" aria-label="暫停遊戲" hidden>暫停</button></div>

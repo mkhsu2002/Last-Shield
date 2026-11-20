@@ -11,28 +11,23 @@
     <title>Last Shield v1.02 | Daily Defense on Reddit</title>
   </head>
   <body>
-    <main class="wrap">
+    <main class="wrap" data-state="idle" aria-labelledby="splash-title">
       <header class="launch-topbar">
-      <div id="splash-brand" class="eyebrow">NEO BABYLON · CITY DEFENSE</div>
-      <select class="language-select" aria-label="Interface language" data-no-translate><option value="en">EN</option><option value="zh-Hant">繁中</option></select>
+        <div><h1 id="splash-title">Last Shield</h1><small><span id="splash-detail">Neo Babylon ·</span> <span id="version"></span></small></div>
+        <select class="language-select" aria-label="Interface language" data-no-translate><option value="en" lang="en">EN</option><option value="zh-Hant" lang="zh-Hant">繁中</option></select>
       </header>
-      <section class="launch-main" aria-labelledby="splash-title">
-      <div class="shield" aria-hidden="true">
-        <svg viewBox="0 0 32 36" fill="none">
-          <path
-            d="M16 2 29 7v11c0 8-13 16-13 16S3 26 3 18V7L16 2Z"
-            stroke="currentColor"
-            stroke-width="1.5"
-          />
-          <path d="m9 18 5 5 9-12" stroke="currentColor" stroke-width="1.5" />
-        </svg>
-      </div>
-      <h1 id="splash-title">Last Shield</h1>
-      <p id="splash-copy">Catch gold. Hold to shatter. Defend Neo Babylon.</p>
+      <section class="arena" id="inline-arena" aria-hidden="true">
+        <svg class="dome" viewBox="0 0 240 110" fill="none" preserveAspectRatio="none"><path d="M3 106a117 104 0 0 1 234 0" stroke-width="2"/><path class="crack" d="m148 5 12 23-7 17 19 13-8 19m-11-32-19 8-8 25m34-50 13 1 7 9" stroke-width="2"/></svg>
+        <svg class="beam" viewBox="0 0 100 100" fill="none" preserveAspectRatio="none"><line x1="50" y1="77" x2="66" y2="46" stroke-width="4" vector-effect="non-scaling-stroke"/></svg>
+        <div class="rock"><img src="./art/meteor.webp" alt="" draggable="false"></div>
       </section>
       <footer class="launch-actions">
-      <button id="start" type="button">Start defending</button>
-      <small><span id="splash-detail">A new daily storm ·</span> <span id="version"></span></small>
+        <p id="splash-copy" role="status" aria-live="polite">Tap when the ring turns gold.</p>
+        <div class="buttons">
+          <button id="start" type="button">Try one meteor</button>
+          <button id="expand" type="button">Open full game</button>
+        </div>
+        <small id="practice-note">Tap practice · no ranking</small>
       </footer>
     </main>
     <script type="module" src="splash.ts"></script>
