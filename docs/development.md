@@ -1,6 +1,6 @@
-> 最新工作（2026-11-19，America/Vancouver）：MK 已通過 v0.50 人工驗收；PR #1 已合併 main、tag v0.50，Reddit 0.50.0 已核准公開並同版安裝到 staging／正式，Vercel production 同版讀回通過。新版英文立體聲實錄與截圖已完成；YouTube 新版已公開發布並通過播放驗證；原 Devpost 投稿已同步新版影片、四張截圖與第一人稱 story，讀回 SUBMITTED／5/5。見 [正式發布紀錄](v0-50-release-2026-11-19.md)。
+> 正式版歷史紀錄（2026-11-19，America/Vancouver）：MK 已通過 v0.50 人工驗收；PR #1 已合併 main、tag v0.50，Reddit 0.50.0 已核准公開並同版安裝到 staging／正式，Vercel production 同版讀回通過。新版英文立體聲實錄與截圖已完成；YouTube 新版已公開發布並通過播放驗證；原 Devpost 投稿已同步新版影片、四張截圖與第一人稱 story，讀回 SUBMITTED／5/5。見 [正式發布紀錄](v0-50-release-2026-11-19.md)。
 
-> 2026-11-20 狀態更新：前一輪紀錄保留為歷史證據。依 MK 最新指示，正式發布與參賽更新暫緩，優先完成[第二輪品質強化](v0-52-quality-round-2-2026-11-20.md)。目前未通過各軸 9 分門檻；不得以已錄影或本機測試通過宣稱達標。
+> 2026-11-20 狀態更新：前一輪紀錄保留為歷史證據。依 MK 最新指示，正式發布與參賽更新暫緩，優先完成[第二輪品質強化](v0-52-quality-round-2-2026-11-20.md)。本輪三次修正後內部複核四軸各 9.0；正式交付仍暫緩。評分與證據範圍見該紀錄，不能推論真人留存或得獎。
 
 
 > 2026-11-19 狀態：本文件前段版本功能為歷史描述。v0.52 候選採 survival-8／community-3，連擊倍率與 Hero Hall 的目前契約、留存與部署進度，以 [v0.52 計畫](superpowers/plans/2026-11-19-v0-52-heroes.md) 及 [本輪紀錄](v0-52-round-1-2026-11-19.md) 為準；正式版尚未更新。
@@ -129,7 +129,7 @@ POST /api/community/hall/certificate/image accepts only id, rendered PNG and pub
 
 The frontend and this endpoint must deploy together in the full Devvit package. Native share and public-image navigation still require candidate live testing before formal release. No new provider secret, external service or scheduler was added.
 
-## v0.52 第三輪候選契約（2026-11-20，待私人部署）
+## v0.52 第三輪候選契約（2026-11-20，已完整私人部署 0.52.0.7）
 
 新增 additive 只讀 `GET /api/community/challenge?code=LS8:<YYYYMMDD>:<UUID>`，沿用 `community-3 / survival-8` envelope，返回 `{target:{username,score,day,rules,kind}}`。僅解析既有 index、accepted audit、當日目前 public best 與榜單成員資格；不回傳 userId、audit 或 trace，不新增伺服器儲存 key、migration 或背景任務。格式錯誤 400，示範／移除／過期／不存在為 404。原生 share data 僅接受 `{kind:"rival",code}`，桌面複製同一 code 為備援。接收端重新查驗、確認日期才設定 rival；舊日改玩今日。接受後開局再次查驗，不依賴只含前十的排行榜來維持好友目標。
 

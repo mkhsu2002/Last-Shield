@@ -57,7 +57,7 @@ Try **Practice perfect timing** before starting the daily challenge. Practice sl
 
 ## Candidate development
 
-Formal delivery is on hold while the candidate undergoes another product quality review. [Current quality work and unverified items](docs/v0-52-quality-round-2-2026-11-20.md).
+Formal delivery remains on hold. The candidate passed the latest internal four-axis quality review at 9.0/10 per axis; this is not a claim of measured human retention or a competition result. [Current quality work and unverified items](docs/v0-52-quality-round-2-2026-11-20.md).
 
 The active v0.52 candidate combines rotating daily storms and rival challenges with combo score multipliers, a daily leader HUD, daily champion history, score and combo Top 100 collections, and optional long-term Neo Babylon Citizen certificates. This is development status; the public release below remains v0.50 until full deployment is verified. [Implementation and release checklist](docs/superpowers/plans/2026-11-19-v0-52-heroes.md).
 
