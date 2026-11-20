@@ -239,6 +239,7 @@ export class HallController {
     finally { this.busy = false; this.controls(); }
   }
   private clearCertificate(): void {
+    say('hall-share-status', '');
     ++this.imageGeneration; this.certificate = null; this.shareFile = null;
     this.exportedImageUrl = null; this.imageExporting = false;
     get<HTMLInputElement>('hall-image-consent').checked = false;
@@ -293,13 +294,16 @@ export class HallController {
     if (!this.enabled || !this.certificate || !this.shareFile) return;
     const presentation = certificatePresentation(this.certificate, this.postUrl);
     const generation = this.imageGeneration;
+    // Clipboard starts in the user gesture; the host share effect has no completion signal.
+    const copied = this.copy();
     try {
       await showShareSheet({ title: presentation.title, text: presentation.text,
         data: JSON.stringify({ kind: 'citizen', id: this.certificate.id }) });
-    } catch (error) {
-      if (generation !== this.imageGeneration || (error instanceof Error && error.name === 'AbortError')) return;
-      say('hall-certificate-status', '暫時無法開啟分享，可複製證書與貼文連結後自行分享。');
+    } catch {
+      // The deterministic copy result remains available even if the host cannot share.
     }
+    await copied;
+    if (generation !== this.imageGeneration) return;
   }
   private async exportImage(): Promise<void> {
     const cert = this.certificate;
@@ -338,12 +342,14 @@ export class HallController {
   }
   private async copy(): Promise<void> {
     if (!this.certificate) return;
+    const generation = this.imageGeneration;
     const copy = certificatePresentation(this.certificate, this.postUrl).text;
-    try { await navigator.clipboard.writeText(copy); say('hall-certificate-status', '已複製證書與貼文連結，可自行分享。'); }
+    try { await navigator.clipboard.writeText(copy); if (generation !== this.imageGeneration) return; say('hall-share-status', '已複製證書與貼文連結，可自行分享。'); }
     catch {
+      if (generation !== this.imageGeneration) return;
       const fallback = get<HTMLTextAreaElement>('hall-copy-fallback');
       localizedValue(fallback, [{ literal: copy }]); fallback.hidden = false; fallback.focus(); fallback.select();
-      say('hall-certificate-status', '請選取上方文字並複製。');
+      say('hall-share-status', '請選取下方文字並複製，再分享到社群。');
     }
   }
 }

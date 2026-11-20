@@ -1,5 +1,8 @@
 // Source-language keys keep gameplay copy in one bilingual catalog.
 export const MESSAGES: Record<string, string> = {
+  "複製並分享證書": "Copy & share certificate",
+  "請選取下方文字並複製，再分享到社群。": "Select and copy the text below, then share it with your community.",
+  "儲存證書圖片": "Save certificate image",
   "守城練習": "Practice defense",
   "練習可慢慢看清時機；正式守城節奏更快。": "Practice gives you time to learn. The real defense moves faster.",
   "本機目標進度。": "Local goal progress.",
