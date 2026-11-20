@@ -2,6 +2,7 @@
  * Local preview only; emulated touch is not an Android/iOS device result. */
 export async function runInteractionQA(page,baseURL='http://localhost:4173') {
   if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(baseURL))throw Error('Local QA only');
+  if(await page.evaluate(()=>document.visibilityState)!=='visible')throw Error('Activate the visible canonical lane tab before QA');
   const check=(ok,message)=>{if(!ok)throw Error(message);};
   await page.setViewportSize({width:390,height:612});await page.emulateMedia({reducedMotion:'reduce'});await page.goto(baseURL);
   await page.locator('#language').selectOption('en');

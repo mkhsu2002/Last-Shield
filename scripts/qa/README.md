@@ -1,6 +1,6 @@
 # Repeatable browser QA
 
-Use Node >=24.18.0 and run `npm run qa:prepare` first. These modules receive an already authorized Playwright `page`; they never start or select a browser, read credentials, or post scores. Use the canonical lane and MCP namespace required by the owner's browser rules.
+Use Node >=24.18.0 and run `npm run qa:prepare` first. These modules receive an already authorized Playwright `page`; they never start or select a browser, read credentials, or post scores. Use the canonical lane and MCP namespace required by the owner's browser rules. Confirm `document.visibilityState === "visible"`; a hidden target suspends native animation frames and cannot establish interaction results. If needed, open the URL with `codex-browser open <authorized-lane> <url>` and select that new target in the same namespace; do not alter game clocks or visibility APIs.
 
 1. Preview the production build with `npm run preview:local` (port4173).
 2. For isolated source fixtures and offline audio, serve Vite with `npx --no-install vite --config vite.standalone.config.ts --host 127.0.0.1 --port 4177 --strictPort`.
@@ -14,6 +14,7 @@ Use Node >=24.18.0 and run `npm run qa:prepare` first. These modules receive an 
 | interactions.mjs | runInteractionQA | Trusted emulated touch, capture release, keyboard, sound, pause/resize, Overdrive, results, clipboard denial and visible English |
 | hall-fixture.mjs | runHallFixture | Explicitly isolated controller fixture: enrollment response immediately updates state, blank callsign is sent, follow-up read outage cannot disable withdrawal |
 | soak.mjs | runSoakChunk | Bounded native-keyboard local demonstration driven by visible cues; automatically pauses between chunks; never submits scores |
+| stage-hall.mjs | runStageHallQA | Optional real private-stage round-trip after a naturally verified demo; checks owner/baseline, clears then restores K in finally, preserves certificate ID/score; never production |
 | audio.mjs | runAudioQA | Actual production impact/Overdrive scheduling, stereo and clipping checks via OfflineAudioContext |
 
 A function throws if an assertion fails. Record the returned result and source SHA in local ignored evidence, then inspect representative screenshots. No function claims physical Android/iOS, listening quality, independent players or retention. Hall fixture data and emulated input must always retain those labels. Local QA success does not establish a Reddit-host/API pass.

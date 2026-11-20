@@ -2,6 +2,7 @@
  * Local demonstration only; no engine access, fake clock, state or score writes. */
 export async function runSoakChunk(page,{baseURL='http://localhost:4173',start=true,durationMs=20000}={}) {
   if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(baseURL)||durationMs>25000)throw Error('Local bounded QA only');
+  if(await page.evaluate(()=>document.visibilityState)!=='visible')throw Error('Activate the visible canonical lane tab before QA');
   if(start){
     await page.setViewportSize({width:390,height:612});await page.emulateMedia({reducedMotion:'no-preference'});await page.goto(baseURL);await page.locator('#language').selectOption('en');
     await page.locator('.demo-options summary').click();await page.locator('#demo-mode').check();await page.locator('#start').click();await page.locator('#game-container').focus();

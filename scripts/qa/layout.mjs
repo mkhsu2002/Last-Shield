@@ -2,6 +2,7 @@
  * Local production preview only. Text scaling is stress simulation, not OS text size. */
 export async function runLayoutQA(page,baseURL='http://localhost:4173') {
   if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(baseURL))throw Error('Local QA only');
+  if(await page.evaluate(()=>document.visibilityState)!=='visible')throw Error('Activate the visible canonical lane tab before QA');
   const sizes=[[320,480],[360,600],[390,612],[390,796],[430,820],[667,375],[724,596],[768,768],[1420,660]];
   const failures=[],widths=[];let cases=0;
   const check=(ok,name,meta)=>{if(!ok)failures.push({name,...meta});};
