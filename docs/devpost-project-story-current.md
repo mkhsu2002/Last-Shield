@@ -18,7 +18,7 @@ Neo Babylon gives that compact challenge a city worth defending. A shared daily 
 - **Climb your community's daily board.** After a run, choose to submit your score. See the top ten, your nearby rivals, and the points needed to pass the next defender. Only your highest accepted score counts; ties share a rank.
 - **Share the decision behind the score.** Preview your result, add an optional strategy note, then copy it and open the Reddit post to write your comment. Sharing is always your choice.
 
-Open the post and select **Start defending**. The timing practice introduces the perfect lock before the daily challenge. Touch and keyboard controls, English and Traditional Chinese, a sound control, pause, and reduced-motion support make the experience approachable. A compact control dock keeps the fire button near the bottom and leaves the battlefield clear on smaller screens. Playing does not require a login; submitting to the community board does.
+Open the post and select **Start defending**. Timing practice slows the action, shows whether you caught the gold or released too soon, and lets you choose when to continue before the daily challenge. Touch and keyboard controls, English and Traditional Chinese, a sound control, pause, and reduced-motion support make the experience approachable. A compact control dock keeps the fire button near the bottom and leaves the battlefield clear on smaller screens. Playing does not require a login; submitting to the community board does.
 
 ## How we built it
 
@@ -30,13 +30,15 @@ The same gameplay rules run in the client and on the server. When a player submi
 
 Timing had to remain readable when several meteors arrived together. We made the initial press distinct from the holding phase: once the beam locks, the timing cue becomes a destruction-progress bar. A recurring gold window preserves a recovery path after a missed press, while a short relay rewards releasing and choosing the next target.
 
+We refined the painted skyline, textured meteors, blue-white Overdrive beams, and stereo impact effects so that a clear, an impact, and an emergency blast each feel distinct.
+
 The community board also needed to survive real interruptions. Runs retain their starting date across midnight, lower scores cannot overwrite a personal best, and submission retries do not create extra entries. A temporary ranking outage leaves the local game playable.
 
 ## Accomplishments we're proud of
 
 The daily loop now connects a tactical solo run to a shared community challenge. The Reddit game supports optional account-based ranking, nearby rivals, and player-led strategy sharing while preserving anonymous play.
 
-We verified a submitted score in the live Reddit game and read the same entry from a separate logged-out view. The project has 56 automated tests covering gameplay, replay validation, ranking, retries, date boundaries, localization, and recoverable failures.
+We verified a submitted score in the live Reddit game and read the same entry from a separate logged-out view. The project has 59 automated tests covering gameplay, replay validation, ranking, retries, date boundaries, localization, and recoverable failures.
 
 ## What we learned
 
