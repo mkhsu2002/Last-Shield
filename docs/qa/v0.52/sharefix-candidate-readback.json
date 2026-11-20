@@ -1,0 +1,51 @@
+{
+  "checkedAt": "2026-11-20T16:01:54.382Z",
+  "source": "official installation API and anonymous CDN fetch",
+  "installations": [
+    {
+      "subreddit": "last_shield_stage",
+      "version": "0.52.0.3",
+      "visibility": "PRIVATE"
+    },
+    {
+      "subreddit": "last_shield_dev",
+      "version": "0.50.0",
+      "visibility": "PUBLIC"
+    }
+  ],
+  "files": [
+    {
+      "path": "game.js",
+      "status": 200,
+      "sha256": "dc3ea036ce3ef53c846ed997bceca8208b26b0f05e20f0cb716f70242b055494",
+      "matchesLocal": true
+    },
+    {
+      "path": "game.css",
+      "status": 200,
+      "sha256": "9d0019c3edb465bfabd407c286bc9312e1fe7d3c7d9f27865e8c3d31050ceedd",
+      "matchesLocal": true
+    },
+    {
+      "path": "privacy/index.html",
+      "status": 200,
+      "sha256": "86b862478d59de30682c642bc2b0a2a3d952e119bdff47e1d596131ec2f10d67",
+      "matchesLocal": true
+    },
+    {
+      "path": "terms/index.html",
+      "status": 200,
+      "sha256": "9beeb5d76d29e685ab9a5591fb09c58711f9bdc213b62d41b202b69c5354847e",
+      "matchesLocal": true
+    }
+  ],
+  "liveHallStatus": 200,
+  "contract": "community-3",
+  "rules": "survival-8",
+  "retainedMillionScore": 1272630,
+  "imageConsentNegativeStatus": 400,
+  "imageConsentError": "consent-required",
+  "nativeShareLiveVerified": false,
+  "publicImageUploadLiveVerified": false,
+  "reason": "Waiting for foreground browser to open the new UI."
+}
