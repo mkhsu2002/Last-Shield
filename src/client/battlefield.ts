@@ -20,7 +20,7 @@ export type BattleEffect = {
   overdrive: boolean;
   perfect: boolean;
 };
-type State = {
+export type BattlefieldState = {
   run: DefenseRun;
   live: boolean;
   reducedMotion: boolean;
@@ -28,7 +28,10 @@ type State = {
   collapse: number;
   overdriveFlash: number;
   time: number;
+  hasCity?: boolean;
+  texturedMeteors?: boolean;
 };
+type State = BattlefieldState;
 type Graphics = Phaser.GameObjects.Graphics;
 
 function glow(
@@ -146,6 +149,37 @@ function city(g: Graphics, state: State): void {
   glow(g, 270, FIELD.y + 75, 16, CYAN, 0.2);
 }
 
+function litCity(g: Graphics, state: State): void {
+  // This is a local lighting layer, not a substitute for the painted environment.
+  const y = FIELD.y + 75;
+  const humidity = state.reducedMotion ? 0.85 : 0.79 + 0.045 * Math.sin(state.time / 1800);
+  for (let n = 7; n > 0; n--) {
+    g.fillStyle(0x3fdefa, (8 - n) * 0.006 * humidity);
+    g.fillEllipse(FIELD.x, y + 10, 42 + n * 32, 7 + n * 9);
+  }
+  g.fillStyle(0xdcffff, 0.94);
+  g.fillCircle(FIELD.x, y, 2.6);
+  g.lineStyle(1, 0x83f8ff, 0.38);
+  g.lineBetween(FIELD.x - 11, y, FIELD.x + 11, y);
+  for (let sector = 0; sector < 6; sector++) {
+    const damage = state.live ? state.run.sectors[sector]! : 0;
+    const start = 123 + sector * 49;
+    for (let window = 0; window < 8; window++) {
+      const on = window >= Math.min(8, Math.ceil(damage / 5));
+      const x = start + (window % 4) * 8;
+      const yy = FIELD.y + 109 + Math.floor(window / 4) * 5;
+      g.fillStyle(on ? 0x9cecf3 : 0x2e2330, on ? 0.73 : 0.75);
+      g.fillRect(x, yy, 2.3, 2);
+    }
+    if (damage > 0) {
+      g.fillStyle(0x19051a, Math.min(0.5, damage / 88));
+      g.fillEllipse(start + 16, FIELD.y + 103, 48, 30);
+      g.fillStyle(0xff855f, Math.min(0.23, damage / 123));
+      g.fillEllipse(start + 16, FIELD.y + 110, 24, 9);
+    }
+  }
+}
+
 function shield(g: Graphics, state: State): void {
   const { run, live, collapse, reducedMotion } = state;
   const broken = live && run.integrity === 0;
@@ -153,6 +187,21 @@ function shield(g: Graphics, state: State): void {
   glow(g, FIELD.x, FIELD.y, SHIELD_RADIUS, CYAN, 0.025 * alpha);
   g.fillStyle(0x65d6ee, 0.035 * alpha);
   g.fillCircle(FIELD.x, FIELD.y, SHIELD_RADIUS);
+  if (!broken && state.hasCity) {
+    // Projected surface lines taper toward the rim; no shader or frame readback.
+    for (let band = 2; band <= 7; band++) {
+      const a = band / 9;
+      g.lineStyle(0.85, 0x88ebfc, (0.05 + a * 0.105) * alpha);
+      g.beginPath();
+      g.arc(FIELD.x, FIELD.y, SHIELD_RADIUS * a, -Math.PI, 0);
+      g.strokePath();
+    }
+    for (let cell = 1; cell < 12; cell++) {
+      const a = -Math.PI + cell * Math.PI / 12;
+      g.lineBetween(FIELD.x + Math.cos(a) * 17, FIELD.y + Math.sin(a) * 17,
+        FIELD.x + Math.cos(a) * SHIELD_RADIUS, FIELD.y + Math.sin(a) * SHIELD_RADIUS);
+    }
+  }
   if (!broken) {
     g.lineStyle(1, CYAN, 0.13);
     g.strokeEllipse(FIELD.x, FIELD.y, SHIELD_RADIUS * 2, SHIELD_RADIUS * 0.7);
@@ -240,6 +289,7 @@ function core(g: Graphics, m: Meteor, state: State): void {
     );
   }
   glow(g, x, y, radius * 1.4, 0xffa35d, 0.09);
+  if (!state.texturedMeteors) {
   const points = [];
   for (let i = 0; i < 13; i++) {
     const a = (i * TAU) / 13 + (reducedMotion ? 0.25 : elapsed / 5000);
@@ -265,6 +315,7 @@ function core(g: Graphics, m: Meteor, state: State): void {
       x + Math.cos(a + 0.24) * radius * 0.8,
       y + Math.sin(a + 0.24) * radius * 0.8
     );
+  }
   }
   if (m.kind === "heavy") {
     g.lineStyle(3, 0xffc393, 0.6);
@@ -308,6 +359,15 @@ function core(g: Graphics, m: Meteor, state: State): void {
     const boosted = m.grade === "perfect";
     const width = boosted ? 9 : 4;
     const beamColor = boosted ? GOLD : CYAN;
+    const sx = FIELD.x, sy = FIELD.y + 75;
+    const perpendicular = Math.atan2(y - sy, x - sx) + Math.PI / 2;
+    const bx = Math.cos(perpendicular), by = Math.sin(perpendicular);
+    const cutoff = boosted ? 13 : 6;
+    g.fillStyle(beamColor, 0.21);
+    g.fillTriangle(sx + bx * 2, sy + by * 2, x + bx * cutoff, y + by * cutoff, x - bx * cutoff, y - by * cutoff);
+    g.fillStyle(0xeaffff, 0.86);
+    g.fillCircle(sx, sy, boosted ? 6 : 4);
+    g.fillCircle(x, y, boosted ? 5 : 3);
     g.lineStyle(width + 17, beamColor, 0.09);
     g.lineBetween(FIELD.x, FIELD.y + 75, x, y);
     g.lineStyle(width + 6, beamColor, 0.17);
@@ -342,6 +402,16 @@ function burst(g: Graphics, e: BattleEffect, reduced: boolean): void {
   glow(g, e.x, e.y, 35 + t * 60, color, e.life * 0.12);
   g.lineStyle(1 + e.life * 3, color, e.life * 0.65);
   g.strokeCircle(e.x, e.y, 15 + t * (e.overdrive ? 150 : 95));
+  if (e.impact) {
+    const angle = Math.atan2(e.y - FIELD.y, e.x - FIELD.x);
+    for (let j = 0; j < 4; j++) {
+      const sweep = 0.08 + t * (0.28 + j * 0.16);
+      g.lineStyle(j === 0 ? 3 : 1.6, j === 0 ? 0xffe4cb : CORAL, e.life * (0.9 - j * 0.17));
+      g.beginPath();
+      g.arc(FIELD.x, FIELD.y, SHIELD_RADIUS - j * 7 + 2 * t, angle - sweep, angle + sweep);
+      g.strokePath();
+    }
+  }
   const count = e.impact ? 25 : e.overdrive ? 22 : 12;
   for (let i = 0; i < count; i++) {
     const a = (i * TAU) / count + 0.2,
@@ -358,8 +428,8 @@ function burst(g: Graphics, e: BattleEffect, reduced: boolean): void {
 
 export function drawBattlefield(g: Graphics, state: State): void {
   g.clear();
-  sky(g);
-  city(g, state);
+  if (state.hasCity) litCity(g, state);
+  else { sky(g); city(g, state); }
   shield(g, state);
   if (state.live)
     for (const meteor of state.run.meteors) core(g, meteor, state);

@@ -10,6 +10,7 @@ import {
   meteorGeometry,
   contactInMs,
   PERFECT_WINDOW_MS,
+  SHIELD_RADIUS,
 } from "../shared/game-logic";
 import type { RunEvent } from "../shared/game-logic";
 import { SynthAudio } from "./audio";
@@ -26,6 +27,7 @@ import {
 import { GAME_VERSION } from "./version";
 import { Community } from "./community";
 import { drawBattlefield, FIELD } from "./battlefield";
+import { SceneArt, preloadSceneArt } from "./scene-art";
 import type { BattleEffect } from "./battlefield";
 
 type Phase =
@@ -37,8 +39,11 @@ type Phase =
   | "trained";
 const KIND_NAMES = { normal: "普通核心", fast: "快速核心", heavy: "重型核心" };
 mountGameUI();
+// Supersample rendering without changing the FIELD coordinate system used by input/physics.
+const RENDER_SCALE = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
 
 class ShieldScene extends Phaser.Scene {
+  private art!: SceneArt;
   private graphics!: Phaser.GameObjects.Graphics;
   private community!: Community;
   private starting = false;
@@ -66,8 +71,11 @@ class ShieldScene extends Phaser.Scene {
     super("shield");
   }
 
+  preload(): void { preloadSceneArt(this); }
+
   create(): void {
-    this.graphics = this.add.graphics();
+    this.art = new SceneArt(this, RENDER_SCALE);
+    this.graphics = this.add.graphics().setScale(RENDER_SCALE);
     this.community = new Community();
     try {
       this.storage = window.localStorage;
@@ -355,7 +363,7 @@ class ShieldScene extends Phaser.Scene {
     } else if (event.type === "clear") {
       this.lastResolution = "clear";
       const perfect = event.grade === "perfect";
-      if (!event.overdrive) this.audio.clear(perfect, false);
+      if (!event.overdrive) this.audio.clear(perfect, false, Math.max(-0.9, Math.min(0.9, event.point.x / SHIELD_RADIUS * 0.9)));
       const label = event.overdrive
         ? "超載擊碎"
         : perfect
@@ -390,7 +398,7 @@ class ShieldScene extends Phaser.Scene {
       }
     } else if (event.type === "impact") {
       this.lastResolution = "impact";
-      this.audio.impact(event.damage);
+      this.audio.impact(event.damage, Math.max(-0.9, Math.min(0.9, event.point.x / SHIELD_RADIUS * 0.9)));
       if (this.practiceMode) {
         this.releaseAll();
         this.setPhase("trained");
@@ -562,7 +570,7 @@ class ShieldScene extends Phaser.Scene {
       } else this.audio.stop();
       this.renderHUD();
     }
-    drawBattlefield(this.graphics, {
+    const frame = {
       run: this.run,
       live: this.phase !== "intro",
       reducedMotion: this.reducedMotion,
@@ -573,7 +581,11 @@ class ShieldScene extends Phaser.Scene {
           : 0,
       overdriveFlash: this.overdriveFlash,
       time,
-    });
+      hasCity: this.art.hasCity,
+      texturedMeteors: this.art.texturedMeteors,
+    };
+    this.art.draw(frame);
+    drawBattlefield(this.graphics, frame);
   }
 
   private renderHUD(): void {
@@ -778,8 +790,8 @@ new Phaser.Game({
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: FIELD.width,
-    height: FIELD.height,
+    width: Math.round(FIELD.width * RENDER_SCALE),
+    height: Math.round(FIELD.height * RENDER_SCALE),
   },
   scene: [ShieldScene],
   render: { antialias: true },
