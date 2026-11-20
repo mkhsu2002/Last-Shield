@@ -1,68 +1,135 @@
-* {
-  box-sizing: border-box;
-}
-html,
-body {
+* { box-sizing: border-box; }
+html, body {
   margin: 0;
-  min-height: 100%;
-  background: radial-gradient(circle at 50% 40%, #17446b, #071323 68%);
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  color-scheme: dark;
+  background: #071323;
   color: #ecf8ff;
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang TC",
-    "Microsoft JhengHei", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
 }
 .wrap {
-  min-height: 100dvh;
-  padding: 36px 22px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  height: 100vh;
+  height: 100svh;
+  padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 12px;
   text-align: center;
-  gap: 17px;
+  background: radial-gradient(ellipse at 50% 35%, #17446b, #071323 78%);
+}
+.launch-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
 }
 .eyebrow {
-  font-size: 11px;
-  letter-spacing: 3px;
-  color: #93d6f0;
+  min-width: 0;
+  max-width: 24ch;
+  text-align: left;
+  font-size: 10px;
+  line-height: 1.4;
+  letter-spacing: 1.5px;
+  color: #a5deef;
+}
+.language-select {
+  position: static;
+  flex: 0 0 auto;
+  min-width: 62px;
+  min-height: 44px;
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 14px;
+  color: #edf5ff;
+  background: #102037;
+  border: 1px solid #adcbe755;
+  border-radius: 10px;
+}
+.launch-main {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(6px, 2vh, 14px);
 }
 .shield {
-  height: 110px;
-  font-size: 108px;
-  line-height: 1;
+  flex: 0 1 auto;
+  min-height: 0;
+  height: clamp(38px, 17vh, 96px);
   color: #66ddf2;
-  text-shadow: 0 0 45px #41b9d0;
+  filter: drop-shadow(0 0 18px #41b9d055);
 }
+.shield svg { display: block; width: auto; height: 100%; }
 h1 {
-  font-size: clamp(24px, 6vw, 43px);
   margin: 0;
-  letter-spacing: 2px;
+  font-size: clamp(24px, 6vw, 36px);
+  line-height: 1.2;
+  letter-spacing: 1px;
 }
 p {
-  max-width: 450px;
+  margin: 0;
+  max-width: 30ch;
   font-size: 15px;
-  line-height: 1.55;
-  color: #bad5e9;
+  line-height: 1.45;
+  color: #c4deee;
+}
+.launch-actions {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: 100%;
 }
 button {
-  background: #ffc46b;
-  color: #32200a;
+  width: min(100%, 340px);
+  min-height: 48px;
+  padding: 12px 18px;
   border: 0;
-  padding: 16px 25px;
-  border-radius: 10px;
-  font-size: 15px;
+  border-radius: 12px;
+  background: linear-gradient(110deg, #ffdc91, #ffb65a);
+  color: #32200a;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.3;
   font-weight: 800;
-  letter-spacing: 1px;
   cursor: pointer;
+  touch-action: manipulation;
 }
-small {
-  font-size: 10px;
-  letter-spacing: 1.5px;
-  color: #99afc4;
+button:focus-visible, select:focus-visible { outline: 3px solid #a5eaff; outline-offset: 3px; }
+small { font-size: 10px; line-height: 1.4; color: #abc4d5; }
+/* The post is a fixed-height card: decoration yields space before the action. */
+@media (max-height: 380px) {
+  .wrap { padding: 10px 14px; gap: 8px; }
+  .launch-main { display: grid; grid-template-columns: auto minmax(0, auto); justify-content: center; align-content: center; column-gap: 12px; row-gap: 8px; }
+  .shield { height: 42px; }
+  h1 { font-size: 24px; text-align: left; }
+  p { grid-column: 1 / -1; font-size: 14px; }
+  .launch-actions { gap: 6px; }
 }
-
-.shield svg {
-  width: 100px;
-  height: 110px;
+@media (max-height: 280px) {
+  .wrap { padding: 8px 12px; gap: 6px; }
+  .shield, .launch-main p, .launch-actions small { display: none; }
+  .launch-main { display: flex; }
+  h1 { font-size: 22px; text-align: center; }
 }
-
-.language-select { position: absolute; top: 12px; right: 12px; min-height: 44px; background: #102037; color: #edf5ff; border: 1px solid #adcbe744; border-radius: 10px; padding: 6px; }
+@media (max-height: 200px) {
+  .launch-main { display: none; }
+  .wrap { grid-template-rows: auto auto; align-content: space-between; }
+}
+/* Content space also shrinks when system text is large. Keep text and Play,
+   giving up the decorative shield first, then the optional one-line guide. */
+.launch-main { container-type: size; container-name: launch-content; }
+@container launch-content (max-height: 340px) {
+  .shield { display: none; }
+}
+@container launch-content (max-height: 220px) {
+  .launch-main p { display: none; }
+  .launch-main h1 { grid-column: 1 / -1; text-align: center; }
+}
+@media (max-height: 380px) {
+  .launch-actions small { display: none; }
+}

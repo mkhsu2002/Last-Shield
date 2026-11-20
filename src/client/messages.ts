@@ -1,5 +1,7 @@
 // Source-language keys keep gameplay copy in one bilingual catalog.
 export const MESSAGES: Record<string, string> = {
+  "金色時按住，擊碎隕石，守住新巴比倫。": "Catch gold. Hold to shatter. Defend Neo Babylon.",
+  "每日新風暴 ·": "A new daily storm ·",
   "最後防線 {0}｜Reddit 每日守城": "Last Shield {0} | Daily Defense on Reddit",
   "迎戰每日新風暴，累積連擊，挑戰好友，在 Reddit 社群英雄館留下紀錄。": "Defend Neo Babylon in a new daily storm. Build your combo, challenge friends, and earn a place in your Reddit community’s Hall of Heroes.",
   "挑戰今日風暴，追上社群最高分。": "Face today’s storm. Chase your community’s best.",
