@@ -1,4 +1,5 @@
-import { version } from '../../package.json';
+import pkg from '../../package.json' with { type: 'json' };
+const { version } = pkg;
 
-// Package minor is the two-digit gameplay release (0.41.0 → v0.41).
+// Display major.minor; package patch and private-build numbers stay out of the UI.
 export const GAME_VERSION = `v${version.split('.').slice(0, 2).join('.')}`;

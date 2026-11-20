@@ -25,7 +25,7 @@ export function mountGameUI(): void {
         <p id="daily-leader" class="daily-leader"></p><p id="target" class="target"></p><p id="rival-goal" class="rival-goal"></p>
       </section>
       <section id="intro" class="intro" aria-labelledby="intro-title">
-        <div class="intro-copy"><span class="chapter">每日生存挑戰 <span id="day"></span></span><h2 id="intro-title">守住這座城。<br><em>直到最後一刻。</em></h2><p>天際正在崩落。你，是城市最後的光。</p></div>
+        <div class="intro-copy"><span class="chapter">每日生存挑戰 <span id="day"></span></span><h2 id="intro-title">守住這座城。<br><em>直到最後一刻。</em></h2><p>挑戰今日風暴，追上社群最高分。</p></div>
         <div class="launch-card">
           <div class="daily-card"><span class="eyebrow">今日風暴</span><strong id="daily-title"></strong><p id="daily-description"></p><span id="daily-tomorrow" class="fineprint"></span></div>
           <p id="daily-focus"></p><p id="daily-reset"></p><p id="daily-return" hidden></p>
@@ -53,7 +53,7 @@ export function mountGameUI(): void {
         <div class="meter" aria-hidden="true"><i id="milestone-fill"></i></div>
       </section>
       <section id="results" class="panel results" hidden aria-labelledby="result-title">
-        <span id="result-kicker" class="eyebrow">本次防守結束</span><h2 id="result-title">防線終於落下。</h2><p class="result-caption">你爭取的每一秒，城市都記得。</p>
+        <span id="result-kicker" class="eyebrow">本次防守結束</span><h2 id="result-title">防線終於落下。</h2>
         <p id="result-storm" class="result-storm"></p><p id="result-rival" class="record-note"></p>
         <div id="result-score" class="result-score">0</div><p id="record-note" class="record-note"></p>
         <div class="result-stats"><div><strong id="result-perfect">0</strong><span>完美擊破</span></div><div><strong id="result-combo">0</strong><span>最高連擊</span></div><div><strong id="result-cleared">0</strong><span>擊碎隕石</span></div></div>

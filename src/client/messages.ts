@@ -1,5 +1,8 @@
 // Source-language keys keep gameplay copy in one bilingual catalog.
 export const MESSAGES: Record<string, string> = {
+  "最後防線 {0}｜Reddit 每日守城": "Last Shield {0} | Daily Defense on Reddit",
+  "迎戰每日新風暴，累積連擊，挑戰好友，在 Reddit 社群英雄館留下紀錄。": "Defend Neo Babylon in a new daily storm. Build your combo, challenge friends, and earn a place in your Reddit community’s Hall of Heroes.",
+  "挑戰今日風暴，追上社群最高分。": "Face today’s storm. Chase your community’s best.",
   "本局已驗分，但本機無法保留每日進度。": "Run verified. Daily progress could not be saved on this device.",
   "本局進度仍可查看，但本機無法保留。": "This run’s progress is shown, but could not be saved on this device.",
   "挑戰目標會以好友目前公開的本日最佳為準。": "The target follows your friend’s current public best for that day.",

@@ -1,3 +1,4 @@
+import { GAME_VERSION } from "./version.ts";
 import { MESSAGES } from "./messages.ts";
 import type { RecordStorage } from "./records.ts";
 
@@ -88,8 +89,8 @@ export function localizeTree(root: HTMLElement): void {
 function refreshLanguage(): void {
   if (typeof document === "undefined") return;
   document.documentElement.lang = language;
-  document.title = translate("最後防線｜新巴比倫守城挑戰");
-  document.querySelector('meta[name="description"]')?.setAttribute("content", translate("金色時機完美起手，迎戰同步逼近的碎星潮。保留超載能量，在危急時手動震爆全場，守護新巴比倫。"));
+  document.title = translate(`最後防線 ${GAME_VERSION}｜Reddit 每日守城`);
+  document.querySelector('meta[name="description"]')?.setAttribute("content", translate("迎戰每日新風暴，累積連擊，挑戰好友，在 Reddit 社群英雄館留下紀錄。"));
   for (const [node, source] of staticText) if (node.isConnected) node.textContent = translate(source);
   for (const [el, source] of dynamicText) if (el.isConnected) localizedText(el, source);
   for (const [el, entries] of attributes) if (el.isConnected)
