@@ -7,7 +7,7 @@
 .pause-run-details p { margin: 5px 0; }
 .pause-run-details p:empty { display: none; }
 
-/* Match the layout condition in view-mode.ts: controls overlay the portrait field. */
+/* Match the compact layout condition in view-mode.ts. */
 @media (max-width: 639px), (max-aspect-ratio: 1/1) {
   .adaptive-view #game-container[data-compact-battle="true"] { width: min(100vw, 620px); }
   .adaptive-view #game-container[data-compact-battle="true"] #canvas-host {
@@ -117,7 +117,7 @@
   .adaptive-view .interface[data-combat="true"]:not([data-state="paused"]) .action {
     position: relative; inset: auto; grid-row: 4; min-height: 0;
   }
-  .adaptive-view #game-container[data-compact-battle="true"] #canvas-host { mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent); }
+  .adaptive-view #game-container[data-compact-battle="true"] #canvas-host { mask-image: none; }
   .adaptive-view .interface[data-state="practice-review"] .action { max-height: min(260px, 50dvh); }
   .adaptive-view .interface[data-state="paused"] #battlefield { visibility: hidden; }
 }
