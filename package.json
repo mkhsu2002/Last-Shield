@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "last-shield",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "module",
   "scripts": {
     "dev": "devvit playtest",
@@ -30,5 +30,5 @@
     "typescript": "6.0.3",
     "vite": "8.3.7"
   },
-  "displayVersion": "v1.03"
+  "displayVersion": "v1.04"
 }
