@@ -1,4 +1,4 @@
-# Last Shield v1.01
+# Last Shield v1.02
 
 **A daily meteor defense game built around Reddit rivals and lasting records.**
 
@@ -79,7 +79,7 @@ Install [Last Shield](https://developers.reddit.com/apps/last-shield), then choo
 
 ## Development
 
-Built with Devvit Web, TypeScript, Phaser, Vite, Hono, Web Audio and Reddit Redis. The client and server share deterministic game rules; submission retries are idempotent. See [development notes](docs/development.md) and the [v1.01 release record](docs/v1-01-release-2026-11-20.md).
+Built with Devvit Web, TypeScript, Phaser, Vite, Hono, Web Audio and Reddit Redis. The client and server share deterministic game rules; submission retries are idempotent. See [development notes](docs/development.md) and the [v1.02 release record](docs/v1-02-mobile-launch-2026-11-20.md).
 
 [Source](https://github.com/mkhsu2002/Last-Shield) · [App listing](https://developers.reddit.com/apps/last-shield) · [Community](https://www.reddit.com/r/last_shield_dev/)
 

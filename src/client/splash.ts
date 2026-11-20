@@ -10,8 +10,8 @@ document.getElementById('start')?.addEventListener('click', (event) => {
 
 for (const [id, source] of Object.entries({
   "splash-brand": "新巴比倫 · 城市守衛", "splash-title": "最後防線",
-  "splash-copy": "金色時按住，定住目標直到擊碎；放開再按，接續金色接力。集滿三格超載可保留，危急時手動清場。",
-  "start": "開始守城", "splash-detail": "每日生存挑戰 · 按住發射 ·",
+  "splash-copy": "金色時按住，擊碎隕石，守住新巴比倫。",
+  "start": "開始守城", "splash-detail": "每日新風暴 ·",
 })) localizedText(document.getElementById(id)!, source);
 setLanguage(currentLanguage(), false);
 bindLanguageSelect();

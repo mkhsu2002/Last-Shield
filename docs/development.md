@@ -1,3 +1,5 @@
+> 本輪修正（2026-11-20）：v1.02 修復 Reddit App 啟動卡的開始按鈕裁切與語言選單遮擋，發布／讀回狀態以 [v1.02 記錄](v1-02-mobile-launch-2026-11-20.md) 為準；下方 v1.01 為上一版紀錄。
+
 > 本輪發布（2026-11-20）：v1.01 已正式發布；main／tag、Reddit 正式與 staging 1.0.1、Vercel production 及原生操作讀回完成；詳見 [v1.01 發布記錄](v1-01-release-2026-11-20.md)。先前 [本地體驗記錄](v1-01-local-preview-2026-11-20.md) 保留為歷史。
 
 > 最新正式狀態（2026-11-20）：**v1.0 已發布並完成原投稿同步**。main／tag v1.0、Reddit 正式與 staging 同為 1.0.0，Vercel production 同源；新版影片及四張截圖已更新至原 Devpost，SUBMITTED／5/5。以 [v1.0 發布紀錄](v1-0-release-2026-11-20.md) 與根目錄 README 為準。以下版本狀態皆為帶日期的歷史，先前的暫緩已由 MK 本輪正式發布授權取代。
