@@ -25,7 +25,7 @@ export function simulateDefense(
   };
   let millionAtMs: number | null = null, millionAtWave: number | null = null;
   const observeMillion = () => {
-    if (millionAtMs === null && run.score >= 1_000_000) {
+    if (millionAtMs === null && run.score > 1_000_000) {
       millionAtMs = Math.round(run.elapsedMs);
       millionAtWave = run.waveIndex + 1;
     }

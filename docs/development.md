@@ -1,5 +1,8 @@
 > 最新工作（2026-11-19，America/Vancouver）：MK 已通過 v0.50 人工驗收；PR #1 已合併 main、tag v0.50，Reddit 0.50.0 已核准公開並同版安裝到 staging／正式，Vercel production 同版讀回通過。新版英文立體聲實錄與截圖已完成；YouTube 新版已公開發布並通過播放驗證；原 Devpost 投稿已同步新版影片、四張截圖與第一人稱 story，讀回 SUBMITTED／5/5。見 [正式發布紀錄](v0-50-release-2026-11-19.md)。
 
+
+> 2026-11-19 狀態：本文件前段版本功能為歷史描述。v0.52 候選採 survival-8／community-3，連擊倍率與 Hero Hall 的目前契約、留存與部署進度，以 [v0.52 計畫](superpowers/plans/2026-11-19-v0-52-heroes.md) 及 [本輪紀錄](v0-52-round-1-2026-11-19.md) 為準；正式版尚未更新。
+
 > 後續精進（同日）：MK 已核准[每日風暴與對手挑戰設計](superpowers/specs/2026-11-19-v0-51-daily-rival-design.md)，要求四項評分各 9 分以上。候選功能已在功能分支實作，本機 72 測試及建置通過；私人 staging 0.51.0.5 已完成同版 CDN／契約／驗分／冪等與效能查核，真人初玩／多人／跨日證據仍待完成；見 [第一輪驗證紀錄](v0-51-round-1-2026-11-19.md)。正式及參賽提交仍為 v0.50，不可將候選或模擬當成已達 9 分。
 
 > 新增需求提案（同日）：每日冠軍歷史、歷史前百、榜首 HUD、百萬公民證書與 K 完整實玩錄影，見 [v0.52 英雄館設計](superpowers/specs/2026-11-19-v0-52-hall-of-fame-design.md)。尚待設計核准，未改計分或長期留存；約 114–134 萬只是候選連擊模型的離線投影，沒有真實百萬紀錄或證書，不能用於英雄榜或投稿。
@@ -33,7 +36,7 @@ Status: 2026-11-14 從 README 移入。v0.46 的 Vercel 段落為歷史證據；
 
 ### 比較策略而非只驗證動畫
 
-`npm run balance` 比較保留救急、提早花掉、完全不用、一直提早按住、慢按後補救、含反應延遲（使用／不用超載）七種控制策略，診斷範圍為前 48 波／最多 180 秒，並非遊戲結束限制。20261101–20261130 共 30 個日期中，含 120ms 出手／擊破反應與 160ms 放開間隔的控制器，均能在首場碎星潮不扣血；不用超載於第 18 波結束，使用超載則到第 18–29 波。理想操作保留救急到第 49 波診斷停止點；理想操作不用超載則於第 24–36 波結束。
+`npm run balance` 比較保留救急、提早花掉、完全不用、一直提早按住、慢按後補救、含反應延遲（使用／不用超載）七種控制策略，目前診斷上限為 240 波／600 秒，實際自然結束結果見 `qa/v0.52/balance.json`；以下 48 波數據屬 v0.46 歷史紀錄，不能套用 survival-8 計分。20261101–20261130 共 30 個日期中，含 120ms 出手／擊破反應與 160ms 放開間隔的控制器，均能在首場碎星潮不扣血；不用超載於第 18 波結束，使用超載則到第 18–29 波。理想操作保留救急到第 49 波診斷停止點；理想操作不用超載則於第 24–36 波結束。
 
 另外以相同實際鍵盤節奏、無模擬時鐘在 390×844 瀏覽器比較：看見金色後等 120ms、按住 520ms、放開 160ms，不用超載。v0.44 首場碎星潮後剩 66%；v0.45 三顆皆完美擊破，剩 100%。三顆大型核心的壓力案例也以逐顆擊碎／放開 180ms 再按驗證，能保留滿盾。
 這些是可重現的壓力與選擇差異，不代表主觀遊戲性已通過 MK 的實際試玩。
@@ -105,9 +108,9 @@ npm run build
 
 `npm run dev` starts the Devvit playtest workflow for a community you moderate after Devvit CLI authentication. `npm run build:standalone` builds the optional web preview into `dist/standalone`; the Reddit client and server build is separate.
 
-The project uses TypeScript, Devvit Web, Phaser, Vite, Hono, and Web Audio. Gameplay rules live in `src/shared/game-logic.ts`; `src/client/` contains the rendered game, controls, localization, audio, and local records; `src/server/index.ts` handles moderator-created playable posts and mounts the community API. `src/server/community-router.ts` defines its HTTP contract; `community-service.ts` owns sessions, daily rankings, and submission records. `src/shared/community.ts` replays submitted gameplay using the same rules as the client. `devvit.json` defines the inline splash, expanded game, and moderator menu.
+The project uses TypeScript, Devvit Web, Phaser, Vite, Hono, and Web Audio. Gameplay rules live in `src/shared/game-logic.ts`; `src/client/` contains the rendered game, controls, localization, audio, and local records; `src/server/index.ts` handles moderator-created playable posts and mounts the community API. `src/server/community-router.ts` defines its HTTP contract; `community-service.ts` owns sessions, daily rankings, and submission records; `hall-service.ts` maintains opt-in long-term best records, champion summaries, certificates and revocation. `src/shared/heroes.ts` defines the public Hall DTOs. `src/shared/community.ts` replays submitted gameplay using the same rules as the client. `devvit.json` defines the inline splash, expanded game, and moderator menu.
 
 
 ## Community development
 
-The default playtest target is the private `r/last_shield_stage`, separate from the public judging post in `r/last_shield_dev`. Do not playtest over the judging installation. The community API contract is `community-1`, and ranking keys include `survival-6`; this update does not change gameplay or scoring rules. The server recalculates scores from gameplay inputs, which prevents arbitrary score submissions but does not establish that a human performed the inputs. No external database, new scheduled job, or comment-as-user permission is required.
+The default playtest target is the private `r/last_shield_stage`, separate from the public judging post in `r/last_shield_dev`. Do not playtest over the judging installation. The v0.52 candidate uses `community-3` and `survival-8`, with score multipliers and an installation-local Hero Hall. All client/server routes must deploy together. Public v0.50 remains on its original contract until the candidate release is verified. The server recalculates scores from gameplay inputs, which prevents arbitrary score submissions but does not establish that a human performed the inputs. No external database, new scheduled job, or comment-as-user permission is required.
