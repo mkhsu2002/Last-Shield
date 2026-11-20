@@ -10,23 +10,55 @@ export function createCommunityRouter(community:CommunityService, actor:(include
   app.onError((error,c)=>{
     const code=error.message;
     const allowed=['login-required','invalid-context','rate-limited','invalid-session','expired-session',
-      'invalid-trace','invalid-duration','unfinished-run','invalid-day','retry-submit','invalid-request'];
+      'invalid-trace','invalid-duration','unfinished-run','invalid-day','retry-submit','invalid-request',
+      'consent-required','invalid-callsign','invalid-certificate','certificate-unavailable','revoked-run','mode-mismatch'];
     if(!allowed.includes(code)) console.error('Community storage unavailable');
     return c.json({...envelope,error:allowed.includes(code)?code:'unavailable'},
-      code==='login-required'?401:code==='rate-limited'?429:allowed.includes(code)?400:503);
+      code==='login-required'?401:code==='rate-limited'?429:code==='certificate-unavailable'?404:allowed.includes(code)?400:503);
   });
-  app.post('/api/community/start',async(c)=>c.json(await community.start(await actor(true))));
+  app.post('/api/community/start',async(c)=>{
+    let body:Record<string,unknown>={};
+    if(c.req.header('content-type')?.includes('application/json')){
+      try{body=await c.req.json();}catch{throw new Error('invalid-request');}
+      if(!body||typeof body!=='object'||Object.keys(body).some(k=>k!=='demo')||('demo' in body&&typeof body.demo!=='boolean'))throw new Error('invalid-request');
+    }
+    return c.json(await community.start(await actor(true),{demo:body.demo===true}));
+  });
   app.get('/api/community/board',async(c)=>c.json(await community.board(Number(c.req.query('day')),(await actor()).userId)));
   app.post('/api/community/submit',async(c)=>{
     let body:unknown;
     try{body=await c.req.json();}catch{throw new Error('invalid-request');}
     if(!body||typeof body!=='object'||!('runId' in body)||typeof body.runId!=='string'||!('trace' in body))throw new Error('invalid-request');
     const result=await community.submit(await actor(),body.runId,body.trace);
-    return c.json({...envelope,result});
+    const {userId:_owner,...publicResult}=result;
+    return c.json({...envelope,result:publicResult});
   });
   app.delete('/api/community/entry',async(c)=>{
     await community.remove(Number(c.req.query('day')),(await actor()).userId);
     return c.json({...envelope,removed:true});
   });
+  app.get('/api/community/hall',async(c)=>{
+    const before=c.req.query('before');
+    return c.json({...envelope,hall:await community.hall.list((await actor()).userId,before===undefined?undefined:Number(before))});
+  });
+  app.post('/api/community/hall/enroll',async(c)=>{
+    let body:unknown;try{body=await c.req.json();}catch{throw new Error('invalid-request');}
+    if(!body||typeof body!=='object'||!('runId' in body)||typeof body.runId!=='string')throw new Error('invalid-request');
+    if(!('publicConsent' in body)||body.publicConsent!==true)throw new Error('consent-required');
+    if(('callsign' in body&&typeof body.callsign!=='string')||Object.keys(body).some(k=>!['runId','callsign','publicConsent'].includes(k)))throw new Error('invalid-request');
+    const owner=await actor();
+    await community.enroll(owner,body.runId,'callsign' in body?body.callsign as string:undefined);
+    return c.json({...envelope,hall:await community.hall.list(owner.userId)});
+  });
+  app.delete('/api/community/hall',async(c)=>{
+    const owner=await actor();if(!owner.userId)throw new Error('login-required');
+    await community.hall.withdraw(owner.userId);return c.json({...envelope,removed:true});
+  });
+  app.get('/api/community/hall/certificate',async(c)=>{
+    const certificate=await community.hall.certificate(c.req.query('id')??'');
+    if(!certificate)throw new Error('certificate-unavailable');
+    return c.json({...envelope,certificate});
+  });
+  app.get('/api/community/hall/champion',async(c)=>c.json({...envelope,champion:await community.hall.championPage(Number(c.req.query('day')),c.req.query('after'))}));
   return app;
 }

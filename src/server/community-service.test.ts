@@ -39,7 +39,7 @@ test('storm is server-derived, midnight-stable and isolated from old rankings', 
   const {service,store,advance}=setup();
   store.sets.set('community-1:survival-6:board:20261115',new Map([['t2_legacy',-99999]]));
   const session=await service.start(actor);
-  assert.equal(session.contract,'community-2');
+  assert.equal(session.contract,'community-3');
   assert.equal(session.storm,dailyStorm(20261115).id);
   advance(120000);
   const result=await service.submit(actor,session.runId!,trace);
@@ -49,13 +49,40 @@ test('storm is server-derived, midnight-stable and isolated from old rankings', 
   assert.equal(board.me?.score,result.score);
   assert.equal(store.sets.get('community-1:survival-6:board:20261115')?.size,1);
 });
+test('demo sessions verify normally but stay outside competitive daily records',async()=>{
+ const {service,advance}=setup();const session=await service.start(actor,{demo:true});advance(120000);
+ const saved=await service.submit(actor,session.runId!,trace);
+ assert.equal(saved.demo,true);assert.equal((await service.board(20261115,actor.userId)).total,0);
+ const proof=await service.acceptedRun(actor,session.runId!);
+ await service.hall.enroll(proof,'K');assert.equal((await service.hall.list(actor.userId)).me.demo,true);
+ await assert.rejects(service.acceptedRun({...actor,userId:'t2_other'},session.runId!),/session/);
+});
+test('audit, day summary and enrolled records share the submit transaction',async()=>{
+ const {service,store,advance}=setup();const session=await service.start(actor);advance(120000);store.fail=true;
+ await assert.rejects(service.submit(actor,session.runId!,trace),/storage/);
+ assert.equal([...store.values.keys()].filter(k=>k.includes(':audit:')||k.includes(':seen:')).length,0);
+ store.fail=false;const saved=await service.submit(actor,session.runId!,trace);const proof=await service.acceptedRun(actor,session.runId!);
+ await service.hall.enroll(proof);assert.equal((await service.hall.list(actor.userId)).topScores[0]?.score,saved.score);
+ await service.remove(20261115,actor.userId);assert.equal((await service.hall.list()).champions.length,0);
+});
+test('removing one tied day entry removes its champion name but preserves all-time score',async()=>{
+ const {service,advance}=setup();const bob={...actor,userId:'t2_bob',username:'Bob'};
+ const a=await service.start(actor),b=await service.start(bob);advance(120000);
+ await service.submit(actor,a.runId!,trace);await service.submit(bob,b.runId!,trace);
+ await service.hall.enroll(await service.acceptedRun(actor,a.runId!));await service.hall.enroll(await service.acceptedRun(bob,b.runId!));
+ await service.remove(20261115,actor.userId);
+ const hall=await service.hall.list();assert.equal(hall.champions[0]?.tieCount,1);assert.deepEqual(hall.champions[0]?.winners.map(r=>r.username),['Bob']);
+ assert.equal(hall.topScores.length,2);
+ await service.enroll(actor,a.runId!);
+ assert.deepEqual((await service.hall.list()).champions[0]?.winners.map(r=>r.username),['Bob']);
+});
 test('concurrent submissions retain one best and ties share a rank', async()=>{
   const {service,advance}=setup();
   const sessions=await Promise.all([service.start(actor),service.start({...actor,userId:'t2_bob',username:'Bob'})]);
   advance(120000);
   await Promise.all([service.submit(actor,sessions[0].runId!,trace),service.submit({...actor,userId:'t2_bob',username:'Bob'},sessions[1].runId!,trace),service.submit(actor,sessions[0].runId!,trace)]);
   const board=await service.board(20261115,actor.userId);
-  assert.equal(board.total,2); assert.deepEqual(board.top.map(r=>r.rank),[1,1]); assert.equal(board.gap,null);
+  assert.equal(board.total,2); assert.equal(board.leaderTies,2); assert.deepEqual(board.top.map(r=>r.rank),[1,1]); assert.equal(board.gap,null);
 });
 test('anonymous sessions cannot submit; expired sessions and storage failure fail closed',async()=>{
   const {service,store,advance}=setup();
@@ -90,4 +117,12 @@ test('lower scores cannot replace a best; nearby ranks and gap work beyond top t
   while(!lost.finished){noFire.push([50,false]);lost.step(50,false);}
   await service.submit(actor,another.runId!,noFire);
   assert.equal((await service.board(20261115,actor.userId)).me?.score,500);
+});
+
+test('leader tie count includes players beyond the top ten',async()=>{
+ const {service,store}=setup();const day=20261115;
+ const key=`${COMMUNITY_CONTRACT}:${RULES_VERSION}:board:${day}`;
+ store.sets.set(key,new Map(Array.from({length:13},(_,i)=>['t2_tie'+i,i<12?-500:-400])));
+ assert.equal((await service.board(day)).leaderTies,12);
+ store.sets.get(key)!.delete('t2_tie12');assert.equal((await service.board(day)).leaderTies,12);
 });
