@@ -1,4 +1,4 @@
-> 最新工作（2026-11-19，America/Vancouver）：已保留 MK 核准的 v0.50.0 影音原始碼，接回 GitHub 並建立功能分支；私人 Devvit 0.50.0.1 已安裝到 staging 並完成原生實玩。正式 Reddit 仍是 0.49.0，YouTube／Devpost 本輪未更新。接手、audit 與驗證結果見 [v0.50 私人候選紀錄](v0-50-staging-2026-11-19.md)。
+> 最新工作（2026-11-19，America/Vancouver）：依 MK 人工驗收回饋改善練習停留與超載藍白雷射／爆裂音效；私人 Devvit **0.50.0.3** 已安裝到 staging 並完成原生實玩，等待 MK 再驗收。正式 Reddit 仍是 0.49.0，YouTube／Devpost 未更新。最新驗證見 [練習與超載修訂](v0-50-practice-overdrive-2026-11-19.md)；接手與 audit 歷史見 [首輪候選紀錄](v0-50-staging-2026-11-19.md)。
 
 > 正式發布基準（2026-11-16 的歷史證據）：v0.49 手機控制改善與正式驗證見 [v0.49 紀錄](v0-49-mobile-controls-2026-11-16.md)，對外展示同步見 [展示紀錄](presentation-review-2026-11-16.md)。本輪只重新查核 Reddit 安裝版本，不將舊 Vercel／Devpost 證據日期更新為今天。
 

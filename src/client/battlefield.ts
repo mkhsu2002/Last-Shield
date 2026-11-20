@@ -9,6 +9,7 @@ import type { DefenseRun, Meteor } from "../shared/game-logic";
 
 export const FIELD = { width: 540, height: 1080, x: 270, y: 560 };
 const CYAN = 0x78e5f2,
+  OVERDRIVE_BLUE = 0x55bfff,
   GOLD = 0xffc46b,
   CORAL = 0xff8b6a,
   TAU = Math.PI * 2;
@@ -260,9 +261,12 @@ function shield(g: Graphics, state: State): void {
   }
   if (state.overdriveFlash > 0) {
     const flash = state.overdriveFlash;
-    g.lineStyle(3, GOLD, flash * 0.65);
-    g.strokeCircle(FIELD.x, FIELD.y, SHIELD_RADIUS + (1 - flash) * 110);
-    glow(g, FIELD.x, FIELD.y, SHIELD_RADIUS, GOLD, flash * 0.04);
+    const spread = state.reducedMotion ? 0 : (1 - flash) * 150;
+    g.lineStyle(5 * flash + 1, OVERDRIVE_BLUE, flash * 0.85);
+    g.strokeCircle(FIELD.x, FIELD.y, SHIELD_RADIUS + spread);
+    g.lineStyle(2, 0xf0fcff, flash * 0.8);
+    g.strokeCircle(FIELD.x, FIELD.y, SHIELD_RADIUS - 8 + spread * 0.8);
+    glow(g, FIELD.x, FIELD.y + 75, 55, OVERDRIVE_BLUE, flash * 0.16);
   }
 }
 
@@ -392,8 +396,22 @@ function core(g: Graphics, m: Meteor, state: State): void {
 }
 
 function burst(g: Graphics, e: BattleEffect, reduced: boolean): void {
-  const color = e.impact ? CORAL : e.overdrive ? GOLD : CYAN,
+  const color = e.impact ? CORAL : e.overdrive ? OVERDRIVE_BLUE : CYAN,
     t = 1 - e.life;
+  if (e.overdrive) {
+    const sx = FIELD.x, sy = FIELD.y + 75;
+    const beam = e.life * e.life;
+    g.lineStyle(42, OVERDRIVE_BLUE, beam * 0.1);
+    g.lineBetween(sx, sy, e.x, e.y);
+    g.lineStyle(20, OVERDRIVE_BLUE, beam * 0.48);
+    g.lineBetween(sx, sy, e.x, e.y);
+    g.lineStyle(7, 0xf0fcff, beam * 0.96);
+    g.lineBetween(sx, sy, e.x, e.y);
+    glow(g, e.x, e.y, 55, OVERDRIVE_BLUE, beam * 0.2);
+    g.fillStyle(0xf0fcff, beam * 0.9);
+    g.fillCircle(e.x, e.y, 12 * e.life);
+    g.fillCircle(sx, sy, 12 * e.life);
+  }
   if (reduced) {
     g.lineStyle(3, color, e.life * 0.7);
     g.strokeCircle(e.x, e.y, 35);

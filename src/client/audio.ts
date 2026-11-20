@@ -146,6 +146,25 @@ export function scheduleImpact(
   ];
 }
 
+/** A single broad blast with centered weight and stereo laser/debris detail. */
+export function scheduleOverdrive(ctx: BaseAudioContext, output: AudioNode): AudioScheduledSourceNode[] {
+  return [
+    tone(ctx, output, 91, 34, 0.85, 0.38),
+    tone(ctx, output, 182, 68, 0.52, 0.19, "triangle"),
+    noise(ctx, output, 0.85, 0.32, 450, "lowpass"),
+    ...spatial(ctx, output, -0.8, side => [
+      tone(ctx, side, 2400, 160, 0.48, 0.12, "sawtooth"),
+      noise(ctx, side, 0.32, 0.22, 1900, "bandpass"),
+      tone(ctx, side, 1250, 250, 0.65, 0.055, "triangle", 0.045),
+    ]),
+    ...spatial(ctx, output, 0.8, side => [
+      tone(ctx, side, 2800, 210, 0.55, 0.12, "sawtooth", 0.018),
+      noise(ctx, side, 0.52, 0.24, 2600, "bandpass"),
+      tone(ctx, side, 1610, 330, 0.78, 0.055, "triangle", 0.075),
+    ]),
+  ];
+}
+
 export class SynthAudio {
   private mutedValue = false;
   private ctx: AudioContext | null = null;
@@ -229,10 +248,9 @@ export class SynthAudio {
     ]);
   }
   overdrive(): void {
-    this.tone(72, 51, 0.43, 0.22);
-    this.tone(144, 102, 0.31, 0.1, "triangle");
-    this.tone(150, 750, 0.4, 0.105, "triangle");
-    this.tone(300, 1500, 0.26, 0.058);
+    this.stop();
+    if (this.muted || !this.ctx || !this.master || this.ctx.state !== "running") return;
+    this.track(scheduleOverdrive(this.ctx, this.master));
   }
   impact(damage = 34, pan = 0): void {
     this.stop();
