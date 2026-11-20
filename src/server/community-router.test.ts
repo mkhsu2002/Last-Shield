@@ -1,3 +1,4 @@
+import { COMMUNITY_CONTRACT } from '../shared/community.ts';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {createCommunityRouter} from './community-router.ts';
@@ -8,7 +9,7 @@ test('HTTP contract rejects malformed requests and anonymous writes with safe er
   const service=new CommunityService(new MemoryStore(),()=>Date.UTC(2026,10,15,12));
   const app=createCommunityRouter(service,async()=>({postId:'t3_test'}));
   const board=await app.request('/api/community/board?day=20261115');
-  assert.equal(board.status,200);assert.equal((await board.json()).contract,'community-1');
+  assert.equal(board.status,200);assert.equal((await board.json()).contract,COMMUNITY_CONTRACT);
   const session=await app.request('/api/community/start',{method:'POST'});
   assert.equal((await session.json()).runId,null);
   for(const method of ['POST','DELETE']) {

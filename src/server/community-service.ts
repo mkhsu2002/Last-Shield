@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { utcDaySeed, RULES_VERSION } from '../shared/game-logic.ts';
 import { COMMUNITY_CONTRACT, RUN_LIFETIME_MS, replayRun, type Board, type BoardEntry, type RunResult } from '../shared/community.ts';
+import { dailyStorm, type StormId } from '../shared/daily-storm.ts';
 
 type SetOptions = { nx?: boolean; expiration?: Date };
 type Row = { member: string; score: number };
@@ -17,9 +18,9 @@ export interface CommunityStore {
   zRank(k:string, member:string):Promise<number|undefined>; zCard(k:string):Promise<number>;
 }
 export type Actor = { userId?: string; username?: string; postId?: string };
-type Session = { userId: string; username: string; postId: string; day: number; startedAt: number; rules: string };
+type Session = { userId: string; username: string; postId: string; day: number; storm: StormId; startedAt: number; rules: string };
 type Saved = RunResult & { username: string; runId: string; acceptedAt: number };
-const prefix = `community-1:${RULES_VERSION}`;
+const prefix = `${COMMUNITY_CONTRACT}:${RULES_VERSION}`;
 export const envelope = { contract: COMMUNITY_CONTRACT, rules: RULES_VERSION };
 export function boardExpiry(day: number): Date {
   const s=String(day);
@@ -40,14 +41,15 @@ export class CommunityService {
   }
   async start(actor:Actor) {
     const day=utcDaySeed(new Date(this.now()));
-    if(!actor.userId) return {...envelope,day,runId:null};
+    const storm=dailyStorm(day).id;
+    if(!actor.userId) return {...envelope,day,storm,runId:null};
     if(!actor.postId || !actor.username) throw new Error('invalid-context');
     const gate=await this.store.set(`${prefix}:start:${actor.userId}`,'1',{nx:true,expiration:new Date(this.now()+3000)});
     if(!gate) throw new Error('rate-limited');
     const runId=randomUUID();
-    const session:Session={userId:actor.userId,username:actor.username,postId:actor.postId,day,startedAt:this.now(),rules:RULES_VERSION};
+    const session:Session={userId:actor.userId,username:actor.username,postId:actor.postId,day,storm,startedAt:this.now(),rules:RULES_VERSION};
     await this.store.set(`${prefix}:run:${runId}`,JSON.stringify(session),{expiration:new Date(this.now()+RUN_LIFETIME_MS)});
-    return {...envelope,day,runId};
+    return {...envelope,day,storm,runId};
   }
   async submit(actor:Actor,runId:string,trace:unknown):Promise<Saved> {
     if(!actor.userId) throw new Error('login-required');
@@ -55,7 +57,7 @@ export class CommunityService {
     const sessionRaw=await this.store.get(`${prefix}:run:${runId}`);
     if(!sessionRaw) throw new Error('expired-session');
     const session=JSON.parse(sessionRaw) as Session;
-    if(session.userId!==actor.userId || session.postId!==actor.postId || session.rules!==RULES_VERSION ||
+    if(session.userId!==actor.userId || session.postId!==actor.postId || session.rules!==RULES_VERSION || session.storm!==dailyStorm(session.day).id ||
       this.now()-session.startedAt>RUN_LIFETIME_MS) throw new Error('expired-session');
     const auditKey=`${prefix}:audit:${session.day}:${runId}`;
     const existing=await this.store.get(auditKey);
@@ -117,7 +119,7 @@ export class CommunityService {
     const me=index!==undefined&&own?await entry({member:userId!,score:-own.score}):null;
     const above=me&&me.rank>1?await this.store.zRange(key,me.rank-2,me.rank-2,{by:'rank'}):[];
     const last=above[0];
-    return {...envelope,day,total,top:topEntries,nearby:nearEntries,me,gap:own&&last?-last.score-own.score+1:null};
+    return {...envelope,day,storm:dailyStorm(day).id,total,top:topEntries,nearby:nearEntries,me,gap:own&&last?-last.score-own.score+1:null};
   }
   async remove(day:number,userId?:string):Promise<void> {
     if(!userId) throw new Error('login-required'); this.checkDay(day);

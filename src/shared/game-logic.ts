@@ -1,5 +1,6 @@
 // Deterministic rules shared by the standalone and Reddit clients.
-export const RULES_VERSION = "survival-6";
+import { dailyStorm, type DailyStorm } from './daily-storm.ts';
+export const RULES_VERSION = "survival-7";
 export const SHIELD_RADIUS = 132;
 export const METEOR_SPAWN_RADIUS = 218;
 export const PERFECT_WINDOW_MS = 180;
@@ -143,7 +144,7 @@ export function meteorSpec(daySeed: number, index: number): MeteorSpec {
   };
 }
 
-export function volleySpecs(daySeed: number, index: number): MeteorSpec[] {
+export function volleySpecs(daySeed: number, index: number, daily = true): MeteorSpec[] {
   const phase = stormPhase(index),
     level = Math.floor(index / 12);
   const count =
@@ -193,7 +194,22 @@ export function volleySpecs(daySeed: number, index: number): MeteorSpec[] {
       ),
     });
   }
-  return result;
+  if (!daily || index < 3) return result;
+  const profile = dailyStorm(daySeed);
+  return result.map((spec,i) => {
+    let next = { ...spec };
+    if (profile.id === 'heavy' && phase !== 'respite' && i === 0) {
+      next.kind = 'heavy'; next.burnMs = 1050;
+    }
+    if (profile.id === 'relay' && next.kind === 'heavy') next.burnMs = Math.round(next.burnMs * 1.15);
+    if (profile.id === 'crosswind' && next.kind === 'fast') {
+      next.durationMs = Math.round(next.durationMs * 0.92);
+      next.chargeStartMs = Math.round(next.chargeStartMs * 0.92);
+      next.burnMs = Math.round(next.burnMs * 0.90);
+    }
+    next.chargeStartMs = Math.min(next.chargeStartMs, Math.floor(next.durationMs - next.burnMs / 3 - 160));
+    return next;
+  });
 }
 
 /** Drawing and damage use this exact geometry. Smaller residual cores travel
@@ -254,6 +270,8 @@ export function debrisDamage(mass: number): number {
 
 export class DefenseRun {
   readonly daySeed: number;
+  readonly storm: DailyStorm;
+  readonly practice: boolean;
   elapsedMs = 0;
   waveIndex = 0;
   meteors: Meteor[];
@@ -281,8 +299,10 @@ export class DefenseRun {
   private needsRelease = false;
   private recoveryMs = 0;
 
-  constructor(daySeed: number) {
+  constructor(daySeed: number, options: {practice?: boolean} = {}) {
     this.daySeed = daySeed;
+    this.storm = dailyStorm(daySeed);
+    this.practice = options.practice === true;
     this.meteors = this.newVolley(false);
   }
 
@@ -318,7 +338,7 @@ export class DefenseRun {
 
   private newVolley(holding: boolean): Meteor[] {
     this.chainEndsAt = -Infinity;
-    const specs = volleySpecs(this.daySeed, this.waveIndex);
+    const specs = volleySpecs(this.daySeed, this.waveIndex, !this.practice);
     this.recoveryMs = Math.round(
       Math.max(...specs.map((m) => m.recoveryMs)) *
         difficultyScale(this.waveIndex)
@@ -479,14 +499,14 @@ export class DefenseRun {
     this.cleared++;
     const base = grade === "perfect" ? 200 : grade === "good" ? 100 : 70;
     const points =
-      Math.round(base * (m.kind === "heavy" ? 1.5 : 1)) +
+      Math.round(base * (m.kind === "heavy" ? (!this.practice && this.waveIndex >= 3 ? this.storm.heavyScoreMultiplier : 1.5) : 1)) +
       Math.min(100, (this.combo - 1) * 10) +
       (overdrive ? 200 : 0);
     this.score += points;
     const point = meteorGeometry(m, this.waveElapsedMs, m.mass);
     this.remove(m, holding);
     if (grade === "perfect" && this.meteors.length)
-      this.chainEndsAt = this.elapsedMs + CHAIN_WINDOW_MS;
+      this.chainEndsAt = this.elapsedMs + (this.practice ? CHAIN_WINDOW_MS : this.storm.relayMs);
     events.push({
       type: "clear",
       grade,

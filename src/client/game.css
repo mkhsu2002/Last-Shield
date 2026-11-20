@@ -1127,3 +1127,22 @@ button:disabled { opacity: .5; cursor: default; }
   .fire-button strong { font-size: 16px; }
   .energy-heading > strong { font-size: 12px; }
 }
+
+/* Daily identity is readable before play; the battlefield keeps a compact target. */
+.daily-card { border-left: 2px solid var(--cyan); padding: 2px 0 2px 12px; margin-bottom: 12px; }
+.daily-card strong { display: block; color: #edf5ff; font-size: 21px; margin: 4px 0; }
+.daily-card p, .launch-guide { font-size: 13px; line-height: 1.45; color: #c4d6e5; margin: 5px 0; }
+.daily-card .fineprint { display: block; margin-top: 6px; }
+.launch-guide { margin-bottom: 12px; }
+.rival-goal { font-size: 12px; color: #f0d584; margin: 2px 0 0; min-height: 0; }
+.rival-goal:empty, .result-storm:empty, #result-rival:empty { display: none; }
+.result-storm { color: var(--cyan); margin: 6px 0; font-size: 14px; }
+.rival-pick { grid-column: 2 / -1; justify-self: start; border: 1px solid #78e5f250; border-radius: 6px; color: #bbf4fa; background: #78e5f210; padding: 7px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+.rival-pick:hover, .rival-pick:focus-visible { background: #78e5f230; outline: 2px solid #78e5f2; outline-offset: 2px; }
+@media (max-height: 700px) {
+  .daily-card { margin-bottom: 7px; padding-left: 10px; }
+  .daily-card strong { font-size: 18px; margin: 2px 0; }
+  .daily-card p, .launch-guide { font-size: 12px; margin: 3px 0; }
+  .launch-guide { margin-bottom: 8px; }
+  .daily-card .fineprint { font-size: 11px; margin-top: 3px; }
+}

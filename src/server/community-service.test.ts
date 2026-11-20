@@ -5,6 +5,9 @@ import type { TraceStep } from '../shared/community.ts';
 import { CommunityService, type CommunityStore, type CommunityTx } from './community-service.ts';
 
 import { MemoryStore } from './community-test-store.ts';
+import { dailyStorm } from '../shared/daily-storm.ts';
+import { COMMUNITY_CONTRACT } from '../shared/community.ts';
+import { RULES_VERSION } from '../shared/game-logic.ts';
 
 const actor = { userId: 't2_alice', username: 'Alice', postId: 't3_test' };
 const trace: TraceStep[] = [];
@@ -32,6 +35,20 @@ test('owner binding, finished replay, idempotent retry and audit persist togethe
   await service.submit(actor,session.runId!,trace);
   assert.equal((await service.board(20261115,actor.userId)).total,0);
 });
+test('storm is server-derived, midnight-stable and isolated from old rankings', async()=>{
+  const {service,store,advance}=setup();
+  store.sets.set('community-1:survival-6:board:20261115',new Map([['t2_legacy',-99999]]));
+  const session=await service.start(actor);
+  assert.equal(session.contract,'community-2');
+  assert.equal(session.storm,dailyStorm(20261115).id);
+  advance(120000);
+  const result=await service.submit(actor,session.runId!,trace);
+  assert.equal(result.storm,session.storm);
+  const board=await service.board(20261115,actor.userId);
+  assert.equal(board.storm,session.storm);assert.equal(board.total,1);
+  assert.equal(board.me?.score,result.score);
+  assert.equal(store.sets.get('community-1:survival-6:board:20261115')?.size,1);
+});
 test('concurrent submissions retain one best and ties share a rank', async()=>{
   const {service,advance}=setup();
   const sessions=await Promise.all([service.start(actor),service.start({...actor,userId:'t2_bob',username:'Bob'})]);
@@ -53,8 +70,8 @@ test('lower scores cannot replace a best; nearby ranks and gap work beyond top t
   const {service,store,advance}=setup(Date.UTC(2026,10,15,12));
   const session=await service.start(actor);advance(120000);
   const saved=await service.submit(actor,session.runId!,trace);
-  const boardKey='community-1:survival-6:board:20261115';
-  const bestKey='community-1:survival-6:best:20261115:';
+  const boardKey=`${COMMUNITY_CONTRACT}:${RULES_VERSION}:board:20261115`;
+  const bestKey=`${COMMUNITY_CONTRACT}:${RULES_VERSION}:best:20261115:`;
   // Seed competitors and an existing higher best, like records from earlier sessions.
   store.values.set(bestKey+actor.userId,JSON.stringify({...saved,score:500}));
   store.sets.get(boardKey)!.set(actor.userId,-500);
@@ -67,7 +84,7 @@ test('lower scores cannot replace a best; nearby ranks and gap work beyond top t
   assert.equal(board.me?.rank,16);assert.equal(board.top.length,10);
   assert.deepEqual(board.nearby.map(r=>r.rank),[14,15,16]);assert.equal(board.gap,101);
   // Fresh session returns a replay-derived score lower than the already saved one.
-  store.values.delete('community-1:survival-6:start:'+actor.userId);
+  store.values.delete(`${COMMUNITY_CONTRACT}:${RULES_VERSION}:start:`+actor.userId);
   const another=await service.start(actor);advance(120000);
   const noFire:TraceStep[]=[];const lost=new DefenseRun(20261115);
   while(!lost.finished){noFire.push([50,false]);lost.step(50,false);}

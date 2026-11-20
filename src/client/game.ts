@@ -1,6 +1,5 @@
-import { translate, localizedAttribute, localizedValue } from "./i18n";
+import { localizedAttribute } from "./i18n";
 import * as Phaser from "phaser";
-import { context } from "@devvit/web/client";
 import {
   DefenseRun,
   volleySpecs,
@@ -30,6 +29,7 @@ import { drawBattlefield, FIELD } from "./battlefield";
 import { SceneArt, preloadSceneArt } from "./scene-art";
 import type { BattleEffect } from "./battlefield";
 import { PracticeReview, practiceDelta } from "./practice";
+import { dailyStorm, nextChallengeDay } from "../shared/daily-storm";
 
 type Phase =
   | "intro"
@@ -66,7 +66,6 @@ class ShieldScene extends Phaser.Scene {
   private previousTarget = -1;
   private previousReady = false;
   private passedBest = false;
-  private sharing = false;
   private cityMilestone = 0;
   private lastResolution: "clear" | "impact" = "clear";
 
@@ -79,7 +78,7 @@ class ShieldScene extends Phaser.Scene {
   create(): void {
     this.art = new SceneArt(this, RENDER_SCALE);
     this.graphics = this.add.graphics().setScale(RENDER_SCALE);
-    this.community = new Community();
+    this.community = new Community(() => { void this.startRun(); });
     try {
       this.storage = window.localStorage;
     } catch {
@@ -112,9 +111,6 @@ class ShieldScene extends Phaser.Scene {
     });
     element("pause").addEventListener("click", () => this.pauseRun());
     element("resume").addEventListener("click", () => this.resumeRun());
-    element("share").addEventListener("click", () => {
-      void this.share();
-    });
     element("sound").addEventListener("click", () => {
       this.audio.unlock();
       this.audio.muted = !this.audio.muted;
@@ -226,6 +222,10 @@ class ShieldScene extends Phaser.Scene {
       "day",
       `${stamp.slice(0, 4)}.${stamp.slice(4, 6)}.${stamp.slice(6)} UTC`
     );
+    const profile = this.run.storm;
+    text("daily-title", profile.title);
+    text("daily-description", profile.description);
+    text("daily-tomorrow", ["明日風暴：", dailyStorm(nextChallengeDay(this.run.daySeed)).title]);
     this.best = readBest(this.storage, this.run.daySeed);
     text(
       "intro-best",
@@ -273,7 +273,7 @@ class ShieldScene extends Phaser.Scene {
     this.releaseAll();
     this.audio.stopAll();
     this.audio.unlock();
-    this.run = new DefenseRun(day);
+    this.run = new DefenseRun(day, {practice});
     this.loadDay();
     this.breakMs = 0;
     this.previousTarget = -1;
@@ -288,8 +288,6 @@ class ShieldScene extends Phaser.Scene {
     this.lastResolution = "clear";
     localizedAttribute(element("fire"), "aria-label", "按住發射光束");
     text("feedback", "");
-    text("share-status", "");
-    show("share-box", false);
     text("city-message", "城市正等你守護。");
     this.setPhase("playing");
     element("game-container").focus({ preventScroll: true });
@@ -513,14 +511,16 @@ class ShieldScene extends Phaser.Scene {
       `手動超載 ${this.run.overdriveUses} 次 · 清除 ${this.run.overdriveCleared} 顆威脅`
     );
     text("retry-hint", [next, retryAdvice(this.run)]);
+    text("result-storm", this.run.storm.title);
+    text("result-rival", this.community.rivalCopy(this.run.score));
     this.community.finish(this.shareMessage());
     this.setPhase("results");
-    element("retry").focus({ preventScroll: true });
+    element("results").querySelector<HTMLButtonElement>("button.primary")?.focus({ preventScroll: true });
   }
 
-  private shareMessage(): string {
+  private shareMessage(): string[] {
     const day = String(this.run.daySeed);
-    return `最後防線 ${GAME_VERSION} · ${day.slice(0, 4)}-${day.slice(
+    const result = `最後防線 ${GAME_VERSION} · ${day.slice(0, 4)}-${day.slice(
       4,
       6
     )}-${day.slice(6)} UTC\n${this.run.score.toLocaleString(
@@ -530,34 +530,8 @@ class ShieldScene extends Phaser.Scene {
     } 顆隕石\n守到第 ${this.run.waveIndex + 1} 波 · 最高連擊 ${
       this.run.bestCombo
     }。同一片天空，換你守守看！`;
-  }
-
-  private async share(): Promise<void> {
-    if (this.sharing) return;
-    this.sharing = true;
-    const message = this.shareMessage();
-    const local = ["localhost", "127.0.0.1", "[::1]"].includes(
-        location.hostname
-      ),
-      postId = context?.postId;
-    const url = postId
-      ? `https://www.reddit.com/comments/${postId.replace(/^t3_/, "")}`
-      : local
-      ? ""
-      : `${location.origin}${location.pathname}`;
-    const challenge = translate(message) + (url ? `\n${url}` : "");
-    try {
-      await navigator.clipboard.writeText(challenge);
-      text("share-status", "戰績已複製，貼給朋友就能邀請挑戰。");
-    } catch {
-      localizedValue(element<HTMLTextAreaElement>("share-text"), [message, url ? `\n${url}` : ""]);
-      show("share-box", true);
-      element<HTMLTextAreaElement>("share-text").focus();
-      element<HTMLTextAreaElement>("share-text").select();
-      text("share-status", "請長按上方文字，選取後複製。");
-    } finally {
-      this.sharing = false;
-    }
+    const rival = this.community.rivalCopy(this.run.score);
+    return [result, "\n", this.run.storm.title, ...(rival ? ["\n", rival] : [])];
   }
 
   update(time: number, delta: number): void {
@@ -636,6 +610,7 @@ class ShieldScene extends Phaser.Scene {
       )
     );
     text("score", run.score.toLocaleString("zh-TW"));
+    text("rival-goal", this.practiceMode ? "" : this.community.rivalCopy(run.score));
     text("clock", `${run.integrity}%`);
     element("clock").style.color =
       run.integrity <= 34 ||
@@ -702,9 +677,7 @@ class ShieldScene extends Phaser.Scene {
       "storm",
       this.practiceMode
         ? "練習不計分、不儲存"
-        : `風暴 ${Math.floor(run.waveIndex / 6) + 1} · ${
-            PHASE_LABELS[stormPhase(run.waveIndex)]
-          }`
+        : [run.storm.title, ` · ${PHASE_LABELS[stormPhase(run.waveIndex)]}`]
     );
     text(
       "next-core",

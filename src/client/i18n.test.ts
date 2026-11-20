@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { translate, readLanguage, LANGUAGE_KEY } from "./i18n.ts";
 import { MESSAGES } from "./messages.ts";
+import { dailyStorm } from '../shared/daily-storm.ts';
 
 test("English is the default regardless of missing, malformed or denied storage", () => {
   assert.equal(readLanguage(null), "en");
@@ -38,4 +39,15 @@ test("English sharing preserves the challenge date, score and line breaks", () =
 test("clear feedback keeps the charge bonus separate from awarded points", () => {
   assert.equal(translate("完美擊破 · 超載 +1　+200", "en"), "Perfect clear · Charge +1 +200");
   assert.equal(translate("核心擊碎　+110", "en"), "Core shattered +110");
+});
+test('daily profile and rival copy remain meaningful in both languages',()=>{
+  for(const day of [20261118,20261119,20261120]) {
+    const profile=dailyStorm(day);
+    assert.doesNotMatch(translate(profile.title,'en'),/\p{Script=Han}/u);
+    assert.doesNotMatch(translate(profile.description,'en'),/\p{Script=Han}/u);
+    assert.equal(translate(profile.title,'zh-Hant'),profile.title);
+  }
+  assert.equal(translate('再得 201 分，超過 u/Near','en'),'201 more points to pass u/Near');
+  assert.equal(translate('追平 u/Near 的 500 分','en'),'Tied u/Near at 500 points');
+  assert.equal(translate('本局已超過 u/Near 的 500 分','en'),'This run passed u/Near’s 500 points');
 });

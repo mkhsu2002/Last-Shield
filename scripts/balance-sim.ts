@@ -11,9 +11,10 @@ export function simulateDefense(
   day: number,
   strategy: Strategy,
   maxMs = 180000,
-  maxWaves = 48
+  maxWaves = 48,
+  options: {practice?: boolean} = {}
 ) {
-  const run = new DefenseRun(day);
+  const run = new DefenseRun(day, options);
   let held = false;
   let releaseAt = 0, nextPressAt = 0, goldSeenAt: number | null = null;
   let firstStormBefore: number | null = null,
@@ -97,6 +98,8 @@ export function simulateDefense(
   return {
     day,
     strategy,
+    storm: options.practice ? "neutral" : run.storm.id,
+    score: run.score,
     health: run.integrity,
     wave: run.waveIndex + 1,
     elapsedMs: Math.round(run.elapsedMs),

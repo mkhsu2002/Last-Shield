@@ -3,8 +3,10 @@ import { utcDaySeed, RULES_VERSION } from '../shared/game-logic';
 import { COMMUNITY_CONTRACT, MAX_TRACE_STEPS, type Board, type RunResult, type TraceStep } from '../shared/community';
 import { element, text } from './game-ui';
 import { localizedText, localizedValue, translate } from './i18n';
+import { dailyStorm, type StormId } from '../shared/daily-storm';
+import { chooseRival, defaultRival, refreshRival, rivalStatus, type RivalTarget } from './rival';
 
-type Start = {contract:string;rules:string;day:number;runId:string|null};
+type Start = {contract:string;rules:string;day:number;storm:StormId;runId:string|null};
 async function request<T>(path:string, method='GET', body?:unknown):Promise<T> {
   const response=await fetch(`/api/community/${path}`,{
     method,headers:body?{'Content-Type':'application/json'}:undefined,
@@ -13,6 +15,7 @@ async function request<T>(path:string, method='GET', body?:unknown):Promise<T> {
   const value=await response.json();
   if(!response.ok) throw new Error(value.error??'unavailable');
   if(value.contract!==COMMUNITY_CONTRACT || value.rules!==RULES_VERSION) throw new Error('version-mismatch');
+  if('day' in value && value.storm!==dailyStorm(value.day).id) throw new Error('version-mismatch');
   return value as T;
 }
 
@@ -26,9 +29,12 @@ export class Community {
   private saved=false;
   private removed=false;
   private boardGeneration=0;
-  private preview='';
+  private preview:string[]=[];
+  private latestBoard:Board|null=null;
+  private nextTarget:RivalTarget|null=null;
+  private activeTarget:RivalTarget|null=null;
   private postedUrl=context?.postId?`https://www.reddit.com/comments/${context.postId.replace(/^t3_/,'')}`:'';
-  constructor() {
+  constructor(private readonly onChallenge:()=>void) {
     element('intro-board').addEventListener('click',()=>void this.openBoard());
     element('result-board').addEventListener('click',()=>void this.openBoard());
     element('board-close').addEventListener('click',()=>element<HTMLDialogElement>('community-dialog').close());
@@ -47,16 +53,30 @@ export class Community {
     });
     element<HTMLButtonElement>('discussion-open').disabled=!this.enabled;
     this.controls();
+    if(this.enabled) void this.refresh();
   }
   async begin(practice:boolean):Promise<number> {
+    ++this.boardGeneration;
     this.runId=null; this.trace=[]; this.finished=false; this.saved=false; this.removed=false;
     this.day=utcDaySeed(new Date());
+    if(!practice && !this.nextTarget && this.latestBoard?.day===this.day) this.nextTarget=defaultRival(this.latestBoard);
     if(this.enabled && !practice) {
       try {
         const session=await request<Start>('start','POST');
         this.day=session.day; this.runId=session.runId;
       } catch { /* Keep the complete local game available during a platform outage. */ }
+      if(this.nextTarget) {
+        try {
+          const board=await request<Board>(`board?day=${this.day}`);
+          this.nextTarget=refreshRival(this.nextTarget,board);
+          this.latestBoard=board;
+        } catch { this.nextTarget=null; this.latestBoard=null; }
+      }
     }
+    if(practice) this.activeTarget=null;
+    else this.activeTarget=this.nextTarget??(this.latestBoard?.day===this.day?defaultRival(this.latestBoard):null);
+    if(this.activeTarget?.day!==this.day || this.activeTarget.rules!==RULES_VERSION) this.activeTarget=null;
+    this.nextTarget=null;
     this.controls(); return this.day;
   }
   record(step:TraceStep):void {
@@ -64,16 +84,22 @@ export class Community {
     if(this.trace.length>=MAX_TRACE_STEPS) { this.runId=null;this.trace=[];return; }
     this.trace.push(step);
   }
-  finish(preview:string):void {
+  finish(preview:string[]):void {
     this.finished=true; this.preview=preview;
     localizedValue(element<HTMLTextAreaElement>('discussion-preview'),preview);
     this.controls();
   }
   private controls():void {
-    element<HTMLButtonElement>('board-submit').disabled=this.busy||!this.finished||!this.runId||this.saved;
+    const eligible=this.finished&&!!this.runId&&!this.saved;
+    element<HTMLButtonElement>('board-submit').disabled=this.busy||!eligible;
     element<HTMLButtonElement>('board-remove').disabled=this.busy||!this.enabled||!context?.userId;
     element<HTMLButtonElement>('board-refresh').disabled=this.busy;
     text('board-submit',this.removed?'本日排名已移除':this.saved?'本局戰績已提交':'提交本局戰績');
+    element('result-board').classList.toggle('primary',eligible);
+    element('result-board').classList.toggle('secondary',!eligible);
+    element('retry').classList.toggle('primary',!eligible);
+    element('retry').classList.toggle('secondary',eligible);
+    text('result-board',eligible?'提交戰績，查看排名':'查看社群每日榜');
   }
   private async openBoard():Promise<void> {
     const dialog=element<HTMLDialogElement>('community-dialog');
@@ -90,6 +116,8 @@ export class Community {
     try {
       const board=await request<Board>(`board?day=${this.day}`);
       if(generation!==this.boardGeneration) return;
+      if(board.day!==this.day) throw new Error('version-mismatch');
+      this.latestBoard=board;
       text('board-total',`今日 ${board.total} 位守城者`);
       text('board-status',board.total?'同分並列；每日僅計最高分。':'今天還沒有人上榜，來留下第一道防線。');
       text('board-me',board.me?[`你的排名：第 ${board.me.rank} 名 · ${board.me.score} 分`,board.gap?` · 再多 ${board.gap} 分超越上一名`:'']:context?.userId?
@@ -104,6 +132,16 @@ export class Community {
           const points=document.createElement('strong');points.textContent=row.score.toLocaleString();
           item.append(place,name,points);
           if(row.isYou) { const you=document.createElement('small');localizedText(you,'你');item.append(you); }
+          const challenge=document.createElement('button');
+          challenge.type='button';challenge.className='rival-pick';
+          localizedText(challenge,row.isYou?'挑戰自己的最佳':'挑戰此分數');
+          challenge.addEventListener('click',()=>{
+            this.nextTarget=chooseRival(board,row);
+            if(!this.nextTarget)return;
+            element<HTMLDialogElement>('community-dialog').close();
+            this.onChallenge();
+          });
+          item.append(challenge);
           element(id).append(item);
         }
       }
@@ -114,6 +152,7 @@ export class Community {
     this.busy=true;this.controls();text('board-status','正在提交戰績…');
     try {
       const response=await request<{result:RunResult}>('submit','POST',{runId:this.runId,trace:this.trace});
+      if(response.result.day!==this.day || response.result.version!==RULES_VERSION || response.result.storm!==dailyStorm(this.day).id) throw new Error('version-mismatch');
       this.saved=true;
       await this.refresh();
       text('board-status',`已提交 ${response.result.score} 分，今日僅保留你的最高分。`);
@@ -132,11 +171,17 @@ export class Community {
   }
   private async copyDiscussion():Promise<void> {
     const note=element<HTMLTextAreaElement>('discussion-note').value.trim();
-    const copy=translate(this.preview)+(note?`\n\n${note}`:'')+(this.postedUrl?`\n${this.postedUrl}`:'');
+    const copy=this.preview.map(s=>translate(s)).join('')+(note?`\n\n${note}`:'')+(this.postedUrl?`\n${this.postedUrl}`:'');
     try {await navigator.clipboard.writeText(copy);text('discussion-status','已複製。前往貼文後貼上，你可以再編輯並自行送出留言。');}
     catch {
       const preview=element<HTMLTextAreaElement>('discussion-preview');preview.value=copy;preview.focus();preview.select();
       text('discussion-status','請選取上方戰績與心得並複製，再到貼文留言。');
     }
+  }
+  rivalCopy(score:number):string {
+    const target=this.activeTarget,status=rivalStatus(target,this.day,RULES_VERSION,score);
+    if(!target||!status)return '';
+    const name=target.kind==='personal'?'個人最佳':`u/${target.username}`;
+    return status.kind==='passed'?`本局已超過 ${name} 的 ${target.score} 分`:status.kind==='tied'?`追平 ${name} 的 ${target.score} 分`:`再得 ${status.gap} 分，超過 ${name}`;
   }
 }
