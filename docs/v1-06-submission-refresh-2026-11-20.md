@@ -15,6 +15,6 @@ MK 已回報實機測驗通過，並授權全面重新提交。這是使用者�
 
 ## 文件與版本
 
-README 的影片與截圖指向本輪展示；本輪正式公開圖片存於 `docs/media/v1.06/`。v1.0 影片與圖片保留為歷史素材。完整逐幀錄影、音軌與原始 QA 證據仍只留在本機 ignored 目錄。
+README 的影片與截圖指向本輪展示；本輪正式公開圖片存於 `docs/media/v1.06/`。v1.0 影片與圖片保留為歷史素材。後續清理狀態：原速與倍速成片已備份至 [v1.06 GitHub Release](https://github.com/mkhsu2002/Last-Shield/releases/tag/v1.06) 並下載驗證；音軌及私人 QA 紀錄封存於本機 ignored 壓縮檔，產生用的逐幀暫存已移除。詳見 [本地儲存與恢復](local-storage-maintenance-2026-11-20.md)。
 
 本輪只有文件與展示素材，未變更 `src/`、依賴、schema、API 或遊戲產物；正式與 stage 沿用已完整發布的 Devvit 1.0.6，Vercel 沿用相同程式來源。文件提交由既有 ignore-build 規則略過完整建置，不重發同一遊戲版本。

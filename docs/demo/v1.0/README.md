@@ -4,7 +4,7 @@
 
 Recorded in the original public Reddit post on 2026-11-20: 1,272,630 points, 146 best combo, 118 perfect clears, 173 meteors cleared, wave 60. The run ended naturally and the server accepted it before issuing the Citizen card. K is an AI demonstration and is excluded from competitive rankings.
 
-The 42.466667-second upload preserves the full continuous run with stereo game audio. YouTube public playback confirms 42.501 seconds and two-channel AAC/Opus audio. The raw frames and separate audio remain local. On 2026-11-20, MK requested mobile video downloads; both finished MP4 recordings are now attached to the v1.0 GitHub Release, outside the repository source tree.
+The 42.466667-second upload preserves the full continuous run with stereo game audio. YouTube public playback confirms 42.501 seconds and two-channel AAC/Opus audio. Historical capture note: separate audio is now preserved in the private local archive; generated raw frames were removed during the authorized 2026-11-20 cleanup. The finished recordings remain backed up on GitHub. On 2026-11-20, MK requested mobile video downloads; both finished MP4 recordings are now attached to the v1.0 GitHub Release, outside the repository source tree.
 
 | File | SHA-256 |
 | --- | --- |
