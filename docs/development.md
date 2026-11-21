@@ -1,3 +1,5 @@
+> 投稿同步（2026-11-20，溫哥華；讀回 UTC 2026-11-21）：MK 已回報實機驗收通過；原 Devpost 已更新 v1.06 影片、四張截圖及文案，仍為 SUBMITTED／5 of 5。詳見 [提交同步紀錄](v1-06-submission-refresh-2026-11-20.md)。以下為各輪帶日期的歷史。
+
 > 本輪狀態（2026-11-20）：v1.06已正式發布，正式／stage均完整1.0.6、Vercel同源；提交前QA完成可執行範圍，實機／真人與新版媒體仍分開保留待確認。以 [v1.06記錄](v1-06-presubmit-2026-11-20.md) 的實際讀回為準，下方為歷史。
 
 > 本輪狀態（2026-11-20）：v1.05 手機寬戰場已正式發布，正式／stage均為1.0.5，Vercel同源；以 [v1.05記錄](v1-05-wide-mobile-arena-2026-11-20.md) 的發布讀回為準，下方版本保留歷史。
@@ -133,7 +135,7 @@ The default playtest target is the private `r/last_shield_stage`, separate from 
 
 ## Social preview images (v0.52 candidate)
 
-`src/server/share-card.ts` uploads the versioned public card through Reddit media, caches its i.redd.it URL and updates only the selected managed post’s shareImageUrl. The moderator menu checks the current account and posts/all permissions. New post creation includes the image; existing posts require the menu action once. `permissions.media` is enabled; client/server/config and the image must ship together. Standalone OG/Twitter metadata lives in index.html. Private staging does not support external unfurls; see [sharing verification](social-sharing-2026-11-19.md). Existing formal post activation is pending, not a completed external-state change.
+`src/server/share-card.ts` uploads the versioned public card through Reddit media, caches its i.redd.it URL and updates only the selected managed post’s shareImageUrl. The moderator menu checks the current account and posts/all permissions. New post creation includes the image; existing posts require the menu action once. `permissions.media` is enabled; client/server/config and the image must ship together. Standalone OG/Twitter metadata lives in index.html. Private staging does not support external unfurls; see [sharing verification](social-sharing-2026-11-19.md). Historical pending note superseded by the v1.0 release: the original public post now exposes the dedicated i.redd.it share image, reconfirmed in the v1.06 submission refresh.
 
 ## Native certificate sharing and public image export
 

@@ -1,4 +1,4 @@
-Last Shield v1.0 is a daily survival game inside a Reddit post. Defend Neo Babylon, build a combo, and give your community a score to chase. A new shared storm arrives each UTC day; the Hall remembers the defenders who held the line.
+Last Shield v1.06 is a daily survival game inside a Reddit post. Defend Neo Babylon, build a combo, and give your community a score to chase. A new shared storm arrives each UTC day; the Hall remembers the defenders who held the line.
 
 [Play today’s defense](https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/).
 
@@ -18,7 +18,9 @@ Catch the gold and hold until the meteor shatters. Release, choose the next thre
 
 **Earn Neo Babylon citizenship.** A verified finished run above 1,000,000 points qualifies for a Citizen card. Players can choose to leave their Reddit name and callsign in the Hall, share the card, and let others check its verification ID.
 
-Three optional practice lessons teach timing, relay and emergency Overdrive. Touch and keyboard controls, English and Traditional Chinese, stereo effects, pause and reduced-motion support keep the short-session game accessible. Playing does not require a login.
+The battlefield fills the available phone width, with status and controls in separate rows. Desktop screens place those panels beside a taller sky. Menus scroll below a steady header, keeping the next action within reach.
+
+Three optional practice lessons teach timing, relay and emergency Overdrive. Each lesson leaves its feedback on screen until the player continues. Touch and keyboard controls, English and Traditional Chinese, stereo effects, pause and reduced-motion support keep the short-session game accessible. Playing does not require a login.
 
 ## How I built it
 
@@ -50,6 +52,6 @@ I’ll use player feedback to tune the basic and stretch targets and watch how s
 
 ## Credits and demonstration notes
 
-Last Shield is set in my original Neo Babylon world. The million-point K video is an AI-controlled demonstration at 3× speed with stereo game audio. Demonstration runs are labeled and kept out of competitive rankings and personal daily achievements. I used AI assistance during implementation and testing.
+Last Shield is set in my original Neo Babylon world. The gameplay video is an AI-controlled demonstration at 3× speed with stereo game audio. Demonstration runs are labeled and kept out of competitive rankings and personal daily achievements. I used AI assistance during implementation and testing.
 
 Submitting a score publishes the Reddit name and score on that community’s board. Joining the Hall is optional and separate. Players can remove their display and revoke a Citizen card; exported image copies may remain after sharing. The card is an in-game achievement.

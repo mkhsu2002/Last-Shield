@@ -4,7 +4,7 @@
 
 Defend Neo Babylon inside a Reddit post. Catch the gold, hold until the meteor shatters, then release and choose the next threat. Build a long combo, bank Overdrive for a crowded sky, and challenge your community to do better.
 
-[**Play today’s defense**](https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/) · [Watch gameplay](https://www.youtube.com/watch?v=mBaIPLJZBs8) · [Devpost project](https://devpost.com/software/last-shield)
+[**Play today’s defense**](https://www.reddit.com/r/last_shield_dev/comments/1xwkbkk/last_shield_daily_meteor_defense/) · [Watch gameplay](https://www.youtube.com/watch?v=cTGUG56bqfo) · [Devpost project](https://devpost.com/software/last-shield)
 
 ## Why come back tomorrow?
 
@@ -58,13 +58,13 @@ The battlefield adapts to your screen while keeping its proportions. Phones give
 
 Menus scroll beneath the header, with play and practice before the daily details. Pause for full run information; compact scores use K and M, while pause, results and rankings show the exact score.
 
-## Gameplay recording (v1.0)
+## Gameplay recording (v1.06)
 
-Recorded in v1.0; the current game uses the adaptive layout above.
+[Watch a complete defense in 40 seconds](https://www.youtube.com/watch?v=cTGUG56bqfo): 1,226,240 points and a best combo of 151, verified in the public Reddit game.
 
-| Overdrive clears the sky | A place in the Hall |
+| A full-width phone battlefield | Review a finished run |
 | --- | --- |
-| ![Blue-white Overdrive beams in the public v1.0 Reddit game](https://raw.githubusercontent.com/mkhsu2002/Last-Shield/main/docs/media/v1.0/overdrive.png) | ![Neo Babylon Citizen card displayed in the Hall of Heroes](https://raw.githubusercontent.com/mkhsu2002/Last-Shield/main/docs/media/v1.0/citizen.png) |
+| ![Overdrive clears five meteors above Neo Babylon in v1.06](https://raw.githubusercontent.com/mkhsu2002/Last-Shield/main/docs/media/v1.06/overdrive.png) | ![A finished v1.06 demonstration with 1,226,240 points and a best combo of 151](https://raw.githubusercontent.com/mkhsu2002/Last-Shield/main/docs/media/v1.06/results.png) |
 
 ## Controls and access
 
@@ -81,7 +81,7 @@ Install [Last Shield](https://developers.reddit.com/apps/last-shield), then choo
 
 ## Development
 
-Built with Devvit Web, TypeScript, Phaser, Vite, Hono, Web Audio and Reddit Redis. The client and server share deterministic game rules; submission retries are idempotent. See [development notes](docs/development.md) and the [v1.06 release record](docs/v1-06-presubmit-2026-11-20.md).
+Built with Devvit Web, TypeScript, Phaser, Vite, Hono, Web Audio and Reddit Redis. The client and server share deterministic game rules; submission retries are idempotent. See [development notes](docs/development.md) and the [v1.06 release record](docs/v1-06-presubmit-2026-11-20.md) and [submission refresh](docs/v1-06-submission-refresh-2026-11-20.md).
 
 [Source](https://github.com/mkhsu2002/Last-Shield) · [App listing](https://developers.reddit.com/apps/last-shield) · [Community](https://www.reddit.com/r/last_shield_dev/)
 
@@ -89,7 +89,7 @@ Built with Devvit Web, TypeScript, Phaser, Vite, Hono, Web Audio and Reddit Redi
 
 Last Shield takes place in the original Neo Babylon world. Rights to its world, characters, artwork and audiovisual assets remain with their creators.
 
-The million-point video features K, an AI-controlled demonstration, shown at 3× speed with stereo game audio. Demonstration runs are labeled and excluded from competitive boards and personal daily achievements. AI tools assisted implementation and testing.
+The gameplay video is an AI-controlled demonstration, shown continuously at 3× speed with stereo game audio. Demonstration runs are labeled and excluded from competitive boards and personal daily achievements. AI tools assisted implementation and testing.
 
 Submitting a score makes your Reddit name and score visible on that community’s daily board. Hall membership requires a separate choice; you can remove your display and revoke your Citizen card. Public image export also requires agreement because shared copies may remain after withdrawal. The card is an in-game achievement, not legal citizenship or a financial asset.
 
