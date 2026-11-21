@@ -62,6 +62,8 @@ Menus scroll beneath the header, with play and practice before the daily details
 
 [Watch a complete defense in 40 seconds](https://www.youtube.com/watch?v=cTGUG56bqfo): 1,226,240 points and a best combo of 151, verified in the public Reddit game.
 
+Download the stereo MP4: [3× speed](https://github.com/mkhsu2002/Last-Shield/releases/download/v1.06/last-shield-v106-gameplay-3x.mp4) · [original speed](https://github.com/mkhsu2002/Last-Shield/releases/download/v1.06/last-shield-v106-gameplay-1x.mp4).
+
 | A full-width phone battlefield | Review a finished run |
 | --- | --- |
 | ![Overdrive clears five meteors above Neo Babylon in v1.06](https://raw.githubusercontent.com/mkhsu2002/Last-Shield/main/docs/media/v1.06/overdrive.png) | ![A finished v1.06 demonstration with 1,226,240 points and a best combo of 151](https://raw.githubusercontent.com/mkhsu2002/Last-Shield/main/docs/media/v1.06/results.png) |
@@ -82,6 +84,8 @@ Install [Last Shield](https://developers.reddit.com/apps/last-shield), then choo
 ## Development
 
 Built with Devvit Web, TypeScript, Phaser, Vite, Hono, Web Audio and Reddit Redis. The client and server share deterministic game rules; submission retries are idempotent. See [development notes](docs/development.md) and the [v1.06 release record](docs/v1-06-presubmit-2026-11-20.md) and [submission refresh](docs/v1-06-submission-refresh-2026-11-20.md).
+
+Use Node >=24.18.0 for this project. Run `npm ci` to restore dependencies and `npm run qa:prepare` to check, test and rebuild both outputs. See [local storage and recovery](docs/local-storage-maintenance-2026-11-20.md).
 
 [Source](https://github.com/mkhsu2002/Last-Shield) · [App listing](https://developers.reddit.com/apps/last-shield) · [Community](https://www.reddit.com/r/last_shield_dev/)
 
